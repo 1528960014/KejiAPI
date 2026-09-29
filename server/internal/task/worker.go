@@ -114,8 +114,14 @@ func (w *Worker) runTask(ctx context.Context, t *store.Task) {
 	if t.APIKeyID != nil {
 		keyID = t.APIKeyID
 	}
-	if err := w.store.SettleFunds(sc, t.KeyUserID, t.HoldMicro, t.HoldMicro, t.TaskUUID, reason, keyID); err != nil {
-		slog.Error("settle task funds", "task", t.TaskUUID, "error", err)
+	if t.KeyOrgID != nil {
+		if err := w.store.SettleOrgFunds(sc, t.KeyOrgID, t.HoldMicro, t.HoldMicro, t.TaskUUID, reason, keyID); err != nil {
+			slog.Error("settle task org funds", "task", t.TaskUUID, "error", err)
+		}
+	} else {
+		if err := w.store.SettleFunds(sc, t.KeyUserID, t.HoldMicro, t.HoldMicro, t.TaskUUID, reason, keyID); err != nil {
+			slog.Error("settle task funds", "task", t.TaskUUID, "error", err)
+		}
 	}
 }
 
@@ -130,10 +136,16 @@ func (w *Worker) failAndRelease(ctx context.Context, t *store.Task, msg string) 
 		}
 		return
 	}
-	if t.KeyUserID != nil && t.HoldMicro > 0 {
+	if t.HoldMicro > 0 {
 		reason := "media:" + t.ModelID + ":" + t.Type
-		if err := w.store.ReleaseFunds(sc, *t.KeyUserID, t.HoldMicro, t.TaskUUID, reason); err != nil {
-			slog.Error("release task funds", "task", t.TaskUUID, "error", err)
+		if t.KeyOrgID != nil {
+			if err := w.store.ReleaseOrgFunds(sc, *t.KeyOrgID, t.HoldMicro, t.TaskUUID, reason); err != nil {
+				slog.Error("release task org funds", "task", t.TaskUUID, "error", err)
+			}
+		} else if t.KeyUserID != nil {
+			if err := w.store.ReleaseFunds(sc, *t.KeyUserID, t.HoldMicro, t.TaskUUID, reason); err != nil {
+				slog.Error("release task funds", "task", t.TaskUUID, "error", err)
+			}
 		}
 	}
 }

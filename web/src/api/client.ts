@@ -691,3 +691,155 @@ export async function rechargeStatus(id: number): Promise<Recharge> {
   const { data } = await http.get<Recharge>(`/api/me/recharges/${id}`)
   return data
 }
+
+// --- P3-3: organizations (multi-tenancy) ---
+
+export type OrgRole = 'owner' | 'admin' | 'member'
+
+export interface MyOrg {
+  id: number
+  name: string
+  owner_user_id: number
+  balance_micro: number
+  balance_usd: number
+  created_at: string
+  role: OrgRole
+}
+
+export interface OrgMember {
+  user_id: number
+  email: string
+  role: OrgRole
+  joined_at: string
+}
+
+export interface OrgDetail extends MyOrg {
+  members: OrgMember[]
+}
+
+export interface OrgKey {
+  id: number
+  name: string
+  allowed_models?: string[]
+  spend_micro: number
+  spend_usd: number
+  created_at: string
+  quota_usd?: number
+  expires_at?: string
+}
+
+export interface OrgUsageSummary {
+  requests: number
+  prompt_tokens: number
+  completion_tokens: number
+  cost_usd: number
+}
+
+export interface OrgUsageRecord {
+  id: number
+  api_key_id?: number
+  key_name: string
+  model_id: string
+  provider: string
+  prompt_tokens: number
+  completion_tokens: number
+  cost_usd: number
+  status: string
+  created_at: string
+}
+
+export interface OrgLedgerEntry {
+  id: number
+  kind: string
+  amount: number
+  amount_usd: number
+  reason: string
+  created_at: string
+  request_id?: string
+}
+
+export async function listMyOrgs(): Promise<MyOrg[]> {
+  const { data } = await http.get<{ data: MyOrg[] }>('/api/me/orgs')
+  return data.data
+}
+
+export async function createOrg(name: string): Promise<MyOrg> {
+  const { data } = await http.post<MyOrg>('/api/me/orgs', { name })
+  return data
+}
+
+export async function getOrg(id: number): Promise<OrgDetail> {
+  const { data } = await http.get<OrgDetail>(`/api/me/orgs/${id}`)
+  return data
+}
+
+export async function addOrgMember(
+  orgId: number,
+  email: string,
+  role: OrgRole = 'member',
+): Promise<OrgMember> {
+  const { data } = await http.post<OrgMember>(`/api/me/orgs/${orgId}/members`, {
+    email,
+    role,
+  })
+  return data
+}
+
+export async function setOrgMemberRole(
+  orgId: number,
+  userId: number,
+  role: 'admin' | 'member',
+): Promise<void> {
+  await http.put(`/api/me/orgs/${orgId}/members/${userId}`, { role })
+}
+
+export async function removeOrgMember(orgId: number, userId: number): Promise<void> {
+  await http.delete(`/api/me/orgs/${orgId}/members/${userId}`)
+}
+
+export async function listOrgKeys(orgId: number): Promise<OrgKey[]> {
+  const { data } = await http.get<{ data: OrgKey[] }>(`/api/me/orgs/${orgId}/keys`)
+  return data.data
+}
+
+export async function createOrgKey(
+  orgId: number,
+  body: {
+    name: string
+    allowed_models?: string[]
+    quota_usd?: number
+    expires_at?: string
+  },
+): Promise<{ key: string; org: OrgKey }> {
+  const { data } = await http.post<{ key: string; org: OrgKey }>(
+    `/api/me/orgs/${orgId}/keys`,
+    body,
+  )
+  return data
+}
+
+export async function deleteOrgKey(orgId: number, keyId: number): Promise<void> {
+  await http.delete(`/api/me/orgs/${orgId}/keys/${keyId}`)
+}
+
+export async function orgUsage(
+  orgId: number,
+  limit = 50,
+): Promise<{ summary: OrgUsageSummary; data: OrgUsageRecord[] }> {
+  const { data } = await http.get<{
+    summary: OrgUsageSummary
+    data: OrgUsageRecord[]
+  }>(`/api/me/orgs/${orgId}/usage`, { params: { limit } })
+  return data
+}
+
+export async function orgLedger(
+  orgId: number,
+  limit = 50,
+): Promise<OrgLedgerEntry[]> {
+  const { data } = await http.get<{ data: OrgLedgerEntry[] }>(
+    `/api/me/orgs/${orgId}/ledger`,
+    { params: { limit } },
+  )
+  return data.data
+}

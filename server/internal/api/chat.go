@@ -111,34 +111,48 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	// M2: estimate the cost, enforce the key quota, hold the funds.
 	// P2-3: when the billing user is a reseller agent, resolve their
 	// wholesale rate first and discount the estimate (and every settle).
+	// P3-3: org keys bill the org's shared wallet at list price.
 	promptEst, completionEst := billing.EstimateTokens(body)
 	estMicro := billing.CostMicro(model, promptEst, completionEst)
 	reqID := newRequestID()
 	reason := "chat:" + modelID
 	held := false
+	billOrg := key != nil && key.OrgID != nil
 	var agentRate *float64
-	if userID := keyUserID(key); userID != nil && estMicro > 0 {
-		user, err := s.store.GetUser(ctx, *userID)
-		if errors.Is(err, store.ErrNotFound) {
-			abortWith(c, http.StatusForbidden, "user_not_found", "billing user of this API key no longer exists")
-			return
+	if !billOrg {
+		if userID := keyUserID(key); userID != nil && estMicro > 0 {
+			user, err := s.store.GetUser(ctx, *userID)
+			if errors.Is(err, store.ErrNotFound) {
+				abortWith(c, http.StatusForbidden, "user_not_found", "billing user of this API key no longer exists")
+				return
+			}
+			if err != nil {
+				httpErr(c, err)
+				return
+			}
+			if !user.Enabled {
+				abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
+				return
+			}
+			agentRate = user.AgentRate
+			estMicro = billing.ApplyRate(estMicro, agentRate)
 		}
-		if err != nil {
-			httpErr(c, err)
-			return
-		}
-		if !user.Enabled {
-			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
-			return
-		}
-		agentRate = user.AgentRate
-		estMicro = billing.ApplyRate(estMicro, agentRate)
 	}
 	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
 		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
 		return
 	}
-	if userID := keyUserID(key); userID != nil && estMicro > 0 {
+	if billOrg && estMicro > 0 {
+		if err := s.store.HoldOrgFunds(ctx, *key.OrgID, estMicro, reqID, reason); err != nil {
+			if errors.Is(err, store.ErrInsufficientBalance) {
+				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient organization balance; top up the org via the admin API")
+				return
+			}
+			httpErr(c, err)
+			return
+		}
+		held = true
+	} else if userID := keyUserID(key); userID != nil && estMicro > 0 {
 		if err := s.store.HoldFunds(ctx, *userID, estMicro, reqID, reason); err != nil {
 			if errors.Is(err, store.ErrInsufficientBalance) {
 				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")
@@ -160,7 +174,13 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		}
 		sc, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancel()
-		if err := s.store.SettleFunds(sc, keyUserID(key), holdMicro, actualMicro, reqID, reason, &key.ID); err != nil {
+		var err error
+		if billOrg {
+			err = s.store.SettleOrgFunds(sc, key.OrgID, holdMicro, actualMicro, reqID, reason, &key.ID)
+		} else {
+			err = s.store.SettleFunds(sc, keyUserID(key), holdMicro, actualMicro, reqID, reason, &key.ID)
+		}
+		if err != nil {
 			slog.Warn("settle funds", "error", err, "request_id", reqID)
 		}
 	}
@@ -170,7 +190,13 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		}
 		sc, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancel()
-		if err := s.store.ReleaseFunds(sc, *keyUserID(key), estMicro, reqID, reason); err != nil {
+		var err error
+		if billOrg {
+			err = s.store.ReleaseOrgFunds(sc, *key.OrgID, estMicro, reqID, reason)
+		} else {
+			err = s.store.ReleaseFunds(sc, *keyUserID(key), estMicro, reqID, reason)
+		}
+		if err != nil {
 			slog.Warn("release funds", "error", err, "request_id", reqID)
 		}
 	}

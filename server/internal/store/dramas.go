@@ -16,6 +16,7 @@ type Drama struct {
 	DramaUUID       string
 	APIKeyID        *int64
 	KeyUserID       *int64
+	KeyOrgID        *int64
 	Title           string
 	Script          string
 	Style           string
@@ -34,7 +35,7 @@ type Drama struct {
 	UpdatedAt       time.Time
 }
 
-const dramaColumns = `d.id, d.drama_uuid, d.api_key_id, k.user_id, d.title, d.script, d.style, d.storyboard_model, d.image_model, d.tts_model, d.shots_planned, d.status, COALESCE(d.hold_micro, 0), d.shots, COALESCE(d.cost, 0), d.error_msg, COALESCE(d.video_url, ''), COALESCE(d.video_error, ''), d.created_at, d.updated_at`
+const dramaColumns = `d.id, d.drama_uuid, d.api_key_id, k.user_id, k.org_id, d.title, d.script, d.style, d.storyboard_model, d.image_model, d.tts_model, d.shots_planned, d.status, COALESCE(d.hold_micro, 0), d.shots, COALESCE(d.cost, 0), d.error_msg, COALESCE(d.video_url, ''), COALESCE(d.video_error, ''), d.created_at, d.updated_at`
 
 func dramaSelect() string {
 	return `SELECT ` + dramaColumns + ` FROM dramas d LEFT JOIN api_keys k ON k.id = d.api_key_id`
@@ -42,7 +43,7 @@ func dramaSelect() string {
 
 func scanDrama(row pgx.Row) (*Drama, error) {
 	d := &Drama{}
-	err := row.Scan(&d.ID, &d.DramaUUID, &d.APIKeyID, &d.KeyUserID, &d.Title, &d.Script, &d.Style, &d.StoryboardModel, &d.ImageModel, &d.TTSModel, &d.ShotsPlanned, &d.Status, &d.HoldMicro, &d.Shots, &d.Cost, &d.ErrorMsg, &d.VideoURL, &d.VideoError, &d.CreatedAt, &d.UpdatedAt)
+	err := row.Scan(&d.ID, &d.DramaUUID, &d.APIKeyID, &d.KeyUserID, &d.KeyOrgID, &d.Title, &d.Script, &d.Style, &d.StoryboardModel, &d.ImageModel, &d.TTSModel, &d.ShotsPlanned, &d.Status, &d.HoldMicro, &d.Shots, &d.Cost, &d.ErrorMsg, &d.VideoURL, &d.VideoError, &d.CreatedAt, &d.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -53,7 +54,7 @@ func (s *Store) scanDramaRows(rows pgx.Rows) ([]Drama, error) {
 	out := []Drama{}
 	for rows.Next() {
 		var d Drama
-		if err := rows.Scan(&d.ID, &d.DramaUUID, &d.APIKeyID, &d.KeyUserID, &d.Title, &d.Script, &d.Style, &d.StoryboardModel, &d.ImageModel, &d.TTSModel, &d.ShotsPlanned, &d.Status, &d.HoldMicro, &d.Shots, &d.Cost, &d.ErrorMsg, &d.VideoURL, &d.VideoError, &d.CreatedAt, &d.UpdatedAt); err != nil {
+		if err := rows.Scan(&d.ID, &d.DramaUUID, &d.APIKeyID, &d.KeyUserID, &d.KeyOrgID, &d.Title, &d.Script, &d.Style, &d.StoryboardModel, &d.ImageModel, &d.TTSModel, &d.ShotsPlanned, &d.Status, &d.HoldMicro, &d.Shots, &d.Cost, &d.ErrorMsg, &d.VideoURL, &d.VideoError, &d.CreatedAt, &d.UpdatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, d)

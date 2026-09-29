@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	if _, err := conn.Exec(ctx, `
-		DROP TABLE IF EXISTS agents, assistants, dramas, recharges, refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
+		DROP TABLE IF EXISTS agents, assistants, dramas, recharges, refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users, org_ledger_entries, org_members, organizations CASCADE
 	`); err != nil {
 		fmt.Println("drop schema:", err)
 		os.Exit(1)
@@ -779,4 +779,117 @@ func indexOf(b []byte, sub string) int {
 		}
 	}
 	return -1
+}
+
+func TestOrganizations(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+	owner := mustCreditUser(t, st, "org-owner@test.local", 0)
+	member := mustCreditUser(t, st, "org-member@test.local", 0)
+
+	// create; the caller becomes owner member
+	org, err := st.CreateOrganization(ctx, "acme", owner.ID)
+	if err != nil {
+		t.Fatalf("create org: %v", err)
+	}
+	m, err := st.GetOrgMember(ctx, org.ID, owner.ID)
+	if err != nil || m.Role != OrgRoleOwner {
+		t.Fatalf("owner member = %+v (%v), want role owner", m, err)
+	}
+
+	// list by user
+	list, err := st.ListOrganizationsByUser(ctx, owner.ID)
+	if err != nil || len(list) != 1 || list[0].Role != OrgRoleOwner {
+		t.Fatalf("list by user = %+v (%v), want 1 owner row", list, err)
+	}
+	if others, err := st.ListOrganizationsByUser(ctx, member.ID); err != nil || len(others) != 0 {
+		t.Fatalf("member list before join = %+v (%v), want 0", others, err)
+	}
+
+	// add member; duplicate is rejected
+	if _, err := st.AddOrgMember(ctx, org.ID, member.Email, OrgRoleMember); err != nil {
+		t.Fatalf("add member: %v", err)
+	}
+	if _, err := st.AddOrgMember(ctx, org.ID, member.Email, OrgRoleMember); !errors.Is(err, ErrOrgMemberExists) {
+		t.Fatalf("duplicate add = %v, want ErrOrgMemberExists", err)
+	}
+
+	// owner role is immutable and the owner cannot be removed
+	if err := st.SetOrgMemberRole(ctx, org.ID, owner.ID, OrgRoleAdmin); err == nil {
+		t.Fatal("set owner role: unexpected success")
+	}
+	if err := st.RemoveOrgMember(ctx, org.ID, owner.ID); err == nil {
+		t.Fatal("remove owner: unexpected success")
+	}
+
+	// promote / demote / remove the member
+	if err := st.SetOrgMemberRole(ctx, org.ID, member.ID, OrgRoleAdmin); err != nil {
+		t.Fatalf("promote: %v", err)
+	}
+	if err := st.SetOrgMemberRole(ctx, org.ID, member.ID, OrgRoleMember); err != nil {
+		t.Fatalf("demote: %v", err)
+	}
+
+	// org key + wallet round trip
+	plain, key, err := st.CreateOrgKey(ctx, org.ID, "org-key", nil, nil, nil)
+	_ = plain
+	if err != nil {
+		t.Fatalf("create org key: %v", err)
+	}
+	if key.OrgID == nil || *key.OrgID != org.ID {
+		t.Fatalf("org key.OrgID = %v, want %d", key.OrgID, org.ID)
+	}
+	if _, err := st.CreditOrg(ctx, org.ID, 100_000, "test top-up"); err != nil {
+		t.Fatalf("credit org: %v", err)
+	}
+	if err := st.HoldOrgFunds(ctx, org.ID, 40_000, "req-org-1", "chat:test"); err != nil {
+		t.Fatalf("hold org: %v", err)
+	}
+	got, err := st.GetOrganization(ctx, org.ID)
+	if err != nil || got.BalanceMicro != 60_000 {
+		t.Fatalf("balance after hold = %v (%v), want 60000", got, err)
+	}
+	if err := st.SettleOrgFunds(ctx, &org.ID, 40_000, 25_000, "req-org-1", "chat:test", &key.ID); err != nil {
+		t.Fatalf("settle org: %v", err)
+	}
+	got, err = st.GetOrganization(ctx, org.ID)
+	if err != nil || got.BalanceMicro != 75_000 {
+		t.Fatalf("balance after settle = %v (%v), want 75000", got, err)
+	}
+	if err := st.ReleaseOrgFunds(ctx, org.ID, 1, "req-org-1", "chat:test"); err == nil {
+		t.Fatal("release after settle: unexpected success")
+	}
+	if err := st.ReleaseOrgFunds(ctx, org.ID, 75_000, "req-org-2", "chat:test"); err != nil {
+		t.Fatalf("release org: %v", err)
+	}
+	got, err = st.GetOrganization(ctx, org.ID)
+	if err != nil || got.BalanceMicro != 0 {
+		t.Fatalf("balance after release = %v (%v), want 0", got, err)
+	}
+
+	// ledger: hold(-40000)+settle(+40000-25000)+release(+75000) => 50000
+	entries, err := st.ListOrgLedger(ctx, org.ID, 100)
+	if err != nil {
+		t.Fatalf("list org ledger: %v", err)
+	}
+	var sum int64
+	for _, e := range entries {
+		sum += e.Amount
+	}
+	if got, _ := st.GetOrganization(ctx, org.ID); sum != got.BalanceMicro {
+		t.Errorf("org balance %d != ledger sum %d", got.BalanceMicro, sum)
+	}
+
+	// usage summary over an empty org must not fail
+	if _, err := st.OrgUsageSummary(ctx, org.ID); err != nil {
+		t.Fatalf("org usage summary: %v", err)
+	}
+
+	// removing the last non-owner member is fine; org stays
+	if err := st.RemoveOrgMember(ctx, org.ID, member.ID); err != nil {
+		t.Fatalf("remove member: %v", err)
+	}
+	if members, err := st.ListOrgMembers(ctx, org.ID); err != nil || len(members) != 1 {
+		t.Fatalf("members after remove = %d (%v), want 1", len(members), err)
+	}
 }

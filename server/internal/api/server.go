@@ -101,6 +101,10 @@ func (s *Server) Engine() *gin.Engine {
 		// P3-2: payment channel configuration (hot reload, no restart).
 		admin.GET("/pay-config", s.handleGetPayConfig)
 		admin.PUT("/pay-config", s.handlePutPayConfig)
+
+		// P3-3: organizations (platform audit + wallet credit).
+		admin.GET("/organizations", s.handleAdminListOrgs)
+		admin.POST("/organizations/:id/credit", s.handleAdminCreditOrg)
 	}
 
 	api := r.Group("/api")
@@ -132,6 +136,19 @@ func (s *Server) Engine() *gin.Engine {
 		me.GET("/me/subkeys", s.handleListSubkeys)
 		me.POST("/me/subkeys", s.handleCreateSubkey)
 		me.DELETE("/me/subkeys/:id", s.handleDeleteSubkey)
+
+		// P3-3: organizations (multi-tenancy).
+		me.GET("/me/orgs", s.handleListMyOrgs)
+		me.POST("/me/orgs", s.handleCreateOrg)
+		me.GET("/me/orgs/:id", s.handleGetOrg)
+		me.POST("/me/orgs/:id/members", s.handleAddOrgMember)
+		me.PUT("/me/orgs/:id/members/:user_id", s.handleSetOrgMemberRole)
+		me.DELETE("/me/orgs/:id/members/:user_id", s.handleRemoveOrgMember)
+		me.GET("/me/orgs/:id/keys", s.handleListOrgKeys)
+		me.POST("/me/orgs/:id/keys", s.handleCreateOrgKey)
+		me.DELETE("/me/orgs/:id/keys/:key_id", s.handleDeleteOrgKey)
+		me.GET("/me/orgs/:id/usage", s.handleOrgUsage)
+		me.GET("/me/orgs/:id/ledger", s.handleOrgLedger)
 	}
 
 	// P2-4: online recharge (JWT user).

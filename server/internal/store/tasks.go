@@ -16,6 +16,7 @@ type Task struct {
 	TaskUUID   string
 	APIKeyID   *int64
 	KeyUserID  *int64
+	KeyOrgID   *int64
 	Type       string
 	ModelID    string
 	Payload    []byte
@@ -28,9 +29,9 @@ type Task struct {
 	UpdatedAt  time.Time
 }
 
-// taskColumns joins the key's billing user so the worker can settle/release
-// without a second lookup.
-const taskColumns = `t.id, t.task_uuid, t.api_key_id, k.user_id, t.type, t.model_id, t.payload, t.status, COALESCE(t.hold_micro, 0), t.result_urls, COALESCE(t.cost, 0), t.error_msg, t.created_at, t.updated_at`
+// taskColumns joins the key's billing target (user or org, P3-3) so the
+// worker can settle/release without a second lookup.
+const taskColumns = `t.id, t.task_uuid, t.api_key_id, k.user_id, k.org_id, t.type, t.model_id, t.payload, t.status, COALESCE(t.hold_micro, 0), t.result_urls, COALESCE(t.cost, 0), t.error_msg, t.created_at, t.updated_at`
 
 func taskSelect() string {
 	return `SELECT ` + taskColumns + ` FROM tasks t LEFT JOIN api_keys k ON k.id = t.api_key_id`
@@ -38,7 +39,7 @@ func taskSelect() string {
 
 func scanTask(row pgx.Row) (*Task, error) {
 	t := &Task{ResultURLs: []string{}}
-	err := row.Scan(&t.ID, &t.TaskUUID, &t.APIKeyID, &t.KeyUserID, &t.Type, &t.ModelID, &t.Payload, &t.Status, &t.HoldMicro, &t.ResultURLs, &t.Cost, &t.ErrorMsg, &t.CreatedAt, &t.UpdatedAt)
+	err := row.Scan(&t.ID, &t.TaskUUID, &t.APIKeyID, &t.KeyUserID, &t.KeyOrgID, &t.Type, &t.ModelID, &t.Payload, &t.Status, &t.HoldMicro, &t.ResultURLs, &t.Cost, &t.ErrorMsg, &t.CreatedAt, &t.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}

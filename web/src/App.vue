@@ -20,6 +20,7 @@ const nav = [
   { to: '/pricing', label: 'nav.pricing' },
   { to: '/recharge', label: 'nav.recharge' },
   { to: '/console', label: 'nav.console' },
+  { to: '/orgs', label: 'nav.orgs' },
 ]
 
 const theme = ref<Theme>(getTheme())

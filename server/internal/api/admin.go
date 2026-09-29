@@ -158,6 +158,9 @@ func keyJSON(k *store.APIKey) gin.H {
 	if k.AgentID != nil {
 		item["agent_id"] = *k.AgentID
 	}
+	if k.OrgID != nil {
+		item["org_id"] = *k.OrgID
+	}
 	if k.Quota != nil {
 		item["quota_usd"] = billing.USD(*k.Quota)
 	}

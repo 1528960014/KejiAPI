@@ -142,31 +142,44 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 
 	held := false
 	userID := keyUserID(key)
+	billOrg := key != nil && key.OrgID != nil
 	// The task UUID doubles as the ledger request ID, so the hold entry and
 	// the worker's settle/release stay auditable against the same ID.
 	taskUUID := newTaskUUID()
-	if userID != nil && estMicro > 0 {
-		user, err := s.store.GetUser(ctx, *userID)
-		if errors.Is(err, store.ErrNotFound) {
-			abortWith(c, http.StatusForbidden, "user_not_found", "billing user of this API key no longer exists")
-			return
+	if !billOrg {
+		if userID != nil && estMicro > 0 {
+			user, err := s.store.GetUser(ctx, *userID)
+			if errors.Is(err, store.ErrNotFound) {
+				abortWith(c, http.StatusForbidden, "user_not_found", "billing user of this API key no longer exists")
+				return
+			}
+			if err != nil {
+				httpErr(c, err)
+				return
+			}
+			if !user.Enabled {
+				abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
+				return
+			}
+			// P2-3: agent wholesale rate discounts the frozen amount.
+			estMicro = billing.ApplyRate(estMicro, user.AgentRate)
 		}
-		if err != nil {
-			httpErr(c, err)
-			return
-		}
-		if !user.Enabled {
-			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
-			return
-		}
-		// P2-3: agent wholesale rate discounts the frozen amount.
-		estMicro = billing.ApplyRate(estMicro, user.AgentRate)
 	}
 	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
 		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
 		return
 	}
-	if userID != nil && estMicro > 0 {
+	if billOrg && estMicro > 0 {
+		if err := s.store.HoldOrgFunds(ctx, *key.OrgID, estMicro, taskUUID, reason); err != nil {
+			if errors.Is(err, store.ErrInsufficientBalance) {
+				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient organization balance; top up the org via the admin API")
+				return
+			}
+			httpErr(c, err)
+			return
+		}
+		held = true
+	} else if userID != nil && estMicro > 0 {
 		if err := s.store.HoldFunds(ctx, *userID, estMicro, taskUUID, reason); err != nil {
 			if errors.Is(err, store.ErrInsufficientBalance) {
 				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")
@@ -190,7 +203,11 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 	}
 	if err := s.store.CreateTask(ctx, t); err != nil {
 		if held {
-			s.releaseHeld(ctx, *userID, estMicro, t.TaskUUID, reason)
+			if billOrg {
+				s.releaseOrgHeld(ctx, *key.OrgID, estMicro, t.TaskUUID, reason)
+			} else {
+				s.releaseHeld(ctx, *userID, estMicro, t.TaskUUID, reason)
+			}
 		}
 		httpErr(c, err)
 		return
@@ -205,6 +222,15 @@ func (s *Server) releaseHeld(ctx context.Context, userID, holdMicro int64, reque
 	defer cancel()
 	if err := s.store.ReleaseFunds(sc, userID, holdMicro, requestID, reason); err != nil {
 		slog.Warn("release held funds", "error", err, "request_id", requestID)
+	}
+}
+
+// releaseOrgHeld is releaseHeld for the organization wallet (P3-3).
+func (s *Server) releaseOrgHeld(ctx context.Context, orgID, holdMicro int64, requestID, reason string) {
+	sc, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	if err := s.store.ReleaseOrgFunds(sc, orgID, holdMicro, requestID, reason); err != nil {
+		slog.Warn("release held org funds", "error", err, "request_id", requestID)
 	}
 }
 

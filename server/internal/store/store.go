@@ -268,6 +268,35 @@ CREATE TABLE IF NOT EXISTS pay_channels (
     config JSONB NOT NULL DEFAULT '{}',
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- P3-3: multi-tenancy — organizations with their own wallet, members and keys.
+CREATE TABLE IF NOT EXISTS organizations (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    owner_user_id BIGINT NOT NULL REFERENCES users(id),
+    balance BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS org_members (
+    org_id BIGINT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role TEXT NOT NULL DEFAULT 'member', -- owner / admin / member
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (org_id, user_id)
+);
+CREATE TABLE IF NOT EXISTS org_ledger_entries (
+    id BIGSERIAL PRIMARY KEY,
+    org_id BIGINT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    amount BIGINT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
+    request_id TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_org_ledger_request_id ON org_ledger_entries(request_id) WHERE request_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_org_ledger_org ON org_ledger_entries(org_id, created_at DESC);
+ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS org_id BIGINT REFERENCES organizations(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_api_keys_org ON api_keys(org_id);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

@@ -234,6 +234,60 @@ curl $B/api/me/recharges/1 -H "Authorization: Bearer <access_token>"
 - **幂等**：同一订单重复回调不会重复入账（订单状态翻转 + ledger request_id 唯一约束双重保险）；回调金额与订单不符则拒绝。
 - 单笔限额 ¥1 – ¥10000（`min_cny`/`max_cny` 分）。
 
+## 组织（P3-3 多租户）
+
+组织 = 租户：独立钱包（`balance`，micro-USD）+ 成员（owner/admin/member）+ 组织 API key。
+组织 key 的 `user_id` 为空、`org_id` 非空，所有调用（chat / media / drama）**按列表价**扣费组织钱包（无代理折扣）。
+组织充值目前**仅管理员手动**（见下文管理接口），不做组织在线支付。
+
+角色规则：
+
+- owner：创建者，唯一；不可改角色、不可被移除。
+- admin：可管理成员与 key；不可改 owner。
+- member：只能查看组织信息、成员列表与 key 列表；管理操作 403。
+- 非成员访问他人组织一律 404（不泄露组织是否存在）。
+
+```bash
+# 我加入的组织列表（含本人角色 / 组织余额）
+curl $B/api/me/orgs -H "Authorization: Bearer <access_token>"
+
+# 创建组织（本人自动成为 owner）
+curl $B/api/me/orgs -X POST -H "Authorization: Bearer <access_token>" -d '{"name":"acme"}'
+
+# 组织详情（含成员列表；仅需成员身份）
+curl $B/api/me/orgs/1 -H "Authorization: Bearer <access_token>"
+
+# 邀请成员（admin+；email 必须已注册，重复 409 member_exists；role: admin|member，缺省 member）
+curl $B/api/me/orgs/1/members -X POST -H "Authorization: Bearer <access_token>" -d '{"email":"dev@acme.io","role":"admin"}'
+
+# 改成员角色（admin+；owner 不可改 → 400）
+curl $B/api/me/orgs/1/members/2 -X PUT -H "Authorization: Bearer <access_token>" -d '{"role":"member"}'
+
+# 移除成员（admin+；本人也可移除自己；owner 不可移除 → 400）
+curl $B/api/me/orgs/1/members/2 -X DELETE -H "Authorization: Bearer <access_token>"
+
+# 组织 key 列表（任何成员）
+curl $B/api/me/orgs/1/keys -H "Authorization: Bearer <access_token>"
+
+# 创建组织 key（admin+；明文 key 仅返回这一次，之后只能看到名称与用量）
+curl $B/api/me/orgs/1/keys -X POST -H "Authorization: Bearer <access_token>" \
+  -d '{"name":"acme-prod","quota_usd":100}'
+# → 201 {"key":"sk-...","org":{"id":7,"name":"acme-prod",...}}
+
+# 删除组织 key（admin+）
+curl $B/api/me/orgs/1/keys/7 -X DELETE -H "Authorization: Bearer <access_token>"
+
+# 组织用量（admin+：汇总 + 最近明细，limit 上限 200）
+curl "$B/api/me/orgs/1/usage?limit=50" -H "Authorization: Bearer <access_token>"
+
+# 组织钱包流水（admin+；kind: credit / hold / release / debit）
+curl "$B/api/me/orgs/1/ledger?limit=50" -H "Authorization: Bearer <access_token>"
+```
+
+计费路由：请求带组织 key 时，hold/settle/release 全部落在组织钱包与 `org_ledger_entries`；
+媒体/漫剧等异步任务由 worker 通过 `api_keys.org_id` 解析归属，成功后结算、失败全额解冻。
+个人 key 行为不变（扣个人余额、代理批发价照旧）。
+
 ## 管理接口
 
 ### POST /admin/models
@@ -378,6 +432,19 @@ curl -X PUT $B/admin/pay-config -H "Authorization: Bearer $MASTER_KEY" \
 - 凭据缺失或非法（如 RSA 解析失败）的渠道**不启用**，并在 `status.error` 说明原因，不影响其他渠道与服务器运行。
 - PUT 响应与 GET 同形（脱敏后的最新配置 + status），一次往返即可刷新界面。
 - `cny_per_usd = 0` 时所有渠道一律不启用（`status.error = "recharge disabled"`）。
+
+### 组织（P3-3）
+
+```bash
+# 全平台组织（新→旧，含 owner email 与成员数，limit 上限 200）
+curl "$B/admin/organizations?limit=50" -H "Authorization: Bearer $MASTER_KEY"
+
+# 组织钱包手动充值（唯一组织充值方式；amount_usd > 0，reason 缺省 "admin credit"）
+curl -X POST $B/admin/organizations/1/credit -H "Authorization: Bearer $MASTER_KEY" \
+  -d '{"amount_usd":50,"reason":"annual plan"}'
+```
+
+组织没有删除接口（避免误删钱包与流水）；停用某个组织可由管理端删除其全部 key 实现（其请求将立即 401）。
 
 ### 充值订单（P2-4）
 

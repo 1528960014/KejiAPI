@@ -195,8 +195,14 @@ func (w *DramaWorker) runDrama(ctx context.Context, d *store.Drama) {
 		slog.Error("complete drama", "drama", d.DramaUUID, "error", err)
 		return
 	}
-	if err := w.store.SettleFunds(sc, d.KeyUserID, d.HoldMicro, d.HoldMicro, d.DramaUUID, reason, d.APIKeyID); err != nil {
-		slog.Error("settle drama funds", "drama", d.DramaUUID, "error", err)
+	if d.KeyOrgID != nil {
+		if err := w.store.SettleOrgFunds(sc, d.KeyOrgID, d.HoldMicro, d.HoldMicro, d.DramaUUID, reason, d.APIKeyID); err != nil {
+			slog.Error("settle drama org funds", "drama", d.DramaUUID, "error", err)
+		}
+	} else {
+		if err := w.store.SettleFunds(sc, d.KeyUserID, d.HoldMicro, d.HoldMicro, d.DramaUUID, reason, d.APIKeyID); err != nil {
+			slog.Error("settle drama funds", "drama", d.DramaUUID, "error", err)
+		}
 	}
 
 	// P2-1b: compose the MP4 after billing is closed — a render failure can
@@ -244,9 +250,16 @@ func (w *DramaWorker) failAndRelease(ctx context.Context, d *store.Drama, msg st
 		}
 		return
 	}
-	if d.KeyUserID != nil && d.HoldMicro > 0 {
-		if err := w.store.ReleaseFunds(sc, *d.KeyUserID, d.HoldMicro, d.DramaUUID, "drama:"+d.ImageModel); err != nil {
-			slog.Error("release drama funds", "drama", d.DramaUUID, "error", err)
+	if d.HoldMicro > 0 {
+		reason := "drama:" + d.ImageModel
+		if d.KeyOrgID != nil {
+			if err := w.store.ReleaseOrgFunds(sc, *d.KeyOrgID, d.HoldMicro, d.DramaUUID, reason); err != nil {
+				slog.Error("release drama org funds", "drama", d.DramaUUID, "error", err)
+			}
+		} else if d.KeyUserID != nil {
+			if err := w.store.ReleaseFunds(sc, *d.KeyUserID, d.HoldMicro, d.DramaUUID, reason); err != nil {
+				slog.Error("release drama funds", "drama", d.DramaUUID, "error", err)
+			}
 		}
 	}
 }

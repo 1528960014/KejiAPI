@@ -80,11 +80,19 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 生成工作台（图/视频/音乐/TTS 表单 + 任务列表 + 结果预览）
 - API 控制台（key 管理、用量与消费）
 - 充值页（P2-4：人民币充值，渠道 QR/跳转、自动到账轮询）
+- 组织页（P3-3：组织/成员/组织 key 管理、组织用量与钱包流水）
 - i18n 六语言（P2-5：zh-CN/en-US/ja/ko/ru/es，顶栏下拉切换、localStorage 记忆）；深浅主题
+
+### 多租户（P3-3，组织）
+- `organizations` 表：名称 + owner + 独立钱包 `balance`（micro-USD）；`org_members`（org_id+user_id 主键，role = owner/admin/member，owner 随创建事务写入、不可改不可移除）；`org_ledger_entries` 与用户账本同构（request_id 部分唯一索引兜底幂等）。
+- key 归属：`api_keys.org_id`（FK → organizations，`ON DELETE CASCADE`）。org key 的 `user_id` 为 NULL，个人 key 的列表查询按 `user_id`，天然互不可见。
+- 计费路由：chat/media/drama 三个入口先判 `key.OrgID != nil`（`billOrg`）——org key **按列表价**冻结组织钱包（`HoldOrgFunds`），跳过用户存在性/禁用检查与代理批发价；worker 结算经 `tasks`/`dramas` 的 join 拿到 `KeyOrgID`，org 走 `SettleOrgFunds/ReleaseOrgFunds`，个人走原路径（tasks/dramas 表无需加列）。
+- 权限：成员端 `/api/me/orgs/*`（JWT）按角色分级——任何成员可读组织/成员/key 列表，admin+ 管成员与 key，owner 唯一；非成员一律 404。管理端 `/admin/organizations`（master key）审计全平台组织并**手动**给组织钱包充值（本里程碑不做组织在线支付）。
+- 边界：无组织删除接口（钱包/流水不可误删）；org key 与个人 key 的配额、allowed_models、有效期语义一致。
 
 ## 核心数据表
 
-users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup）、tasks、dramas、usage_logs、agents、assistants、recharges
+users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup、P3-3 org_id）、tasks、dramas、usage_logs、agents、assistants、recharges、pay_settings、pay_channels、organizations、org_members、org_ledger_entries
 
 ## 技术选型
 

@@ -16,12 +16,14 @@ import (
 // APIKey is a user-facing access key; only its hash is stored. A non-nil
 // AgentID marks a reseller subkey: it bills the agent's balance at the
 // agent's wholesale rate. Markup is the informational reseller price factor
-// the agent shows its own customers.
+// the agent shows its own customers. A non-nil OrgID (P3-3) marks an
+// organization key: it bills the org's shared wallet at list price.
 type APIKey struct {
 	ID            int64
 	Name          string
 	UserID        *int64
 	AgentID       *int64
+	OrgID         *int64
 	Markup        float64
 	AllowedModels []string
 	Quota         *int64
@@ -44,11 +46,11 @@ func generateKey() (string, error) {
 	return "sk-" + hex.EncodeToString(buf), nil
 }
 
-const keyColumns = `id, name, user_id, agent_id, markup, allowed_models, quota, spend, expires_at, created_at`
+const keyColumns = `id, name, user_id, agent_id, org_id, markup, allowed_models, quota, spend, expires_at, created_at`
 
 func scanKey(row pgx.Row) (*APIKey, error) {
 	k := &APIKey{}
-	err := row.Scan(&k.ID, &k.Name, &k.UserID, &k.AgentID, &k.Markup, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt)
+	err := row.Scan(&k.ID, &k.Name, &k.UserID, &k.AgentID, &k.OrgID, &k.Markup, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -57,7 +59,7 @@ func scanKey(row pgx.Row) (*APIKey, error) {
 
 func scanKeyRow(rows pgx.Rows) (*APIKey, error) {
 	k := &APIKey{}
-	err := rows.Scan(&k.ID, &k.Name, &k.UserID, &k.AgentID, &k.Markup, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt)
+	err := rows.Scan(&k.ID, &k.Name, &k.UserID, &k.AgentID, &k.OrgID, &k.Markup, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt)
 	return k, err
 }
 
@@ -72,7 +74,7 @@ func (s *Store) CreateAPIKey(ctx context.Context, name string) (string, *APIKey,
 		INSERT INTO api_keys (key_hash, name) VALUES ($1, $2)
 		RETURNING `+keyColumns,
 		HashKey(plain), name,
-	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.OrgID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
 	if err != nil {
 		return "", nil, err
 	}
@@ -195,7 +197,7 @@ func (s *Store) CreateAPIKeyForUser(ctx context.Context, userID int64, name stri
 		INSERT INTO api_keys (key_hash, name, user_id) VALUES ($1, $2, $3)
 		RETURNING `+keyColumns,
 		HashKey(plain), name, userID,
-	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.OrgID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
 	if err != nil {
 		return "", nil, err
 	}
@@ -253,11 +255,63 @@ func (s *Store) CreateSubkey(ctx context.Context, agentID, userID int64, name st
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING `+keyColumns,
 		HashKey(plain), name, userID, agentID, markup, allowedModels, quota, expiresAt,
-	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.OrgID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
 	if err != nil {
 		return "", nil, err
 	}
 	return plain, key, nil
+}
+
+// CreateOrgKey (P3-3) generates an organization key: user_id stays NULL and
+// billing goes to the org's shared wallet at list price.
+func (s *Store) CreateOrgKey(ctx context.Context, orgID int64, name string, allowedModels []string, quota *int64, expiresAt *time.Time) (string, *APIKey, error) {
+	plain, err := generateKey()
+	if err != nil {
+		return "", nil, err
+	}
+	key := &APIKey{}
+	err = s.pool.QueryRow(ctx, `
+		INSERT INTO api_keys (key_hash, name, org_id, allowed_models, quota, expires_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING `+keyColumns,
+		HashKey(plain), name, orgID, allowedModels, quota, expiresAt,
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.OrgID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	if err != nil {
+		return "", nil, err
+	}
+	return plain, key, nil
+}
+
+// ListOrgKeys returns one org's keys, newest first.
+func (s *Store) ListOrgKeys(ctx context.Context, orgID int64) ([]APIKey, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT `+keyColumns+`
+		FROM api_keys WHERE org_id = $1 ORDER BY id DESC`, orgID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []APIKey{}
+	for rows.Next() {
+		k, err := scanKeyRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *k)
+	}
+	return out, rows.Err()
+}
+
+// DeleteOrgKey removes a key only if it belongs to the given org.
+func (s *Store) DeleteOrgKey(ctx context.Context, orgID, id int64) error {
+	tag, err := s.pool.Exec(ctx, `DELETE FROM api_keys WHERE id = $1 AND org_id = $2`, id, orgID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 // ListSubkeys returns one agent's reseller keys, newest first.

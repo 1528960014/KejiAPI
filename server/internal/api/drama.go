@@ -145,28 +145,41 @@ func (s *Server) handleDramaGenerate(c *gin.Context) {
 	dramaUUID := newTaskUUID()
 	held := false
 	userID := keyUserID(key)
-	if userID != nil && estMicro > 0 {
-		user, err := s.store.GetUser(ctx, *userID)
-		if errors.Is(err, store.ErrNotFound) {
-			abortWith(c, http.StatusForbidden, "user_not_found", "billing user of this API key no longer exists")
-			return
+	billOrg := key != nil && key.OrgID != nil
+	if !billOrg {
+		if userID != nil && estMicro > 0 {
+			user, err := s.store.GetUser(ctx, *userID)
+			if errors.Is(err, store.ErrNotFound) {
+				abortWith(c, http.StatusForbidden, "user_not_found", "billing user of this API key no longer exists")
+				return
+			}
+			if err != nil {
+				httpErr(c, err)
+				return
+			}
+			if !user.Enabled {
+				abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
+				return
+			}
+			// P2-3: agent wholesale rate discounts the frozen amount.
+			estMicro = billing.ApplyRate(estMicro, user.AgentRate)
 		}
-		if err != nil {
-			httpErr(c, err)
-			return
-		}
-		if !user.Enabled {
-			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
-			return
-		}
-		// P2-3: agent wholesale rate discounts the frozen amount.
-		estMicro = billing.ApplyRate(estMicro, user.AgentRate)
 	}
 	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
 		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
 		return
 	}
-	if userID != nil && estMicro > 0 {
+	if billOrg && estMicro > 0 {
+		if err := s.store.HoldOrgFunds(ctx, *key.OrgID, estMicro, dramaUUID, reason); err != nil {
+			if errors.Is(err, store.ErrInsufficientBalance) {
+				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient organization balance; top up the org via the admin API")
+				return
+			}
+			httpErr(c, err)
+			return
+		}
+		held = true
+	} else if userID != nil && estMicro > 0 {
 		if err := s.store.HoldFunds(ctx, *userID, estMicro, dramaUUID, reason); err != nil {
 			if errors.Is(err, store.ErrInsufficientBalance) {
 				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")
@@ -198,7 +211,11 @@ func (s *Server) handleDramaGenerate(c *gin.Context) {
 	}
 	if err := s.store.CreateDrama(ctx, d); err != nil {
 		if held {
-			s.releaseHeld(ctx, *userID, estMicro, dramaUUID, reason)
+			if billOrg {
+				s.releaseOrgHeld(ctx, *key.OrgID, estMicro, dramaUUID, reason)
+			} else {
+				s.releaseHeld(ctx, *userID, estMicro, dramaUUID, reason)
+			}
 		}
 		httpErr(c, err)
 		return
