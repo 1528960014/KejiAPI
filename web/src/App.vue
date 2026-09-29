@@ -21,6 +21,7 @@ const nav = [
   { to: '/recharge', label: 'nav.recharge' },
   { to: '/console', label: 'nav.console' },
   { to: '/orgs', label: 'nav.orgs' },
+  { to: '/admin', label: 'nav.admin' },
 ]
 
 const theme = ref<Theme>(getTheme())
@@ -55,7 +56,10 @@ async function handleSignOut() {
 <template>
   <header class="topbar">
     <div class="topbar-inner">
-      <router-link to="/" class="brand">ModelHub</router-link>
+      <router-link to="/" class="brand">
+        <span class="brand-mark">▲</span>
+        <span class="brand-name">ModelHub</span>
+      </router-link>
       <nav>
         <router-link
           v-for="item in nav"
@@ -99,35 +103,67 @@ async function handleSignOut() {
 <style scoped>
 .topbar {
   border-bottom: 1px solid var(--border);
-  background: var(--bg-panel);
+  background: color-mix(in srgb, var(--bg-panel) 82%, transparent);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 .topbar-inner {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 12px 24px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 }
 .brand {
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  color: #0b0b12;
+  font-size: 12px;
+  font-weight: 800;
+}
+.brand-name {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.2px;
+  background: linear-gradient(90deg, var(--text), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 nav {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   flex: 1;
+  flex-wrap: wrap;
 }
 .nav-link {
   color: var(--text-dim);
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
 }
 .nav-link.active,
 .nav-link:hover {
   color: var(--text);
   background: var(--bg-hover);
+}
+.nav-link.active {
+  color: var(--accent);
 }
 .topbar-actions {
   display: flex;

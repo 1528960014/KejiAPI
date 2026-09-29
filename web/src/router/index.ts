@@ -11,6 +11,7 @@ const router = createRouter({
     { path: '/recharge', name: 'recharge', component: () => import('../views/RechargeView.vue') },
     { path: '/console', name: 'console', component: () => import('../views/ConsoleView.vue') },
     { path: '/orgs', name: 'orgs', component: () => import('../views/OrgsView.vue') },
+    { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue') },
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue') },
   ],
 })

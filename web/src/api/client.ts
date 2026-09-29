@@ -180,6 +180,8 @@ export interface AdminModel {
   capabilities: string[]
   input_price_per_1k: number
   output_price_per_1k: number
+  price_unit?: string
+  unit_price?: number
   enabled: boolean
 }
 
@@ -195,6 +197,9 @@ export async function createAdminModel(body: {
   capabilities?: string[]
   input_price_per_1k: number
   output_price_per_1k: number
+  price_unit?: string
+  unit_price?: number
+  enabled?: boolean
 }): Promise<void> {
   await http.post('/admin/models', body, { headers: adminHeaders() })
 }
@@ -214,6 +219,8 @@ export interface AdminChannel {
   model_id: string
   priority: number
   enabled: boolean
+  health?: string
+  cooldown_until?: string
 }
 
 export async function listChannels(): Promise<AdminChannel[]> {
@@ -842,4 +849,112 @@ export async function orgLedger(
     { params: { limit } },
   )
   return data.data
+}
+
+// --- admin: chat-agent templates (assistants) ---
+
+export interface AdminAssistant {
+  id: number
+  agent_id: string
+  name: string
+  description: string
+  system_prompt: string
+  model: string
+  tools: unknown
+  enabled: boolean
+  created_at: string
+}
+
+export async function listAssistants(): Promise<AdminAssistant[]> {
+  const { data } = await http.get('/admin/assistants', { headers: adminHeaders() })
+  return data.data as AdminAssistant[]
+}
+
+export async function createAssistant(body: {
+  agent_id: string
+  name: string
+  description?: string
+  system_prompt: string
+  model: string
+  tools?: string
+  enabled?: boolean
+}): Promise<void> {
+  const payload: Record<string, unknown> = { ...body }
+  if (typeof body.tools === 'string' && body.tools.trim()) {
+    try {
+      payload.tools = JSON.parse(body.tools)
+    } catch {
+      throw new Error('tools 必须是 JSON 数组')
+    }
+  } else {
+    delete payload.tools
+  }
+  await http.post('/admin/assistants', payload, { headers: adminHeaders() })
+}
+
+export async function deleteAssistant(id: number): Promise<void> {
+  await http.delete(`/admin/assistants/${id}`, { headers: adminHeaders() })
+}
+
+// --- admin: recharge orders ---
+
+export async function adminRecharges(limit = 50): Promise<Recharge[]> {
+  const { data } = await http.get<{ data: Recharge[] }>('/admin/recharges', {
+    params: { limit, offset: 0 },
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data.data
+}
+
+// --- admin: payment configuration (P3-2, hot-reload) ---
+
+export interface PayChannelView {
+  enabled: boolean
+  config: Record<string, string>
+  status: { ok: boolean; error?: string }
+}
+
+export interface PayConfigView {
+  cny_per_usd: number
+  public_url: string
+  channels: Record<string, PayChannelView>
+}
+
+export const PAY_CHANNEL_IDS = ['yipay', 'alipay', 'wechat'] as const
+
+export const PAY_CHANNEL_FIELDS: Record<string, { name: string; secret: boolean }[]> = {
+  yipay: [
+    { name: 'mapi_url', secret: false },
+    { name: 'pid', secret: false },
+    { name: 'key', secret: true },
+  ],
+  alipay: [
+    { name: 'app_id', secret: false },
+    { name: 'private_key', secret: true },
+    { name: 'public_key', secret: false },
+  ],
+  wechat: [
+    { name: 'mch_id', secret: false },
+    { name: 'app_id', secret: false },
+    { name: 'api_v3_key', secret: true },
+    { name: 'merchant_serial', secret: false },
+    { name: 'private_key', secret: true },
+    { name: 'platform_key', secret: true },
+  ],
+}
+
+export async function getPayConfig(): Promise<PayConfigView> {
+  const { data } = await http.get<PayConfigView>('/admin/pay-config', { headers: adminHeaders() })
+  return data
+}
+
+export async function putPayConfig(body: {
+  cny_per_usd?: number
+  public_url?: string
+  channels?: Record<string, { enabled?: boolean; config: Record<string, string> }>
+}): Promise<PayConfigView> {
+  const { data } = await http.put<PayConfigView>('/admin/pay-config', body, {
+    headers: adminHeaders(),
+  })
+  return data
 }
