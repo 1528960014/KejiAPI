@@ -1,2 +1,4 @@
-allowBuilds:
-  esbuild: true
+# pnpm >= 10 reads build-script approval from pnpm-workspace.yaml
+# (the `pnpm` block in package.json is ignored).
+onlyBuiltDependencies:
+  - esbuild
