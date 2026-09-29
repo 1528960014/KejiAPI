@@ -39,6 +39,9 @@ func (s *Store) Close() { s.pool.Close() }
 // Pool exposes the raw pool for read-only diagnostics.
 func (s *Store) Pool() *pgxpool.Pool { return s.pool }
 
+// Money amounts are stored as BIGINT micro-USD (1 USD = 1_000_000 units) so
+// ledger arithmetic stays exact.
+
 const schema = `
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
@@ -128,6 +131,12 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_usage_key_time ON usage_logs(api_key_id, created_at DESC);
+
+-- M2: lifetime spend per key (micro-USD), used for quota enforcement.
+ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS spend BIGINT NOT NULL DEFAULT 0;
+-- M2: users may exist without a login password (billing-only accounts);
+-- console login lands in M3.
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 `
 
 func (s *Store) migrate(ctx context.Context) error {

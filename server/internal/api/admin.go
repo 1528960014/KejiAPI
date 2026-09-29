@@ -1,12 +1,14 @@
 package api
 
 import (
-	"strconv"
 	"errors"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"modelhub/internal/billing"
 	"modelhub/internal/store"
 )
 
@@ -135,13 +137,39 @@ func (s *Server) handleDeleteChannel(c *gin.Context) {
 
 // --- api keys ---
 
+// keyJSON renders an API key for the admin API; monetary fields in USD.
+func keyJSON(k *store.APIKey) gin.H {
+	item := gin.H{
+		"id":             k.ID,
+		"name":           k.Name,
+		"allowed_models": k.AllowedModels,
+		"spend_micro":    k.Spend,
+		"spend_usd":      billing.USD(k.Spend),
+		"created_at":     k.CreatedAt,
+	}
+	if k.UserID != nil {
+		item["user_id"] = *k.UserID
+	}
+	if k.Quota != nil {
+		item["quota_usd"] = billing.USD(*k.Quota)
+	}
+	if k.ExpiresAt != nil {
+		item["expires_at"] = *k.ExpiresAt
+	}
+	return item
+}
+
 func (s *Server) handleListKeys(c *gin.Context) {
 	keys, err := s.store.ListAPIKeys(c.Request.Context())
 	if err != nil {
 		httpErr(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": keys})
+	data := make([]gin.H, 0, len(keys))
+	for i := range keys {
+		data = append(data, keyJSON(&keys[i]))
+	}
+	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
 func (s *Server) handleCreateKey(c *gin.Context) {
@@ -176,6 +204,21 @@ func (s *Server) handleDeleteKey(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
+// parsePagination reads ?limit=&offset= with a default limit and hard cap.
+func parsePagination(c *gin.Context, defLimit, maxLimit int) (int, int) {
+	limit, offset := defLimit, 0
+	if v, err := strconv.Atoi(c.Query("limit")); err == nil && v > 0 {
+		limit = v
+	}
+	if v, err := strconv.Atoi(c.Query("offset")); err == nil && v > 0 {
+		offset = v
+	}
+	if limit > maxLimit {
+		limit = maxLimit
+	}
+	return limit, offset
+}
+
 func parseIDParam(c *gin.Context) (int64, error) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -183,4 +226,64 @@ func parseIDParam(c *gin.Context) (int64, error) {
 		return 0, err
 	}
 	return id, nil
+}
+
+type updateKeyReq struct {
+	Name          *string   `json:"name"`
+	UserID        *int64    `json:"user_id"`        // 0 unbinds the key from its user
+	QuotaUSD      *float64  `json:"quota_usd"`      // 0 removes the quota
+	AllowedModels *[]string `json:"allowed_models"` // empty slice = allow all
+	ExpiresAt     *string   `json:"expires_at"`     // RFC3339; "" removes the expiry
+}
+
+// handleUpdateKey patches an existing API key (binding, quota, allowlist, expiry).
+func (s *Server) handleUpdateKey(c *gin.Context) {
+	id, err := parseIDParam(c)
+	if err != nil {
+		return
+	}
+	var req updateKeyReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		abortWith(c, http.StatusBadRequest, "invalid_request", err.Error())
+		return
+	}
+	patch := &store.KeyPatch{
+		Name:          req.Name,
+		UserID:        req.UserID,
+		AllowedModels: req.AllowedModels,
+	}
+	if req.QuotaUSD != nil {
+		if *req.QuotaUSD < 0 {
+			abortWith(c, http.StatusBadRequest, "invalid_request", "quota_usd must be >= 0")
+			return
+		}
+		q := int64(0)
+		if *req.QuotaUSD > 0 {
+			q = billing.ToMicro(*req.QuotaUSD)
+		}
+		patch.Quota = &q
+	}
+	if req.ExpiresAt != nil {
+		if *req.ExpiresAt == "" {
+			zero := time.Time{}
+			patch.ExpiresAt = &zero
+		} else {
+			t, err := time.Parse(time.RFC3339, *req.ExpiresAt)
+			if err != nil {
+				abortWith(c, http.StatusBadRequest, "invalid_expires_at", "expires_at must be RFC3339 or empty")
+				return
+			}
+			patch.ExpiresAt = &t
+		}
+	}
+	key, err := s.store.UpdateAPIKey(c.Request.Context(), id, patch)
+	if errors.Is(err, store.ErrNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	if err != nil {
+		httpErr(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, keyJSON(key))
 }

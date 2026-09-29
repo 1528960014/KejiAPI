@@ -53,7 +53,17 @@ func (s *Server) Engine() *gin.Engine {
 		admin.DELETE("/channels/:id", s.handleDeleteChannel)
 		admin.GET("/api-keys", s.handleListKeys)
 		admin.POST("/api-keys", s.handleCreateKey)
+		admin.PATCH("/api-keys/:id", s.handleUpdateKey)
 		admin.DELETE("/api-keys/:id", s.handleDeleteKey)
+
+		admin.GET("/users", s.handleListUsers)
+		admin.POST("/users", s.handleCreateUser)
+		admin.GET("/users/:id", s.handleGetUser)
+		admin.POST("/users/:id/credit", s.handleCreditUser)
+		admin.GET("/users/:id/ledger", s.handleUserLedger)
+
+		admin.GET("/usage", s.handleListUsage)
+		admin.GET("/usage/summary", s.handleUsageSummary)
 	}
 	return r
 }

@@ -1,8 +1,11 @@
 package api
 
 import (
+	"bufio"
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -18,9 +21,12 @@ import (
 )
 
 // handleChatCompletions proxies an OpenAI-compatible chat request to the
-// upstream channel for the requested model.
+// upstream channel for the requested model, with M2 billing:
+// estimate cost -> enforce quota -> hold funds -> forward -> settle/release.
 func (s *Server) handleChatCompletions(c *gin.Context) {
 	ctx := c.Request.Context()
+	key := s.apiKeyFrom(c)
+
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		abortWith(c, http.StatusBadRequest, "invalid_request", "cannot read body")
@@ -43,6 +49,11 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		return
 	}
 
+	if !modelAllowed(key, modelID) {
+		abortWith(c, http.StatusForbidden, "model_not_allowed", "API key is not allowed to use model "+modelID)
+		return
+	}
+
 	ch, err := s.store.PickChannel(ctx, modelID)
 	if errors.Is(err, store.ErrNotFound) {
 		abortWith(c, http.StatusBadGateway, "no_channel", "no enabled channel for model "+modelID)
@@ -53,29 +64,90 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		return
 	}
 
-	upstreamBody, err := gateway.ReplaceModel(body, model.UpstreamModel)
-	if err != nil {
-		abortWith(c, http.StatusBadRequest, "invalid_request", err.Error())
-		return
-	}
-
 	var reqMeta struct {
 		Stream bool `json:"stream"`
 	}
 	_ = json.Unmarshal(body, &reqMeta)
 
+	// M2: estimate the cost, enforce the key quota, hold the funds.
+	promptEst, completionEst := billing.EstimateTokens(body)
+	estMicro := billing.CostMicro(model, promptEst, completionEst)
+	reqID := newRequestID()
+	reason := "chat:" + modelID
+	held := false
+	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
+		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
+		return
+	}
+	if userID := keyUserID(key); userID != nil && estMicro > 0 {
+		user, err := s.store.GetUser(ctx, *userID)
+		if errors.Is(err, store.ErrNotFound) {
+			abortWith(c, http.StatusForbidden, "user_not_found", "billing user of this API key no longer exists")
+			return
+		}
+		if err != nil {
+			httpErr(c, err)
+			return
+		}
+		if !user.Enabled {
+			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
+			return
+		}
+		if err := s.store.HoldFunds(ctx, *userID, estMicro, reqID, reason); err != nil {
+			if errors.Is(err, store.ErrInsufficientBalance) {
+				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")
+				return
+			}
+			httpErr(c, err)
+			return
+		}
+		held = true
+	}
+
+	settle := func(actualMicro int64) {
+		if key == nil {
+			return
+		}
+		holdMicro := int64(0)
+		if held {
+			holdMicro = estMicro
+		}
+		sc, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if err := s.store.SettleFunds(sc, keyUserID(key), holdMicro, actualMicro, reqID, reason, &key.ID); err != nil {
+			slog.Warn("settle funds", "error", err, "request_id", reqID)
+		}
+	}
+	release := func() {
+		if !held {
+			return
+		}
+		sc, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if err := s.store.ReleaseFunds(sc, *keyUserID(key), estMicro, reqID, reason); err != nil {
+			slog.Warn("release funds", "error", err, "request_id", reqID)
+		}
+	}
+
+	upstreamBody, err := gateway.PrepareUpstreamBody(body, model.UpstreamModel, reqMeta.Stream)
+	if err != nil {
+		abortWith(c, http.StatusBadRequest, "invalid_request", err.Error())
+		return
+	}
+
 	res, err := s.provider.Chat(ctx, ch, upstreamBody)
 	if err != nil {
+		release()
+		s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "upstream_error", err.Error(), 0)
 		abortWith(c, http.StatusBadGateway, "upstream_error", err.Error())
 		return
 	}
 	defer res.Close()
 
-	apiKey := s.apiKeyFrom(c)
-
 	if res.StatusCode >= 400 {
 		errBody, _ := io.ReadAll(io.LimitReader(res.Body, 64*1024))
-		s.logUsage(ctx, apiKey, model, reqMeta.Stream, 0, 0, "upstream_error", string(errBody), 0)
+		release()
+		s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "upstream_error", string(errBody), 0)
 		ct := res.Header.Get("Content-Type")
 		if ct == "" {
 			ct = "application/json"
@@ -92,32 +164,29 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	c.Status(http.StatusOK)
 
 	if reqMeta.Stream {
-		flusher, _ := c.Writer.(http.Flusher)
-		buf := make([]byte, 32*1024)
-		for {
-			n, rerr := res.Body.Read(buf)
-			if n > 0 {
-				if _, werr := c.Writer.Write(buf[:n]); werr != nil {
-					return
-				}
-				if flusher != nil {
-					flusher.Flush()
-				}
-			}
-			if rerr == io.EOF {
-				break
-			}
-			if rerr != nil {
-				slog.Warn("stream copy", "error", rerr)
-				break
-			}
+		prompt, completion, gotUsage, writeErr := s.forwardStream(c, res.Body)
+		if writeErr {
+			release()
+			s.logUsage(ctx, key, model, true, 0, 0, "client_gone", "client disconnected mid-stream", 0)
+			return
 		}
-		s.logUsage(ctx, apiKey, model, true, 0, 0, "ok", "", 0)
+		status := "ok"
+		actualMicro := estMicro
+		if gotUsage {
+			actualMicro = billing.CostMicro(model, prompt, completion)
+		} else {
+			status = "ok_estimated"
+			prompt, completion = 0, 0
+		}
+		settle(actualMicro)
+		s.logUsage(ctx, key, model, true, prompt, completion, status, "", billing.USD(actualMicro))
 		return
 	}
 
 	var out bytes.Buffer
 	if _, err := io.Copy(c.Writer, io.TeeReader(res.Body, &out)); err != nil {
+		settle(estMicro)
+		s.logUsage(ctx, key, model, false, 0, 0, "client_gone", "client disconnected mid-response", 0)
 		return
 	}
 	if flusher, ok := c.Writer.(http.Flusher); ok {
@@ -125,29 +194,109 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	}
 
 	var parsed struct {
-		Usage struct {
+		Usage *struct {
 			PromptTokens     int `json:"prompt_tokens"`
 			CompletionTokens int `json:"completion_tokens"`
 		} `json:"usage"`
 	}
 	_ = json.Unmarshal(out.Bytes(), &parsed)
-	cost := billing.Cost(model, parsed.Usage.PromptTokens, parsed.Usage.CompletionTokens)
-	s.logUsage(ctx, apiKey, model, false, parsed.Usage.PromptTokens, parsed.Usage.CompletionTokens, "ok", "", cost)
+
+	status := "ok"
+	actualMicro := estMicro
+	prompt, completion := 0, 0
+	if parsed.Usage != nil && (parsed.Usage.PromptTokens > 0 || parsed.Usage.CompletionTokens > 0) {
+		prompt, completion = parsed.Usage.PromptTokens, parsed.Usage.CompletionTokens
+		actualMicro = billing.CostMicro(model, prompt, completion)
+	} else {
+		status = "ok_estimated"
+	}
+	settle(actualMicro)
+	s.logUsage(ctx, key, model, false, prompt, completion, status, "", billing.USD(actualMicro))
 }
 
-func (s *Server) logUsage(ctx context.Context, key *store.APIKey, m *store.Model, stream bool, prompt, completion int, status, errMsg string, cost float64) {
+// keyUserID returns the billing user bound to the key, if any.
+func keyUserID(key *store.APIKey) *int64 {
+	if key == nil {
+		return nil
+	}
+	return key.UserID
+}
+
+// modelAllowed reports whether the key may call the given model; an empty
+// allowlist means all models.
+func modelAllowed(key *store.APIKey, modelID string) bool {
+	if key == nil || len(key.AllowedModels) == 0 {
+		return true
+	}
+	for _, m := range key.AllowedModels {
+		if m == modelID {
+			return true
+		}
+	}
+	return false
+}
+
+// newRequestID builds a unique request ID used to tag ledger entries.
+func newRequestID() string {
+	buf := make([]byte, 8)
+	_, _ = rand.Read(buf)
+	return "req-" + hex.EncodeToString(buf)
+}
+
+// forwardStream copies the upstream SSE body to the client verbatim, line by
+// line, and captures token usage from a data chunk when the upstream honors
+// stream_options.include_usage.
+func (s *Server) forwardStream(c *gin.Context, body io.Reader) (prompt, completion int, gotUsage, writeErr bool) {
+	flusher, _ := c.Writer.(http.Flusher)
+	r := bufio.NewReaderSize(body, 64*1024)
+	for {
+		line, err := r.ReadBytes('\n')
+		if len(line) > 0 {
+			if bytes.HasPrefix(line, []byte("data:")) && bytes.Contains(line, []byte(`"usage"`)) {
+				var chunk struct {
+					Usage *struct {
+						PromptTokens     int `json:"prompt_tokens"`
+						CompletionTokens int `json:"completion_tokens"`
+					} `json:"usage"`
+				}
+				if jerr := json.Unmarshal(bytes.TrimSpace(bytes.TrimPrefix(line, []byte("data:"))), &chunk); jerr == nil && chunk.Usage != nil {
+					prompt, completion = chunk.Usage.PromptTokens, chunk.Usage.CompletionTokens
+					gotUsage = true
+				}
+			}
+			if _, werr := c.Writer.Write(line); werr != nil {
+				writeErr = true
+				return
+			}
+			if flusher != nil {
+				flusher.Flush()
+			}
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			slog.Warn("stream copy", "error", err)
+			writeErr = true
+			break
+		}
+	}
+	return
+}
+
+func (s *Server) logUsage(ctx context.Context, key *store.APIKey, m *store.Model, stream bool, prompt, completion int, status, errMsg string, costUSD float64) {
 	u := &store.UsageLog{
 		ModelID:          m.ModelID,
 		Provider:         m.Provider,
 		Stream:           stream,
 		PromptTokens:     prompt,
 		CompletionTokens: completion,
-		Cost:             cost,
+		Cost:             costUSD,
 		Status:           status,
 		ErrorMsg:         errMsg,
 	}
 	if key != nil {
-		u.APIKeyID = key.ID
+		u.APIKeyID = &key.ID
 	}
 	logCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 	defer cancel()

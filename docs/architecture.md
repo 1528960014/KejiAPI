@@ -27,9 +27,11 @@ PostgreSQL（用户/账本/模型/通道/任务）  Redis（限流/队列，M2+�
 - 请求流：API key 鉴权 → 查 model → 选 channel → 替换 body 中 model 为上游名 → 透传转发（SSE 直写回）→ 记录 usage。
 
 ### 计费（M2）
-- 账本式：`wallets.balance` + `ledger_entries`（credit/debit/hold/release），余额 = 流水汇总。
-- 请求生命周期：预估费用 → 余额检查 → hold → 完成后按实际结算（chat 按真实 token；任务按成功/失败策略）。
-- API key 绑定模型组 + 额度 + 过期时间；`sk-` 前缀，库内只存 SHA-256。
+- 账本式：`users.balance`（微美元整数，1 USD = 10^6 µ）+ `ledger_entries`（credit/hold/release/debit 有符号流水），余额 = 流水汇总，同事务更新。
+- 请求生命周期：预估费用（prompt ≈ 字节数/4，completion ≈ max_tokens，默认 1024 上限 16384）→ 行锁下检查余额并 hold → 完成后 release + 按实际 token debit（chat 按真实 usage；流式注入 `stream_options.include_usage` 取末 chunk usage，取不到则按预估计费）→ 失败全额 release。
+- 实际超过冻结额时允许透支（余额可为负），账本始终一致。
+- API key 绑定用户 + 模型白名单（allowed_models）+ 额度（quota 微美元，消费累计在 api_keys.spend）+ 过期时间；`sk-` 前缀，库内只存 SHA-256。
+- 管理端：创建用户、手动充值（ledger credit）、账本流水查询、用量明细/汇总。
 
 ### 任务管线（M4）
 - task 表（uuid、type、status、payload、result_urls、cost）；Redis 队列 + worker。

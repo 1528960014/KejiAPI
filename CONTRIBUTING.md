@@ -29,6 +29,24 @@ Vite 已配置 `/v1` 与 `/admin` 代理到 `http://127.0.0.1:8080`。
 - 新增上游 provider：在 `internal/gateway` 增加 adapter，并补单元测试。
 - 提交信息：`feat/fix/docs/refactor/test/chore(scope): 简述`。
 
+## 测试
+
+```bash
+cd server
+go vet ./... && go test ./...
+```
+
+存储层集成测试需要本地数据库（未设置 `MODELHUB_TEST_DSN` 时自动跳过）。
+**集成测试会 DROP 并重建目标库的全部表，请指向一次性数据库。**
+
+```bash
+cd deploy && docker compose up -d postgres
+MODELHUB_TEST_DSN=postgres://modelhub:modelhub@127.0.0.1:5432/modelhub \
+  go test ./internal/store/
+```
+
+（Windows PowerShell：`$env:MODELHUB_TEST_DSN='postgres://modelhub:modelhub@127.0.0.1:5432/modelhub'; go test ./internal/store/`）
+
 ## 安全红线
 
 - 任何真实 API key 不得进入仓库、日志或测试数据。
