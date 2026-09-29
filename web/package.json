@@ -23,10 +23,5 @@
     "vite": "^6.0.7",
     "vue-tsc": "^2.2.0"
   },
-  "packageManager": "pnpm@11.25.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  }
+  "packageManager": "pnpm@11.25.0"
 }
