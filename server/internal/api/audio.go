@@ -139,13 +139,14 @@ func (s *Server) handleAudioSpeech(c *gin.Context) {
 		}
 	}
 
-	ch, err := s.store.PickChannel(ctx, model.ModelID)
-	if errors.Is(err, store.ErrNotFound) {
-		abortWith(c, http.StatusBadGateway, "no_channel", "no enabled channel for model "+req.Model)
-		return
-	}
+	usable, err := s.hasUsableChannel(ctx, model.ModelID)
 	if err != nil {
 		httpErr(c, err)
+		return
+	}
+	if !usable {
+		abortWith(c, http.StatusBadGateway, "no_channel",
+			"no enabled (non-cooled-down) channel for model "+req.Model)
 		return
 	}
 
@@ -249,17 +250,38 @@ func (s *Server) handleAudioSpeech(c *gin.Context) {
 		abortWith(c, status, code, msg)
 	}
 
+	// P5-1: dial with channel failover.
 	var audio []byte
 	if model.Provider == "dashscope" {
-		audio, err = s.synthesizeDashscopeSpeech(ctx, ch, model, req.Input)
+		dsBody, _ := json.Marshal(map[string]any{
+			"model": model.UpstreamModel,
+			"input": map[string]any{"text": req.Input},
+		})
+		status, respBody, dErr := s.dialJSON(ctx, model.ModelID, http.MethodPost,
+			"/api/v1/services/aigc/multimodal-generation/generation", dsBody, nil)
+		if dErr != nil {
+			fail(http.StatusBadGateway, "upstream_error", dErr.Error())
+			return
+		}
+		if status >= 400 {
+			fail(http.StatusBadGateway, "upstream_error",
+				fmt.Sprintf("upstream returned HTTP %d: %s", status, trimErrBody(respBody)))
+			return
+		}
+		audio, err = s.fetchDashscopeAudio(ctx, respBody)
 	} else {
 		rawBody := speechUpstreamBody(model, &req)
-		var status int
-		status, audio, err = s.provider.DoJSON(ctx, ch, http.MethodPost, "/audio/speech", rawBody, nil)
-		if err == nil && status >= 400 {
-			err = fmt.Errorf("upstream returned HTTP %d: %s", status, trimErrBody(audio))
-			audio = nil
+		status, respBody, dErr := s.dialJSON(ctx, model.ModelID, http.MethodPost, "/audio/speech", rawBody, nil)
+		if dErr != nil {
+			fail(http.StatusBadGateway, "upstream_error", dErr.Error())
+			return
 		}
+		if status >= 400 {
+			fail(http.StatusBadGateway, "upstream_error",
+				fmt.Sprintf("upstream returned HTTP %d: %s", status, trimErrBody(respBody)))
+			return
+		}
+		audio = respBody
 	}
 	if err != nil {
 		fail(http.StatusBadGateway, "upstream_error", err.Error())
@@ -275,21 +297,10 @@ func (s *Server) handleAudioSpeech(c *gin.Context) {
 	c.Data(http.StatusOK, contentType, audio)
 }
 
-// synthesizeDashscopeSpeech calls DashScope CosyVoice (URL reply) and
-// downloads the audio so the endpoint can always return bytes.
-func (s *Server) synthesizeDashscopeSpeech(ctx context.Context, ch *store.Channel, m *store.Model, input string) ([]byte, error) {
-	body, _ := json.Marshal(map[string]any{
-		"model": m.UpstreamModel,
-		"input": map[string]any{"text": input},
-	})
-	status, respBody, err := s.provider.DoJSON(ctx, ch, http.MethodPost,
-		"/api/v1/services/aigc/multimodal-generation/generation", body, nil)
-	if err != nil {
-		return nil, err
-	}
-	if status >= 400 {
-		return nil, fmt.Errorf("upstream returned HTTP %d: %s", status, trimErrBody(respBody))
-	}
+// fetchDashscopeAudio parses a CosyVoice response body (URL reply) and
+// downloads the audio so the endpoint can always return bytes. The download
+// itself is not failover-covered (it is a CDN fetch, not a channel call).
+func (s *Server) fetchDashscopeAudio(ctx context.Context, respBody []byte) ([]byte, error) {
 	var out struct {
 		Output struct {
 			Audio struct {

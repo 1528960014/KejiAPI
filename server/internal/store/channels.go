@@ -38,6 +38,30 @@ func (s *Store) PickChannel(ctx context.Context, modelID string) (*Channel, erro
 	return c, nil
 }
 
+// ChannelsForModel returns all enabled channels for a model in failover
+// order (priority DESC, id ASC). P5-1: the gateway dials them in sequence
+// when a channel fails.
+func (s *Store) ChannelsForModel(ctx context.Context, modelID string) ([]*Channel, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, name, provider, base_url, api_key, priority
+		FROM channels
+		WHERE model_id = $1 AND enabled
+		ORDER BY priority DESC, id ASC`, modelID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []*Channel{}
+	for rows.Next() {
+		c := &Channel{}
+		if err := rows.Scan(&c.ID, &c.Name, &c.Provider, &c.BaseURL, &c.APIKey, &c.Priority); err != nil {
+			return nil, err
+		}
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
 // ListChannels returns all channels.
 func (s *Store) ListChannels(ctx context.Context) ([]Channel, error) {
 	rows, err := s.pool.Query(ctx, `SELECT id, name, provider, base_url, api_key, model_id, priority, enabled FROM channels ORDER BY model_id, priority DESC`)

@@ -91,7 +91,26 @@ func (s *Server) handleListChannels(c *gin.Context) {
 		httpErr(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": channels})
+	// P5-1: annotate each channel with its in-memory failover health.
+	now := time.Now()
+	out := make([]channelWithHealth, 0, len(channels))
+	for _, ch := range channels {
+		item := channelWithHealth{Channel: ch, Health: "ok"}
+		if until, down := s.health.cooldownUntil(ch.ID, now); down {
+			item.Health = "cooldown"
+			item.CooldownUntil = until.UTC().Format(time.RFC3339)
+		}
+		out = append(out, item)
+	}
+	c.JSON(http.StatusOK, gin.H{"data": out})
+}
+
+// channelWithHealth is a channel plus its P5-1 failover health (cooldown
+// state is per-instance in-memory, like the rate limiter).
+type channelWithHealth struct {
+	store.Channel
+	Health        string `json:"health"`
+	CooldownUntil string `json:"cooldown_until,omitempty"`
 }
 
 type createChannelReq struct {

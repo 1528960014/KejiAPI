@@ -102,13 +102,14 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		}
 	}
 
-	ch, err := s.store.PickChannel(ctx, model.ModelID)
-	if errors.Is(err, store.ErrNotFound) {
-		abortWith(c, http.StatusBadGateway, "no_channel", "no enabled channel for model "+modelID)
-		return
-	}
+	usable, err := s.hasUsableChannel(ctx, model.ModelID)
 	if err != nil {
 		httpErr(c, err)
+		return
+	}
+	if !usable {
+		abortWith(c, http.StatusBadGateway, "no_channel",
+			"no enabled (non-cooled-down) channel for model "+modelID)
 		return
 	}
 
@@ -216,28 +217,36 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		return
 	}
 
-	res, err := s.provider.Chat(ctx, ch, upstreamBody)
+	// P5-1: dial the model's channels in priority order with failover.
+	att, err := s.dialChat(ctx, model.ModelID, upstreamBody)
 	if err != nil {
 		release()
+		if errors.Is(err, errNoUsableChannel) {
+			s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "no_channel",
+				"all channels cooling down", 0)
+			abortWith(c, http.StatusBadGateway, "no_channel",
+				"all channels for model "+modelID+" are cooling down after recent failures; retry shortly")
+			return
+		}
 		s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "upstream_error", err.Error(), 0)
 		abortWith(c, http.StatusBadGateway, "upstream_error", err.Error())
 		return
 	}
-	defer res.Close()
-
-	if res.StatusCode >= 400 {
-		errBody, _ := io.ReadAll(io.LimitReader(res.Body, 64*1024))
+	if att.res == nil {
+		// Final upstream error (non-retryable, or the last retryable one):
+		// forward the upstream status and body as-is.
 		release()
-		s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "upstream_error", string(errBody), 0)
-		ct := res.Header.Get("Content-Type")
+		s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "upstream_error", string(att.errBody), 0)
+		ct := att.header.Get("Content-Type")
 		if ct == "" {
 			ct = "application/json"
 		}
-		c.Data(res.StatusCode, ct, errBody)
+		c.Data(att.status, ct, att.errBody)
 		return
 	}
+	defer att.res.Close()
 
-	ct := res.Header.Get("Content-Type")
+	ct := att.res.Header.Get("Content-Type")
 	if ct == "" {
 		ct = "application/json"
 	}
@@ -245,7 +254,7 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	c.Status(http.StatusOK)
 
 	if reqMeta.Stream {
-		prompt, completion, gotUsage, writeErr := s.forwardStream(c, res.Body)
+		prompt, completion, gotUsage, writeErr := s.forwardStream(c, att.res.Body)
 		if writeErr {
 			release()
 			s.logUsage(ctx, key, model, true, 0, 0, "client_gone", "client disconnected mid-stream", 0)
@@ -268,7 +277,7 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	}
 
 	var out bytes.Buffer
-	if _, err := io.Copy(c.Writer, io.TeeReader(res.Body, &out)); err != nil {
+	if _, err := io.Copy(c.Writer, io.TeeReader(att.res.Body, &out)); err != nil {
 		settle(estMicro)
 		s.logUsage(ctx, key, model, false, 0, 0, "client_gone", "client disconnected mid-response", 0)
 		return

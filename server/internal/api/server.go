@@ -28,6 +28,9 @@ type Server struct {
 	payMu    sync.RWMutex
 	payState payConfigState // P3-2: hot-swappable payment config
 	limiter  *rateLimiter   // P4-3: per-key RPM/TPM (nil when disabled)
+	health   *channelHealth // P5-1: channel failure cooldown
+	// P5-1: *store.Store in production; swappable in unit tests.
+	channelSource channelSource
 }
 
 // New builds the API server. The payment state starts from the environment;
@@ -35,11 +38,13 @@ type Server struct {
 // via /admin/pay-config afterwards).
 func New(cfg *config.Config, st *store.Store, p *gateway.Provider) *Server {
 	s := &Server{
-		cfg:      cfg,
-		store:    st,
-		provider: p,
-		tokens:   auth.NewTokenService(cfg.MasterKey),
-		payState: envPayState(cfg),
+		cfg:           cfg,
+		store:         st,
+		provider:      p,
+		tokens:        auth.NewTokenService(cfg.MasterKey),
+		payState:      envPayState(cfg),
+		health:        newChannelHealth(),
+		channelSource: st,
 	}
 	if cfg.RPM > 0 || cfg.TPM > 0 {
 		s.limiter = newRateLimiter(cfg.RPM, cfg.TPM)
