@@ -9,6 +9,10 @@
 #     --build-arg KEY=VALUE pairs for the image builds (e.g. CN mirrors)
 #   MINIO=1
 #     start the optional MinIO object storage service (profile "minio")
+#   SERIAL=1
+#     build the images one at a time instead of in parallel (recommended
+#     on small VPSes: concurrent go+node builds can exhaust 2GB RAM and
+#     hang the whole box in swap)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -19,6 +23,12 @@ for f in ${COMPOSE_OVERRIDES:-}; do COMPOSE+=( -f "deploy/$f" ); done
 
 BUILD_ARGS=()
 for kv in ${BUILD_ARGS:-}; do BUILD_ARGS+=( --build-arg "$kv" ); done
+
+if [ "${SERIAL:-}" = "1" ]; then
+  for svc in app web; do
+    "${COMPOSE[@]}" build ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} "$svc"
+  done
+fi
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Docker not found. Install it first, e.g.:"
