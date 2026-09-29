@@ -114,6 +114,14 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 语义：固定 Unix 分钟桶，先查 token 窗口（`AddTokens` 在请求结算后按**实际** token 记账）再查请求窗口；窗口惰性清理（>1024 个 key 时清理 2 分钟前的条目），无后台 sweeper。
 - 边界：**单实例内存实现，多实例部署时限流是每实例的近似值**（精确全局限流需共享存储，如 Redis——技术选型表已预留）；分钟边界不滑动（边界处瞬时吞吐可达 2× 配额，量级可接受）。
 
+### 通道故障切换（P5-1，自动 failover + 失败冷却）
+- 数据：`store.ChannelsForModel` 返回模型全部启用通道（priority DESC, id ASC）。`PickChannel` 保留（任务管线等单通道路径仍用）。
+- 拨号循环（`api/failover.go`，`dialChat`/`dialJSON` 两个变体）：按序尝试每个非冷却通道；**传输失败**或**可重试状态码**（401/403/408/429/5xx）→ 记失败并换下一个；400/404 等请求类错误 → 原样转发不换通道；全部耗尽时转发"最后一次可重试错误"的响应体（客户端能看到真实上游报错），全传输失败则 502 `upstream_error`，无可用通道 502 `no_channel`。
+- 冷却：`channelHealth`（单实例内存，与 P4-3 限流同边界）——失败通道 5 分钟内跳过，任一次成功清除；惰性清理 >1024 条目。`GET /admin/channels` 每通道返回 `health: ok|cooldown` + `cooldown_until`。
+- 计费不变式：hold/settle/release 只在**最终结果**上执行一次；重试不重复冻结（`hasUsableChannel` 在 hold 前快速失败，保留 no_channel 502 的原有时序）。
+- 边界：failover 只发生在**响应开始之前**（流式断流不重试，客户端已有部分输出）；dashscope 的音频 URL 下载（CDN fetch）不参与 failover；媒体/漫剧任务管线暂不 failover（后续里程碑）；冷却状态随进程重启清零。
+- 可测性：`channelSource` 接口隔离数据库，failover 循环用 httptest 上游做单测（500/401/400/传输错误/全冷却五类场景）。
+
 ## 核心数据表
 
 users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup、P3-3 org_id）、tasks、dramas、usage_logs、agents、assistants、recharges、pay_settings、pay_channels、organizations、org_members、org_ledger_entries
