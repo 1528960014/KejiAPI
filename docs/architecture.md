@@ -58,11 +58,12 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 撤销代理（DELETE /admin/agents/:id）只解除代理身份，子 key 降级为代理用户的普通 key。
 
 ### 智能体（P2-2，预定义 agent 模板）
-- `assistants` 表：公开 `agent_id` + 名称/描述/system prompt + 绑定的真实 `model_id` + enabled；首次启动播种 3 个内置模板（翻译官/写手/客服），绑定当时第一个启用的 chat 模型（幂等，可改绑）。
-- 复用 chat 通道：`/v1/chat/completions` 的 `model` 命中 agent_id 时，`injectSystemPrompt` 在 messages 头部注入模板 system prompt，随后按真实模型取通道、估价（注入后的 body）、hold/settle——worker、账本、用量日志零改动；usage 日志记真实模型。
+- `assistants` 表：公开 `agent_id` + 名称/描述/system prompt + 绑定的真实 `model_id` + `tools`（JSONB，OpenAI 函数定义数组，可空）+ enabled；首次启动播种 3 个内置模板（翻译官/写手/客服），绑定当时第一个启用的 chat 模型（幂等，可改绑）。
+- 复用 chat 通道：`/v1/chat/completions` 的 `model` 命中 agent_id 时，`injectSystemPrompt` 在 messages 头部注入模板 system prompt，`injectTools` 注入模板 tools（请求自带 `tools` 时不覆盖），随后按真实模型取通道、估价（注入后的 body）、hold/settle——worker、账本、用量日志零改动；usage 日志记真实模型。
 - key 白名单：agent id 或绑定模型任一命中即放行；空白名单全放行。
-- 无状态多轮：历史由客户端维护（与现有 chat 页一致）；`GET /v1/agents` 供前端/SDK 列模板。
-- 管理端 `/admin/assistants` CRUD（改绑模型校验存在性）；Web 聊天页"智能体"下拉选择后锁定模型列。
+- 无状态多轮：历史由客户端维护（与现有 chat 页一致）；`GET /v1/agents` 供前端/SDK 列模板（含 `tools`，供客户端实现工具执行）。
+- 工具调用（P3-1）：网关只负责把模板 `tools` 注入上游请求，`tool_calls` 随响应原样透传（含流式 `delta.tool_calls`）；**工具由客户端执行**（网关不执行工具、不做 MCP），客户端把 `role:"tool"` 结果加入 messages 续问。Web 聊天页把 tool_calls 渲染为可读文本、不执行。
+- 管理端 `/admin/assistants` CRUD（改绑模型校验存在性，`tools` 校验为含 `function` 对象的数组）；Web 聊天页"智能体"下拉选择后锁定模型列。
 
 ### 在线支付（P2-4，人民币充值 → USD 余额）
 - 订单模型：`recharges` 表，商户订单号 `order_no`（`RH…`，DB 唯一）+ 渠道（yipay/alipay/wechat）+ 金额（分）+ **下单时锁定**的入账 `credit_micro`（= 金额 / `PAY_CNY_PER_USD`），渠道后改汇率不影响在途订单。

@@ -61,6 +61,15 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 			abortWith(c, http.StatusBadRequest, "invalid_request", "cannot parse request body")
 			return
 		}
+		// P3-1: attach the template's tool schemas unless the request
+		// already carries its own tools (the client's tools win).
+		if len(assistant.Tools) > 0 {
+			body, err = injectTools(body, assistant.Tools)
+			if err != nil {
+				abortWith(c, http.StatusBadRequest, "invalid_request", "cannot parse request body")
+				return
+			}
+		}
 	}
 
 	targetModel := modelID
@@ -285,6 +294,24 @@ func injectSystemPrompt(body []byte, system string) ([]byte, error) {
 	next = append(next, map[string]any{"role": "system", "content": system})
 	next = append(next, msgs...)
 	payload["messages"] = next
+	return json.Marshal(payload)
+}
+
+// injectTools adds the template's OpenAI-format tools array to the request
+// body. A request that already carries its own tools is returned unchanged.
+func injectTools(body []byte, tools []byte) ([]byte, error) {
+	var payload map[string]any
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return nil, err
+	}
+	if existing, ok := payload["tools"]; ok && existing != nil {
+		return body, nil
+	}
+	var tv any
+	if err := json.Unmarshal(tools, &tv); err != nil {
+		return nil, err
+	}
+	payload["tools"] = tv
 	return json.Marshal(payload)
 }
 

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -17,6 +18,7 @@ func assistantJSON(a *store.Assistant) gin.H {
 		"name":        a.Name,
 		"description": a.Description,
 		"model":       a.ModelID,
+		"tools":       a.Tools,
 	}
 }
 
@@ -29,10 +31,29 @@ func assistantAdminJSON(a *store.Assistant) gin.H {
 		"description":   a.Description,
 		"system_prompt": a.SystemPrompt,
 		"model":         a.ModelID,
+		"tools":         a.Tools,
 		"enabled":       a.Enabled,
 		"created_at":    a.CreatedAt,
 	}
 	return item
+}
+
+// validTools checks a tools payload: it must be a JSON array whose elements
+// are objects with a "function" object (OpenAI tool schema shape).
+func validTools(raw json.RawMessage) error {
+	if len(raw) == 0 {
+		return nil
+	}
+	var arr []map[string]any
+	if err := json.Unmarshal(raw, &arr); err != nil {
+		return errors.New("tools must be a JSON array")
+	}
+	for _, item := range arr {
+		if _, ok := item["function"].(map[string]any); !ok {
+			return errors.New("each tool must be an object with a function object")
+		}
+	}
+	return nil
 }
 
 // handleListChatAgents lists enabled templates for API-key clients.
@@ -64,12 +85,13 @@ func (s *Server) handleListAssistants(c *gin.Context) {
 }
 
 type assistantReq struct {
-	AgentID      string `json:"agent_id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	SystemPrompt string `json:"system_prompt"`
-	Model        string `json:"model"`
-	Enabled      *bool  `json:"enabled"`
+	AgentID      string          `json:"agent_id"`
+	Name         string          `json:"name"`
+	Description  string          `json:"description"`
+	SystemPrompt string          `json:"system_prompt"`
+	Model        string          `json:"model"`
+	Tools        json.RawMessage `json:"tools"`
+	Enabled      *bool           `json:"enabled"`
 }
 
 // handleCreateAssistant creates a template (admin).
@@ -79,12 +101,17 @@ func (s *Server) handleCreateAssistant(c *gin.Context) {
 		abortWith(c, http.StatusBadRequest, "invalid_request", "agent_id, model and system_prompt are required")
 		return
 	}
+	if err := validTools(req.Tools); err != nil {
+		abortWith(c, http.StatusBadRequest, "invalid_tools", err.Error())
+		return
+	}
 	a := &store.Assistant{
 		AgentID:      req.AgentID,
 		Name:         req.Name,
 		Description:  req.Description,
 		SystemPrompt: req.SystemPrompt,
 		ModelID:      req.Model,
+		Tools:        req.Tools,
 		Enabled:      true,
 	}
 	if req.Enabled != nil {
@@ -109,21 +136,29 @@ func (s *Server) handleUpdateAssistant(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name         *string `json:"name"`
-		Description  *string `json:"description"`
-		SystemPrompt *string `json:"system_prompt"`
-		Model        *string `json:"model"`
-		Enabled      *bool   `json:"enabled"`
+		Name         *string          `json:"name"`
+		Description  *string          `json:"description"`
+		SystemPrompt *string          `json:"system_prompt"`
+		Model        *string          `json:"model"`
+		Tools        *json.RawMessage `json:"tools"`
+		Enabled      *bool            `json:"enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		abortWith(c, http.StatusBadRequest, "invalid_request", "invalid body")
 		return
+	}
+	if req.Tools != nil {
+		if err := validTools(*req.Tools); err != nil {
+			abortWith(c, http.StatusBadRequest, "invalid_tools", err.Error())
+			return
+		}
 	}
 	updated, err := s.store.UpdateAssistant(c.Request.Context(), id, &store.AssistantPatch{
 		Name:         req.Name,
 		Description:  req.Description,
 		SystemPrompt: req.SystemPrompt,
 		ModelID:      req.Model,
+		Tools:        req.Tools,
 		Enabled:      req.Enabled,
 	})
 	if errors.Is(err, store.ErrNotFound) {

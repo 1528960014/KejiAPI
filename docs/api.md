@@ -17,6 +17,7 @@
 - **透支**：实际费用超过冻结额时允许余额为负（账本始终一致）。
 - **代理分销（P2-3）**：管理员可将某用户标记为代理并设批发系数 `rate ∈ (0, 1]`（如 0.85 = 八五折）。该用户**所有**冻结与结算金额都按 `ceil(金额 × rate)` 打折（正数永不断为 0）；代理可在控制台创建"子 key"分发给客户——子 key 共用代理余额、按代理批发价结算，各自独立的模型白名单 / 额度 / 有效期。`markup`（加价倍率）仅为代理向客户展示的建议价，平台不向终端客户收款。
 - **智能体（P2-2）**：`/v1/chat/completions` 的 `model` 可以填**智能体模板 id**（如 `agent-translator`）。网关识别后：把模板的 system prompt 注入到 messages 最前 → 走模板绑定的**真实模型**的通道与计费（按真实模型的 token 单价）；key 白名单校验"agent id 或真实模型"任一命中即可。无状态：多轮上下文由客户端保留（与现有 chat 一致）。首次启动自动播种 3 个内置模板（翻译官 / 写手 / 客服），绑定当时第一个启用的 chat 模型，可用 `/admin/assistants` 改绑 / 增删。
+- **智能体工具调用（P3-1）**：智能体模板可携带 OpenAI 格式的 `tools`（function 定义数组）。以 agent id 发起 chat 时，网关把模板的 `tools` 注入上游请求体（**请求自带 `tools` 时以请求为准**），上游原样流式回传 `tool_calls`；工具**由客户端执行**并携带结果续问（标准 function calling 流程），网关本身不执行工具、不做 MCP。SDK 客户端可直接拿到模板 tools 定义（`GET /v1/agents` 返回 `tools` 字段）。
 - **在线充值（P2-4）**：用户通过易支付 / 支付宝官方 / 微信支付官方以人民币充值，按 `PAY_CNY_PER_USD` 汇率在**下单时**锁定入账的 micro-USD；渠道异步回调验签（易支付 MD5、支付宝 RSA2、微信 v3 平台密钥 + AES-256-GCM）后，在单事务内把订单置为 paid 并记 `credit` 流水入账。入账前校验渠道金额与订单金额一致；幂等，重复回调不重复入账。
 
 ## 开放接口
@@ -27,9 +28,9 @@
 
 ### GET /v1/agents（P2-2 智能体）
 
-需要 API key 鉴权。返回启用的智能体模板：`agent_id`、`name`、`description`、`model`（绑定的真实模型）。
+需要 API key 鉴权。返回启用的智能体模板：`agent_id`、`name`、`description`、`model`（绑定的真实模型）、`tools`（模板的工具定义数组，OpenAI 格式；无工具时为 null）。
 
-调用方式：`POST /v1/chat/completions`，`"model": "agent-translator"` 即可；system prompt 由网关注入，计费按绑定的真实模型。
+调用方式：`POST /v1/chat/completions`，`"model": "agent-translator"` 即可；system prompt 与模板的 `tools` 由网关注入，计费按绑定的真实模型。带工具的模板会触发上游 function calling，响应（含流式 `delta.tool_calls`）原样透传，客户端执行工具后把 `role:"tool"` 结果加入 messages 续问即可。
 
 非标准附加字段（OpenAI SDK 会忽略）：`input_price_per_1k` / `output_price_per_1k`（token 计价），`price_unit`（`token` 默认 / `image` / `video` / `music` / `tts`）与 `unit_price`（每件 USD，媒体模型用）。
 
@@ -329,22 +330,23 @@ curl -X DELETE $B/admin/agents/1 -H "Authorization: Bearer $MASTER_KEY"
 ### 智能体模板（P2-2）
 
 ```bash
-# 模板列表（含 system_prompt / enabled / created_at）
+# 模板列表（含 system_prompt / tools / enabled / created_at）
 curl $B/admin/assistants -H "Authorization: Bearer $MASTER_KEY"
 
-# 新建模板（agent_id 全局唯一；model 必须是已存在的模型）
+# 新建模板（agent_id 全局唯一；model 必须是已存在的模型；tools 为 OpenAI 格式函数定义数组，可选）
 curl -X POST $B/admin/assistants -H "Authorization: Bearer $MASTER_KEY" \
-  -d '{"agent_id":"agent-poet","name":"诗人","description":"写诗","system_prompt":"你是一位诗人……","model":"gpt-4o-mini"}'
+  -d '{"agent_id":"agent-poet","name":"诗人","description":"写诗","system_prompt":"你是一位诗人……","model":"gpt-4o-mini","tools":[{"type":"function","function":{"name":"get_weather","description":"查询天气","parameters":{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}}}]}'
 
-# 局部更新（改绑模型 / 改 prompt / 启停）
+# 局部更新（改绑模型 / 改 prompt / 改 tools / 启停；tools 传 [] 清空）
 curl -X PATCH $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY" -d '{"model":"gpt-4o"}'
+curl -X PATCH $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY" -d '{"tools":[]}'
 curl -X PATCH $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY" -d '{"enabled":false}'
 
 # 删除
 curl -X DELETE $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY"
 ```
 
-- `agent_id` 重复 → 409 `agent_exists`；改绑不存在的模型 → 400。
+- `agent_id` 重复 → 409 `agent_exists`；改绑不存在的模型 → 400；`tools` 非数组或元素缺 `function` 对象 → 400 `invalid_tools`。
 - 停用的模板不出现在 `GET /v1/agents`，且以其 id 发起 chat 会 404。
 
 ### 充值订单（P2-4）

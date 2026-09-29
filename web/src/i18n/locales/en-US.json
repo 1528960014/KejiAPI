@@ -25,6 +25,7 @@
     "clear": "Clear",
     "you": "You",
     "tokens": "tokens",
+    "toolCall": "Tool call:",
     "compareHint": "Select several models to send the same prompt side by side and compare responses.",
     "noKey": "Enter an API key first (create one in the console after sign-in, or via /admin/api-keys)",
     "noModels": "No models available yet (configure via /admin/models and /admin/channels)",

@@ -25,6 +25,7 @@
     "clear": "Limpiar",
     "you": "Tú",
     "tokens": "tokens",
+    "toolCall": "Llamada a herramienta:",
     "compareHint": "Selecciona varios modelos para enviar el mismo prompt en paralelo y comparar respuestas.",
     "noKey": "Introduce primero una clave API (créala en la consola tras iniciar sesión o vía /admin/api-keys)",
     "noModels": "No hay modelos disponibles (configúralos vía /admin/models y /admin/channels)",

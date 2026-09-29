@@ -25,6 +25,7 @@
     "clear": "清空",
     "you": "你",
     "tokens": "tokens",
+    "toolCall": "工具调用：",
     "compareHint": "选择多个模型后，同一问题会并排发送到所选模型，便于横向对比。",
     "noKey": "请先填入 API Key（登录后可在控制台创建，或由管理员通过 /admin/api-keys 创建）",
     "noModels": "暂无可用模型（请先配置 /admin/models 与 /admin/channels）",

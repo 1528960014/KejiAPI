@@ -11,6 +11,7 @@ package store
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -606,6 +607,22 @@ func TestAssistants(t *testing.T) {
 	badModel := "missing"
 	if _, err := st.UpdateAssistant(ctx, a.ID, &AssistantPatch{ModelID: &badModel}); err == nil {
 		t.Fatalf("rebind to missing model = nil, want error")
+	}
+
+	// tools roundtrip: set, read back, clear (P3-1)
+	tools := json.RawMessage(`[{"type":"function","function":{"name":"get_weather","parameters":{"type":"object"}}}]`)
+	updated, err = st.UpdateAssistant(ctx, a.ID, &AssistantPatch{Tools: &tools})
+	if err != nil || len(updated.Tools) == 0 || !json.Valid(updated.Tools) {
+		t.Fatalf("tools set = %+v (%v), want a valid payload", updated, err)
+	}
+	byID, err = st.GetAssistantByID(ctx, "agent-x")
+	if err != nil || string(byID.Tools) != string(tools) {
+		t.Fatalf("tools readback = %s (%v), want %s", byID.Tools, err, tools)
+	}
+	emptyTools := json.RawMessage(nil)
+	updated, err = st.UpdateAssistant(ctx, a.ID, &AssistantPatch{Tools: &emptyTools})
+	if err != nil || len(updated.Tools) != 0 {
+		t.Fatalf("tools clear = %+v (%v), want NULL", updated, err)
 	}
 
 	// disable -> hidden from the public list

@@ -25,6 +25,7 @@
     "clear": "クリア",
     "you": "あなた",
     "tokens": "トークン",
+    "toolCall": "ツール呼び出し：",
     "compareHint": "複数のモデルを選択すると、同じプロンプトを並行して送信して比較できます。",
     "noKey": "先に API キーを入力してください（ログイン後にコンソールで作成、または /admin/api-keys）",
     "noModels": "利用可能なモデルがありません（/admin/models と /admin/channels で設定してください）",

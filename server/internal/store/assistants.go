@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -12,8 +13,9 @@ import (
 
 // Assistant is a predefined chat-agent template: a system prompt bound to a
 // real chat model. Clients invoke it by sending model = <agent_id> to
-// /v1/chat/completions; the gateway injects the system prompt and routes to
-// ModelID.
+// /v1/chat/completions; the gateway injects the system prompt (and the
+// template's tools, P3-1) and routes to ModelID. Tools is nil when the
+// template has none.
 type Assistant struct {
 	ID           int64
 	AgentID      string
@@ -21,15 +23,16 @@ type Assistant struct {
 	Description  string
 	SystemPrompt string
 	ModelID      string
+	Tools        json.RawMessage
 	Enabled      bool
 	CreatedAt    time.Time
 }
 
-const assistantColumns = `id, agent_id, name, description, system_prompt, model_id, enabled, created_at`
+const assistantColumns = `id, agent_id, name, description, system_prompt, model_id, tools, enabled, created_at`
 
 func scanAssistant(row pgx.Row) (*Assistant, error) {
 	a := &Assistant{}
-	err := row.Scan(&a.ID, &a.AgentID, &a.Name, &a.Description, &a.SystemPrompt, &a.ModelID, &a.Enabled, &a.CreatedAt)
+	err := row.Scan(&a.ID, &a.AgentID, &a.Name, &a.Description, &a.SystemPrompt, &a.ModelID, &a.Tools, &a.Enabled, &a.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -74,7 +77,7 @@ func scanAssistantRows(rows pgx.Rows) ([]Assistant, error) {
 	out := []Assistant{}
 	for rows.Next() {
 		var a Assistant
-		if err := rows.Scan(&a.ID, &a.AgentID, &a.Name, &a.Description, &a.SystemPrompt, &a.ModelID, &a.Enabled, &a.CreatedAt); err != nil {
+		if err := rows.Scan(&a.ID, &a.AgentID, &a.Name, &a.Description, &a.SystemPrompt, &a.ModelID, &a.Tools, &a.Enabled, &a.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, a)
@@ -96,11 +99,11 @@ func (s *Store) CreateAssistant(ctx context.Context, a *Assistant) (*Assistant, 
 	}
 	created := &Assistant{}
 	err = s.pool.QueryRow(ctx, `
-		INSERT INTO assistants (agent_id, name, description, system_prompt, model_id, enabled)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO assistants (agent_id, name, description, system_prompt, model_id, tools, enabled)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING `+assistantColumns,
-		a.AgentID, a.Name, a.Description, a.SystemPrompt, a.ModelID, a.Enabled,
-	).Scan(&created.ID, &created.AgentID, &created.Name, &created.Description, &created.SystemPrompt, &created.ModelID, &created.Enabled, &created.CreatedAt)
+		a.AgentID, a.Name, a.Description, a.SystemPrompt, a.ModelID, a.Tools, a.Enabled,
+	).Scan(&created.ID, &created.AgentID, &created.Name, &created.Description, &created.SystemPrompt, &created.ModelID, &created.Tools, &created.Enabled, &created.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -108,12 +111,14 @@ func (s *Store) CreateAssistant(ctx context.Context, a *Assistant) (*Assistant, 
 }
 
 // AssistantPatch carries the mutable fields for UpdateAssistant; nil fields
-// are left unchanged.
+// are left unchanged. A non-nil Tools pointer sets the column (empty slice
+// clears it to NULL).
 type AssistantPatch struct {
 	Name         *string
 	Description  *string
 	SystemPrompt *string
 	ModelID      *string
+	Tools        *json.RawMessage
 	Enabled      *bool
 }
 
@@ -148,6 +153,13 @@ func (s *Store) UpdateAssistant(ctx context.Context, id int64, p *AssistantPatch
 	}
 	if p.Enabled != nil {
 		sets = append(sets, "enabled="+nextArg(*p.Enabled))
+	}
+	if p.Tools != nil {
+		tools := []byte("null")
+		if len(*p.Tools) > 0 {
+			tools = *p.Tools
+		}
+		sets = append(sets, "tools="+nextArg(tools))
 	}
 	if len(sets) == 0 {
 		return scanAssistant(s.pool.QueryRow(ctx, `SELECT `+assistantColumns+` FROM assistants WHERE id = $1`, id))

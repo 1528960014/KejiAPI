@@ -25,6 +25,7 @@
     "clear": "지우기",
     "you": "나",
     "tokens": "토큰",
+    "toolCall": "도구 호출:",
     "compareHint": "여러 모델을 선택하면 같은 프롬프트를 나란히 보내 답변을 비교할 수 있습니다.",
     "noKey": "먼저 API 키를 입력하세요 (로그인 후 콘솔에서 생성 또는 /admin/api-keys)",
     "noModels": "사용 가능한 모델이 없습니다 (/admin/models 와 /admin/channels 에서 설정하세요)",

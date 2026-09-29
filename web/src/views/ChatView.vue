@@ -120,6 +120,8 @@ async function streamToColumn(column: Column, history: { role: string; content: 
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
+    // streamed tool_call fragments keyed by call index (agent templates, P3-1)
+    const toolParts = new Map<number, { name: string; args: string }>()
     for (;;) {
       const { done, value } = await reader.read()
       if (done) break
@@ -133,8 +135,16 @@ async function streamToColumn(column: Column, history: { role: string; content: 
         if (payload === '[DONE]') continue
         try {
           const json = JSON.parse(payload)
-          const delta: string = json.choices?.[0]?.delta?.content ?? ''
-          if (delta) column.content += delta
+          const delta: { content?: unknown; tool_calls?: unknown } = json.choices?.[0]?.delta ?? {}
+          if (typeof delta.content === 'string' && delta.content) column.content += delta.content
+          if (Array.isArray(delta.tool_calls)) {
+            for (const part of delta.tool_calls as Array<{ index?: number; function?: { name?: string; arguments?: string } }>) {
+              const slot = toolParts.get(part.index ?? 0) ?? { name: '', args: '' }
+              if (part.function?.name) slot.name += part.function.name
+              if (part.function?.arguments) slot.args += part.function.arguments
+              toolParts.set(part.index ?? 0, slot)
+            }
+          }
           const usage = json.usage
           if (usage) {
             column.promptTokens = usage.prompt_tokens ?? 0
@@ -144,6 +154,13 @@ async function streamToColumn(column: Column, history: { role: string; content: 
           // ignore partial lines
         }
       }
+    }
+    // The web chat page does not execute tools; render the calls so the user
+    // sees what the model asked for (SDK clients do the real execution).
+    const calls = [...toolParts.values()].filter((s) => s.name || s.args)
+    if (calls.length) {
+      const rendered = calls.map((s) => `${s.name || 'tool'}(${s.args})`).join(', ')
+      column.content = (column.content ? column.content + '\n\n' : '') + t('chat.toolCall') + ' ' + rendered
     }
     if (!column.content) {
       column.content = '…'

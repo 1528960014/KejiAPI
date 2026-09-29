@@ -213,9 +213,11 @@ CREATE TABLE IF NOT EXISTS assistants (
     description TEXT NOT NULL DEFAULT '',
     system_prompt TEXT NOT NULL,
     model_id TEXT NOT NULL,
+    tools JSONB,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE assistants ADD COLUMN IF NOT EXISTS tools JSONB;
 -- Built-in templates, seeded once per template and bound to the first
 -- enabled chat model at seed time (admins can rebind via /admin/assistants).
 INSERT INTO assistants (agent_id, name, description, system_prompt, model_id)
