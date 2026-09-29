@@ -68,6 +68,11 @@ func (s *Server) Engine() *gin.Engine {
 		v1.POST("/audio/speech", s.handleAudioSpeech)
 	}
 
+	// P4-1: bidirectional real-time voice (OpenAI Realtime WS pass-through).
+	// Outside the v1 group: auth is via the Sec-WebSocket-Protocol subprotocol,
+	// not the Bearer header.
+	r.POST("/v1/realtime", s.handleRealtime)
+
 	admin := r.Group("/admin")
 	admin.Use(s.authMasterKey())
 	{
