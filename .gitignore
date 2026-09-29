@@ -24,3 +24,6 @@ Thumbs.db
 # vue-tsc composite emit
 web/vite.config.js
 web/vite.config.d.ts
+
+# tsc incremental info
+*.tsbuildinfo
