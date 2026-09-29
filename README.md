@@ -84,6 +84,7 @@ modelhub/
 - [x] P4-2 音乐适配器（suno 社区 API，`/v1/media/generate` type=music）
 - [x] P4-3 每 key 限流（`MODELHUB_RPM`/`MODELHUB_TPM`，429 `rate_limited`）
 - [x] P5-1 通道自动故障切换（多通道按优先级重试 + 5 分钟失败冷却，chat/语音，`/admin/channels` 健康状态）
+- [x] P6-1 任务管线故障切换（媒体任务整任务重试、漫剧镜头级切换、分镜重试，与同步接口共享冷却状态）
 - [ ] 后续：双向实时语音（麦克风↔麦克风，OpenAI Realtime 类协议）
 
 ## 合规说明

@@ -186,12 +186,14 @@ async with websockets.connect(uri, subprotocols=[proto]) as ws:
 - 模型需在 `capabilities` 里带 `"realtime"`（自由数组，建模型时直接加）。
 - 边界：SDK 级能力，无 Web UI；WS 帧直接透传，网关不改协议；上游断开会向客户端发 `error: realtime_upstream_closed`。
 
-## 通道故障切换（P5-1）
+## 通道故障切换（P5-1 / P6-1）
 
 - 同一模型配置多个通道（按 `priority` 降序）时，网关自动**按优先级逐个重试**：当前通道**传输失败**（连不上/超时）或返回**可重试状态码**（401/403/408/429/500/502/503/504）时，自动换下一个通道。400/404 等请求类错误原样转发（换个通道也一样错）。
-- **失败冷却 5 分钟**：失败过的通道短时间内不再尝试（避免每个请求都撞一次死通道）；任一次成功即恢复。冷却状态是**单实例内存**（与 P4-3 限流同边界），`GET /admin/channels` 的每个通道多返回 `health: "ok" | "cooldown"` 与 `cooldown_until`（RFC3339）。
+- **失败冷却 5 分钟**：失败过的通道短时间内不再尝试（避免每个请求都撞一次死通道）；任一次成功即恢复。冷却状态是**单实例内存**（与 P4-3 限流同边界），但**同步接口与任务 worker 共享同一份状态**（一个通道挂了，两边都不再撞它）。`GET /admin/channels` 的每个通道多返回 `health: "ok" | "cooldown"` 与 `cooldown_until`（RFC3339）。
 - 全部通道冷却中 → 502 `no_channel`（提示稍后重试）；没有任何启用通道 → 同样 `no_channel`。
-- 生效范围：`/v1/chat/completions`（同步+流式）与 `/v1/audio/speech`（含 dashscope CosyVoice）。**响应开始后**的断流不重试（客户端已有部分输出）；媒体/漫剧任务管线暂不 failover。
+- 生效范围：
+  - **同步接口（P5-1）**：`/v1/chat/completions`（同步+流式）与 `/v1/audio/speech`（含 dashscope CosyVoice）。**响应开始后**的断流不重试（客户端已有部分输出）。
+  - **任务管线（P6-1）**：`/v1/media/generate`（image/video/music/tts）整任务按通道重试（共享同一个 10 分钟超时预算）；`/v1/drama/generate` 在**镜头粒度**切换——某镜头图像/配音遇可用性问题时，同一镜头换下一个通道重试，分镜 LLM 调用同样按通道重试。上游**任务内容级失败**（审核拒绝、`upstream task failed`）与超时不切换通道（换个通道也一样错）。
 - 计费不受影响：冻结/结算/解冻按最终结果执行一次（成功结算，全部失败解冻），重试不重复扣费。
 
 ## 限流（P4-3）

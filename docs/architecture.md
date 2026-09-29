@@ -115,12 +115,19 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 边界：**单实例内存实现，多实例部署时限流是每实例的近似值**（精确全局限流需共享存储，如 Redis——技术选型表已预留）；分钟边界不滑动（边界处瞬时吞吐可达 2× 配额，量级可接受）。
 
 ### 通道故障切换（P5-1，自动 failover + 失败冷却）
-- 数据：`store.ChannelsForModel` 返回模型全部启用通道（priority DESC, id ASC）。`PickChannel` 保留（任务管线等单通道路径仍用）。
-- 拨号循环（`api/failover.go`，`dialChat`/`dialJSON` 两个变体）：按序尝试每个非冷却通道；**传输失败**或**可重试状态码**（401/403/408/429/5xx）→ 记失败并换下一个；400/404 等请求类错误 → 原样转发不换通道；全部耗尽时转发"最后一次可重试错误"的响应体（客户端能看到真实上游报错），全传输失败则 502 `upstream_error`，无可用通道 502 `no_channel`。
-- 冷却：`channelHealth`（单实例内存，与 P4-3 限流同边界）——失败通道 5 分钟内跳过，任一次成功清除；惰性清理 >1024 条目。`GET /admin/channels` 每通道返回 `health: ok|cooldown` + `cooldown_until`。
+- 数据：`store.ChannelsForModel` 返回模型全部启用通道（priority DESC, id ASC）。`PickChannel` 保留（未接 failover 的路径仍可用）。
+- 共享原语（`gateway/failover.go`）：`gateway.UpstreamRetryable(status, transportErr)`（401/403/408/429/5xx 与传输失败可重试；400/404 不可）与 `gateway.ChannelHealth`（5 分钟冷却、成功即清、惰性清理 >1024 条目）。**API 拨号循环与任务 worker 共享同一个 `ChannelHealth` 实例**（main 构造后注入 `api.New`/`task.NewWorker`/`task.NewDramaWorker`）：一个通道在 chat 上挂掉，媒体任务也不会再撞它。
+- 拨号循环（`api/failover.go`，`dialChat`/`dialJSON` 两个变体）：按序尝试每个非冷却通道；可重试失败 → 记失败并换下一个；400/404 等请求类错误 → 原样转发不换通道；全部耗尽时转发"最后一次可重试错误"的响应体（客户端能看到真实上游报错），全传输失败则 502 `upstream_error`，无可用通道 502 `no_channel`。
+- 冷却：单实例内存（与 P4-3 限流同边界，多实例各自维护）。`GET /admin/channels` 每通道返回 `health: ok|cooldown` + `cooldown_until`。
 - 计费不变式：hold/settle/release 只在**最终结果**上执行一次；重试不重复冻结（`hasUsableChannel` 在 hold 前快速失败，保留 no_channel 502 的原有时序）。
-- 边界：failover 只发生在**响应开始之前**（流式断流不重试，客户端已有部分输出）；dashscope 的音频 URL 下载（CDN fetch）不参与 failover；媒体/漫剧任务管线暂不 failover（后续里程碑）；冷却状态随进程重启清零。
-- 可测性：`channelSource` 接口隔离数据库，failover 循环用 httptest 上游做单测（500/401/400/传输错误/全冷却五类场景）。
+- 边界：failover 只发生在**响应开始之前**（流式断流不重试，客户端已有部分输出）；dashscope 的音频 URL 下载（CDN fetch）不参与 failover；冷却状态随进程重启清零。
+- 可测性：`channelSource` 接口隔离数据库，failover 循环用 httptest 上游做单测（500/401/400/传输错误/全冷却五类场景）；`UpstreamRetryable` 与 `ChannelHealth` 的测试在 gateway 包。
+
+### 任务管线故障切换（P6-1，媒体/漫剧接入）
+- 结构化错误（`task/failover.go`）：适配器把上游失败分成 `UpstreamHTTPError{Status, Body}`（非 2xx 响应）与 `TransportError`（网络层失败），用户可见的错误文本保持不变；`taskFailureRetryable` 用 `errors.As` 分类——**内容级失败**（异步任务 `failed`、审核拒绝、超时、解析错误）不切换通道，可用性问题才切。
+- 媒体任务（`Worker.runTask`）：整任务按通道顺序重试，共享同一个 `TaskTimeout` 预算（不会 N 通道 × 10 分钟）；成功后 `MarkOK`，可重试失败 `MarkFailed` 并换通道；全部失败时任务按最后一次错误失败并解冻。
+- 漫剧（`DramaWorker`）：图像/配音通道在开跑前收集为**候选列表**（跳过冷却、要求适配器存在），镜头循环内维护 `imgIdx`/`ttsIdx`——某镜头遇可用性问题时**同一镜头**换下一个通道重试（24 镜的漫剧不会因为主通道挂了而整部失败），不可重试错误或候选耗尽才整部失败并全额解冻；分镜 LLM 调用同样按通道重试。
+- 边界：任务重试是**整次尝试**级别（异步任务已在上游排队后失败，重试会在下一通道重新提交，上一通道的排队任务被放弃——客户不付费，上游可能损失一次免费额度，属可接受代价）；漫剧切换不重跑已成功镜头（`imgIdx` 是运行级游标，只影响后续尝试）；冷却共享意味着同步接口的高频失败会保护任务 worker（反之亦然）。
 
 ## 核心数据表
 
