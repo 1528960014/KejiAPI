@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	if _, err := conn.Exec(ctx, `
-		DROP TABLE IF EXISTS refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
+		DROP TABLE IF EXISTS agents, dramas, refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
 	`); err != nil {
 		fmt.Println("drop schema:", err)
 		os.Exit(1)
@@ -443,6 +443,107 @@ func TestDramaLifecycle(t *testing.T) {
 	}
 	if len(running) != 1 || running[0].DramaUUID != "drama-2" {
 		t.Errorf("running = %+v, want [drama-2]", running)
+	}
+}
+
+func TestAgentAndSubkeys(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+	u := mustCreditUser(t, st, "agent@test.local", 1_000_000)
+
+	// rate validation
+	if _, err := st.CreateAgent(ctx, u.ID, 1.5); !errors.Is(err, ErrInvalidRate) {
+		t.Fatalf("create agent rate 1.5 = %v, want ErrInvalidRate", err)
+	}
+	a, err := st.CreateAgent(ctx, u.ID, 0.85)
+	if err != nil {
+		t.Fatalf("create agent: %v", err)
+	}
+	// creating a second agency for the same user violates the unique index
+	if _, err := st.CreateAgent(ctx, u.ID, 0.9); err == nil {
+		t.Fatalf("second agent for same user = nil, want duplicate-key error")
+	}
+	// GetUser now surfaces the wholesale rate
+	got, err := st.GetUser(ctx, u.ID)
+	if err != nil || got.AgentRate == nil || *got.AgentRate != 0.85 {
+		t.Fatalf("get user rate = %v (%v), want 0.85", got, err)
+	}
+
+	// a subkey bills the agent user and carries the agent id + markup
+	plain, sub, err := st.CreateSubkey(ctx, a.ID, u.ID, "customer-a", 1.2, []string{"gpt-x"}, nil, nil)
+	if err != nil {
+		t.Fatalf("create subkey: %v", err)
+	}
+	if plain == "" || sub.AgentID == nil || *sub.AgentID != a.ID || *sub.UserID != u.ID {
+		t.Fatalf("subkey = %+v, want agent %d bound to user %d", sub, a.ID, u.ID)
+	}
+	if sub.Markup != 1.2 {
+		t.Errorf("markup = %v, want 1.2", sub.Markup)
+	}
+	// the agent's own key list must not include subkeys
+	_, own, err := st.CreateAPIKeyForUser(ctx, u.ID, "own-key")
+	if err != nil {
+		t.Fatalf("create own key: %v", err)
+	}
+	ownKeys, err := st.ListAPIKeysByUser(ctx, u.ID)
+	if err != nil {
+		t.Fatalf("list own keys: %v", err)
+	}
+	if len(ownKeys) != 1 || ownKeys[0].ID != own.ID {
+		t.Fatalf("own keys = %+v, want only [own-key]", ownKeys)
+	}
+	// the agent cannot delete a subkey as if it were a plain key
+	if err := st.DeleteAPIKeyByUser(ctx, u.ID, sub.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("delete subkey via user path = %v, want ErrNotFound", err)
+	}
+	subs, err := st.ListSubkeys(ctx, a.ID)
+	if err != nil || len(subs) != 1 {
+		t.Fatalf("list subkeys = %+v (%v), want 1", subs, err)
+	}
+	// subkey usage settles against the agent balance and the subkey's own spend
+	if err := st.SettleFunds(ctx, &u.ID, 0, 85_000, "req-agent-1", "chat:gpt-x", &sub.ID); err != nil {
+		t.Fatalf("settle subkey usage: %v", err)
+	}
+	gk, err := st.GetAPIKey(ctx, sub.ID)
+	if err != nil {
+		t.Fatalf("get subkey: %v", err)
+	}
+	if gk.Spend != 85_000 {
+		t.Errorf("subkey spend = %d, want 85000", gk.Spend)
+	}
+
+	// rate update
+	a2, err := st.UpdateAgentRate(ctx, a.ID, 0.8)
+	if err != nil || a2.Rate != 0.8 {
+		t.Fatalf("update rate = %+v (%v), want 0.8", a2, err)
+	}
+	got, _ = st.GetUser(ctx, u.ID)
+	if got.AgentRate == nil || *got.AgentRate != 0.8 {
+		t.Fatalf("rate after update = %v, want 0.8", got.AgentRate)
+	}
+
+	// removing the agency keeps the subkey as a regular key of the agent user
+	if err := st.DeleteAgent(ctx, a.ID); err != nil {
+		t.Fatalf("delete agent: %v", err)
+	}
+	got, _ = st.GetUser(ctx, u.ID)
+	if got.AgentRate != nil {
+		t.Fatalf("rate after agency removal = %v, want nil", got.AgentRate)
+	}
+	sub2, err := st.GetAPIKey(ctx, sub.ID)
+	if err != nil {
+		t.Fatalf("get subkey after agency removal: %v", err)
+	}
+	if sub2.AgentID != nil {
+		t.Fatalf("subkey agent_id = %v, want NULL after agency removal", sub2.AgentID)
+	}
+	if err := st.DeleteSubkey(ctx, a.ID, sub.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("delete orphaned subkey = %v, want ErrNotFound (no longer a subkey)", err)
+	}
+
+	// the agent's own key can still be deleted through the user path
+	if err := st.DeleteAPIKeyByUser(ctx, u.ID, own.ID); err != nil {
+		t.Fatalf("delete own key: %v", err)
 	}
 }
 

@@ -140,10 +140,6 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 	}
 	reason := "media:" + req.Model + ":" + mediaType
 
-	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
-		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
-		return
-	}
 	held := false
 	userID := keyUserID(key)
 	// The task UUID doubles as the ledger request ID, so the hold entry and
@@ -163,6 +159,14 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
 			return
 		}
+		// P2-3: agent wholesale rate discounts the frozen amount.
+		estMicro = billing.ApplyRate(estMicro, user.AgentRate)
+	}
+	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
+		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
+		return
+	}
+	if userID != nil && estMicro > 0 {
 		if err := s.store.HoldFunds(ctx, *userID, estMicro, taskUUID, reason); err != nil {
 			if errors.Is(err, store.ErrInsufficientBalance) {
 				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")

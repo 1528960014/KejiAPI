@@ -50,6 +50,13 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 产物：JSON 素材包（shots + URL，前端可下载）。
 - **成片（P2-1b）**：结算后由 `Composer`（task 包）调主机上的 `ffmpeg`/`ffprobe`：下载各镜素材 → 每镜渲染一段固定 1280x720@30 的 h264+aac 片段（图像信箱铺满、台词 SRT 字幕烧录、无配音补静音、时长=配音+0.5s）→ concat demuxer 免重编码拼接 → `MEDIA_DIR/dramas/{uuid}.mp4`，经 `GET /media/dramas/:uuid` 公开服务（UUID 即凭证）。渲染失败只记 `video_error`，不动钱、不动素材包。
 
+### 代理分销（P2-3）
+- `agents` 表：user_id 唯一 + 批发系数 `rate ∈ (0,1]`。`GetUser` LEFT JOIN 出 `AgentRate`，chat/media/drama 三个计费入口在 hold 前统一 `billing.ApplyRate`（向上取整、正数不断零）；worker 按冻结额原样结算，无需改动。
+- 子 key：`api_keys.agent_id`（FK → agents，`ON DELETE SET NULL`）+ `markup NUMERIC`（仅展示用的客户加价倍率）。子 key 的 `user_id` 指向代理用户，因此消费自然落入代理余额、按代理批发价结算；每个子 key 独立 allowed_models/quota/expires。
+- 权限边界：代理控制台（`/api/me/subkeys`，JWT）只能建/删自己的子 key；代理自己的 `/api/me/keys` 列表与删除均排除子 key（`agent_id IS NULL`），互不越权。
+- 业务模型：代理预购制——代理按零售价充值、按批发价消费，与客户之间的收款（markup）在平台之外进行；平台不向终端客户收款（在线支付为 P2-4）。
+- 撤销代理（DELETE /admin/agents/:id）只解除代理身份，子 key 降级为代理用户的普通 key。
+
 ### Web 控制台（M3）
 - 多模型对比聊天（同一 prompt 并排 N 个模型，SSE 流式渲染）
 - 生成工作台（图/视频/音乐/TTS 表单 + 任务列表 + 结果预览）
@@ -58,7 +65,7 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 
 ## 核心数据表
 
-users、ledger_entries、models、channels、api_keys、tasks、dramas、usage_logs
+users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup）、tasks、dramas、usage_logs、agents
 
 ## 技术选型
 

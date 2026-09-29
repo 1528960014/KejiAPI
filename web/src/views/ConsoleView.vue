@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   createMyKey,
+  createSubkey,
   deleteMyKey,
+  deleteSubkey,
   formatUsd,
+  listSubkeys,
   myKeys,
   myLedger,
   setApiKey,
   type LedgerEntry,
   type MyKey,
+  type Subkey,
 } from '../api/client'
 import { isLoggedIn, useSession } from '../session'
 
@@ -22,6 +26,15 @@ const ledger = ref<LedgerEntry[]>([])
 const newName = ref('')
 const busy = ref(false)
 const createdKey = ref('')
+
+// P2-3: reseller subkeys (only for agent accounts)
+const isAgent = computed(() => session.user?.agent_rate != null)
+const subkeys = ref<Subkey[]>([])
+const subName = ref('')
+const subMarkup = ref(1)
+const subQuota = ref<number | undefined>(undefined)
+const subBusy = ref(false)
+const createdSubkey = ref('')
 
 const example = `curl https://<your-host>/v1/chat/completions \\
   -H "Authorization: Bearer sk-xxxx" \\
@@ -38,6 +51,9 @@ async function reload() {
     const [k, l] = await Promise.all([myKeys(), myLedger(50)])
     keys.value = k
     ledger.value = l
+    if (isAgent.value) {
+      subkeys.value = await listSubkeys()
+    }
   } catch {
     // session expired or network error; App.vue reloads /me on navigation
   }
@@ -87,6 +103,52 @@ async function removeKey(key: MyKey) {
   }
   try {
     await deleteMyKey(key.id)
+    await reload()
+  } catch {
+    ElMessage.error(t('login.errNetwork'))
+  }
+}
+
+async function createSub() {
+  const name = subName.value.trim()
+  if (!name || subBusy.value) return
+  subBusy.value = true
+  try {
+    const res = await createSubkey({
+      name,
+      markup: subMarkup.value,
+      quota_usd: subQuota.value,
+    })
+    createdSubkey.value = res.key
+    subName.value = ''
+    await reload()
+  } catch {
+    ElMessage.error(t('login.errNetwork'))
+  } finally {
+    subBusy.value = false
+  }
+}
+
+async function copySubkey() {
+  if (!createdSubkey.value) return
+  try {
+    await navigator.clipboard.writeText(createdSubkey.value)
+    ElMessage.success(t('console.copied'))
+  } catch {
+    ElMessage.warning(t('console.keyCreatedHint'))
+  }
+}
+
+async function removeSubkey(sub: Subkey) {
+  try {
+    await ElMessageBox.confirm(t('console.keyDeleteConfirm'), t('console.keyDelete'), {
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+  try {
+    await deleteSubkey(sub.id)
     await reload()
   } catch {
     ElMessage.error(t('login.errNetwork'))
@@ -151,6 +213,69 @@ function kindLabel(kind: string): string {
           </el-table-column>
         </el-table>
         <p v-else class="muted">{{ t('console.keysEmpty') }}</p>
+      </div>
+
+      <div v-if="isAgent" class="card">
+        <h3>{{ t('console.subkeys') }}</h3>
+        <p class="muted">{{ t('console.subkeysHint', { rate: session.user?.agent_rate }) }}</p>
+        <div class="create-row">
+          <el-input
+            v-model="subName"
+            :placeholder="t('console.subkeyNamePlaceholder')"
+            style="max-width: 220px"
+            @keydown.enter.prevent="createSub"
+          />
+          <el-input-number
+            v-model="subMarkup"
+            :min="1"
+            :max="100"
+            :step="0.1"
+            :precision="2"
+            size="default"
+            style="width: 130px"
+            :title="t('console.subkeyMarkup')"
+          />
+          <el-input-number
+            v-model="subQuota"
+            :min="0"
+            :step="10"
+            :precision="2"
+            size="default"
+            style="width: 150px"
+            :title="t('console.subkeyQuota')"
+          />
+          <el-button type="primary" :loading="subBusy" @click="createSub">
+            {{ t('console.subkeyCreate') }}
+          </el-button>
+        </div>
+
+        <div v-if="createdSubkey" class="created">
+          <code class="new-key">{{ createdSubkey }}</code>
+          <el-button size="small" @click="copySubkey">{{ t('console.copy') }}</el-button>
+          <p class="muted">{{ t('console.keyCreatedHint') }}</p>
+        </div>
+
+        <el-table v-if="subkeys.length" :data="subkeys">
+          <el-table-column prop="name" :label="t('console.keyName')" />
+          <el-table-column prop="markup" :label="t('console.subkeyMarkup')" width="90" />
+          <el-table-column :label="t('console.keySpend')" width="140">
+            <template #default="{ row }">{{ formatUsd(row.spend_micro, row.spend_usd) }}</template>
+          </el-table-column>
+          <el-table-column :label="t('console.subkeyQuota')" width="120">
+            <template #default="{ row }">
+              {{ row.quota_usd != null ? formatUsd(undefined, row.quota_usd) : '—' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="created_at" :label="t('console.keyCreatedAt')" width="220" />
+          <el-table-column width="100">
+            <template #default="{ row }">
+              <el-button size="small" type="danger" plain @click="removeSubkey(row)">
+                {{ t('console.keyDelete') }}
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <p v-else class="muted">{{ t('console.subkeysEmpty') }}</p>
       </div>
 
       <div class="card">

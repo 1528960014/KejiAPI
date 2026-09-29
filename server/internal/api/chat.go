@@ -70,15 +70,14 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	_ = json.Unmarshal(body, &reqMeta)
 
 	// M2: estimate the cost, enforce the key quota, hold the funds.
+	// P2-3: when the billing user is a reseller agent, resolve their
+	// wholesale rate first and discount the estimate (and every settle).
 	promptEst, completionEst := billing.EstimateTokens(body)
 	estMicro := billing.CostMicro(model, promptEst, completionEst)
 	reqID := newRequestID()
 	reason := "chat:" + modelID
 	held := false
-	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
-		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
-		return
-	}
+	var agentRate *float64
 	if userID := keyUserID(key); userID != nil && estMicro > 0 {
 		user, err := s.store.GetUser(ctx, *userID)
 		if errors.Is(err, store.ErrNotFound) {
@@ -93,6 +92,14 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
 			return
 		}
+		agentRate = user.AgentRate
+		estMicro = billing.ApplyRate(estMicro, agentRate)
+	}
+	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
+		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
+		return
+	}
+	if userID := keyUserID(key); userID != nil && estMicro > 0 {
 		if err := s.store.HoldFunds(ctx, *userID, estMicro, reqID, reason); err != nil {
 			if errors.Is(err, store.ErrInsufficientBalance) {
 				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")
@@ -173,7 +180,7 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		status := "ok"
 		actualMicro := estMicro
 		if gotUsage {
-			actualMicro = billing.CostMicro(model, prompt, completion)
+			actualMicro = billing.ApplyRate(billing.CostMicro(model, prompt, completion), agentRate)
 		} else {
 			status = "ok_estimated"
 			prompt, completion = 0, 0
@@ -206,7 +213,7 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	prompt, completion := 0, 0
 	if parsed.Usage != nil && (parsed.Usage.PromptTokens > 0 || parsed.Usage.CompletionTokens > 0) {
 		prompt, completion = parsed.Usage.PromptTokens, parsed.Usage.CompletionTokens
-		actualMicro = billing.CostMicro(model, prompt, completion)
+		actualMicro = billing.ApplyRate(billing.CostMicro(model, prompt, completion), agentRate)
 	} else {
 		status = "ok_estimated"
 	}

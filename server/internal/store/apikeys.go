@@ -13,11 +13,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// APIKey is a user-facing access key; only its hash is stored.
+// APIKey is a user-facing access key; only its hash is stored. A non-nil
+// AgentID marks a reseller subkey: it bills the agent's balance at the
+// agent's wholesale rate. Markup is the informational reseller price factor
+// the agent shows its own customers.
 type APIKey struct {
 	ID            int64
 	Name          string
 	UserID        *int64
+	AgentID       *int64
+	Markup        float64
 	AllowedModels []string
 	Quota         *int64
 	Spend         int64
@@ -39,14 +44,20 @@ func generateKey() (string, error) {
 	return "sk-" + hex.EncodeToString(buf), nil
 }
 
-const keyColumns = `id, name, user_id, allowed_models, quota, spend, expires_at, created_at`
+const keyColumns = `id, name, user_id, agent_id, markup, allowed_models, quota, spend, expires_at, created_at`
 
 func scanKey(row pgx.Row) (*APIKey, error) {
 	k := &APIKey{}
-	err := row.Scan(&k.ID, &k.Name, &k.UserID, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt)
+	err := row.Scan(&k.ID, &k.Name, &k.UserID, &k.AgentID, &k.Markup, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
+	return k, err
+}
+
+func scanKeyRow(rows pgx.Rows) (*APIKey, error) {
+	k := &APIKey{}
+	err := rows.Scan(&k.ID, &k.Name, &k.UserID, &k.AgentID, &k.Markup, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt)
 	return k, err
 }
 
@@ -61,7 +72,7 @@ func (s *Store) CreateAPIKey(ctx context.Context, name string) (string, *APIKey,
 		INSERT INTO api_keys (key_hash, name) VALUES ($1, $2)
 		RETURNING `+keyColumns,
 		HashKey(plain), name,
-	).Scan(&key.ID, &key.Name, &key.UserID, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
 	if err != nil {
 		return "", nil, err
 	}
@@ -91,11 +102,11 @@ func (s *Store) ListAPIKeys(ctx context.Context) ([]APIKey, error) {
 	defer rows.Close()
 	out := []APIKey{}
 	for rows.Next() {
-		var k APIKey
-		if err := rows.Scan(&k.ID, &k.Name, &k.UserID, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt); err != nil {
+		k, err := scanKeyRow(rows)
+		if err != nil {
 			return nil, err
 		}
-		out = append(out, k)
+		out = append(out, *k)
 	}
 	return out, rows.Err()
 }
@@ -184,36 +195,94 @@ func (s *Store) CreateAPIKeyForUser(ctx context.Context, userID int64, name stri
 		INSERT INTO api_keys (key_hash, name, user_id) VALUES ($1, $2, $3)
 		RETURNING `+keyColumns,
 		HashKey(plain), name, userID,
-	).Scan(&key.ID, &key.Name, &key.UserID, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
 	if err != nil {
 		return "", nil, err
 	}
 	return plain, key, nil
 }
 
-// ListAPIKeysByUser returns the user's keys, newest first.
+// ListAPIKeysByUser returns the user's own keys (reseller subkeys are
+// excluded; use ListSubkeys for those), newest first.
 func (s *Store) ListAPIKeysByUser(ctx context.Context, userID int64) ([]APIKey, error) {
 	rows, err := s.pool.Query(ctx, `
 		SELECT `+keyColumns+`
-		FROM api_keys WHERE user_id = $1 ORDER BY id DESC`, userID)
+		FROM api_keys WHERE user_id = $1 AND agent_id IS NULL ORDER BY id DESC`, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	out := []APIKey{}
 	for rows.Next() {
-		var k APIKey
-		if err := rows.Scan(&k.ID, &k.Name, &k.UserID, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt); err != nil {
+		k, err := scanKeyRow(rows)
+		if err != nil {
 			return nil, err
 		}
-		out = append(out, k)
+		out = append(out, *k)
 	}
 	return out, rows.Err()
 }
 
-// DeleteAPIKeyByUser removes a key only if it belongs to the user.
+// DeleteAPIKeyByUser removes a key only if it belongs to the user and is not
+// a reseller subkey (subkeys are managed via DeleteSubkey).
 func (s *Store) DeleteAPIKeyByUser(ctx context.Context, userID, id int64) error {
-	tag, err := s.pool.Exec(ctx, `DELETE FROM api_keys WHERE id = $1 AND user_id = $2`, id, userID)
+	tag, err := s.pool.Exec(ctx, `DELETE FROM api_keys WHERE id = $1 AND user_id = $2 AND agent_id IS NULL`, id, userID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// CreateSubkey generates a reseller subkey for an agent. The key bills the
+// agent's user balance at the agent's wholesale rate; markup is the
+// informational reseller factor shown to the agent's customers.
+func (s *Store) CreateSubkey(ctx context.Context, agentID, userID int64, name string, markup float64, allowedModels []string, quota *int64, expiresAt *time.Time) (string, *APIKey, error) {
+	if markup <= 0 {
+		markup = 1
+	}
+	plain, err := generateKey()
+	if err != nil {
+		return "", nil, err
+	}
+	key := &APIKey{}
+	err = s.pool.QueryRow(ctx, `
+		INSERT INTO api_keys (key_hash, name, user_id, agent_id, markup, allowed_models, quota, expires_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING `+keyColumns,
+		HashKey(plain), name, userID, agentID, markup, allowedModels, quota, expiresAt,
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AgentID, &key.Markup, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	if err != nil {
+		return "", nil, err
+	}
+	return plain, key, nil
+}
+
+// ListSubkeys returns one agent's reseller keys, newest first.
+func (s *Store) ListSubkeys(ctx context.Context, agentID int64) ([]APIKey, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT `+keyColumns+`
+		FROM api_keys WHERE agent_id = $1 ORDER BY id DESC`, agentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []APIKey{}
+	for rows.Next() {
+		k, err := scanKeyRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *k)
+	}
+	return out, rows.Err()
+}
+
+// DeleteSubkey removes a subkey only if it belongs to the agent.
+func (s *Store) DeleteSubkey(ctx context.Context, agentID, id int64) error {
+	tag, err := s.pool.Exec(ctx, `DELETE FROM api_keys WHERE id = $1 AND agent_id = $2`, id, agentID)
 	if err != nil {
 		return err
 	}

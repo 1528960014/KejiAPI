@@ -141,10 +141,6 @@ func (s *Server) handleDramaGenerate(c *gin.Context) {
 	estMicro := billing.DramaCostMicro(imageModel, ttsModel, req.Shots)
 	reason := "drama:" + req.ImageModel
 
-	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
-		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
-		return
-	}
 	// The drama UUID doubles as the ledger request ID (hold/settle/release
 	// stay auditable against the same ID).
 	dramaUUID := newTaskUUID()
@@ -164,6 +160,14 @@ func (s *Server) handleDramaGenerate(c *gin.Context) {
 			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
 			return
 		}
+		// P2-3: agent wholesale rate discounts the frozen amount.
+		estMicro = billing.ApplyRate(estMicro, user.AgentRate)
+	}
+	if key != nil && key.Quota != nil && key.Spend+estMicro > *key.Quota {
+		abortWith(c, http.StatusTooManyRequests, "quota_exceeded", "API key quota exhausted; ask the admin to raise the quota")
+		return
+	}
+	if userID != nil && estMicro > 0 {
 		if err := s.store.HoldFunds(ctx, *userID, estMicro, dramaUUID, reason); err != nil {
 			if errors.Is(err, store.ErrInsufficientBalance) {
 				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")

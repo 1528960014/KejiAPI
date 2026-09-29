@@ -13,7 +13,7 @@ import (
 
 // userJSON renders a user without secrets; balances in both micro-USD and USD.
 func userJSON(u *store.User) gin.H {
-	return gin.H{
+	item := gin.H{
 		"id":            u.ID,
 		"email":         u.Email,
 		"balance_micro": u.Balance,
@@ -21,6 +21,10 @@ func userJSON(u *store.User) gin.H {
 		"enabled":       u.Enabled,
 		"created_at":    u.CreatedAt,
 	}
+	if u.AgentRate != nil {
+		item["agent_rate"] = *u.AgentRate
+	}
+	return item
 }
 
 type createUserReq struct {

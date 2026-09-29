@@ -72,6 +72,12 @@ func (s *Server) Engine() *gin.Engine {
 		admin.GET("/usage/summary", s.handleUsageSummary)
 		admin.GET("/tasks", s.handleListTasks)
 		admin.GET("/dramas", s.handleListDramas)
+
+		// P2-3: reseller agents (wholesale rate on a billing user).
+		admin.GET("/agents", s.handleListAgents)
+		admin.POST("/agents", s.handleCreateAgent)
+		admin.PUT("/agents/:id", s.handleUpdateAgent)
+		admin.DELETE("/agents/:id", s.handleDeleteAgent)
 	}
 
 	api := r.Group("/api")
@@ -99,6 +105,10 @@ func (s *Server) Engine() *gin.Engine {
 		me.GET("/me/keys", s.handleMyKeys)
 		me.POST("/me/keys", s.handleCreateMyKey)
 		me.DELETE("/me/keys/:id", s.handleDeleteMyKey)
+		// P2-3: reseller subkeys (agent accounts only).
+		me.GET("/me/subkeys", s.handleListSubkeys)
+		me.POST("/me/subkeys", s.handleCreateSubkey)
+		me.DELETE("/me/subkeys/:id", s.handleDeleteSubkey)
 	}
 	return r
 }

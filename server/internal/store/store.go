@@ -186,6 +186,22 @@ CREATE INDEX IF NOT EXISTS idx_dramas_key ON dramas(api_key_id, created_at DESC)
 -- /media/dramas/{uuid}.mp4) and the reason a video is missing.
 ALTER TABLE dramas ADD COLUMN IF NOT EXISTS video_url TEXT NOT NULL DEFAULT '';
 ALTER TABLE dramas ADD COLUMN IF NOT EXISTS video_error TEXT NOT NULL DEFAULT '';
+
+-- P2-3: agent distribution. An agent is a billing user with a wholesale
+-- rate (0 < rate <= 1) applied to every hold/settle of their balance;
+-- subkeys (api_keys.agent_id) are reseller keys created by the agent that
+-- bill the agent's balance at the agent's rate. markup is an informational
+-- reseller price factor shown to the agent's customers (the platform does
+-- not collect from end customers).
+CREATE TABLE IF NOT EXISTS agents (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT UNIQUE NOT NULL REFERENCES users(id),
+    rate NUMERIC(6,4) NOT NULL CHECK (rate > 0 AND rate <= 1),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS agent_id BIGINT REFERENCES agents(id) ON DELETE SET NULL;
+ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS markup NUMERIC(8,4) NOT NULL DEFAULT 1;
+CREATE INDEX IF NOT EXISTS idx_api_keys_agent ON api_keys(agent_id);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

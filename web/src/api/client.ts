@@ -225,6 +225,8 @@ export interface AdminKey {
   id: number
   name: string
   user_id?: number
+  agent_id?: number
+  markup?: number
   quota_usd?: number
   allowed_models: string[]
   spend_micro: number
@@ -270,6 +272,7 @@ export interface AdminUser {
   balance_usd: number
   enabled: boolean
   created_at: string
+  agent_rate?: number
 }
 
 export async function listUsers(): Promise<AdminUser[]> {
@@ -374,6 +377,7 @@ export interface MeUser {
   balance_usd: number
   enabled: boolean
   created_at: string
+  agent_rate?: number
 }
 
 function storeTokens(data: AuthTokens): void {
@@ -547,4 +551,68 @@ export async function dramaStatus(dramaId: string): Promise<Drama> {
     headers: authHeaders(),
   })
   return data
+}
+
+// --- P2-3: reseller agents (admin) ---
+
+export interface AdminAgent {
+  id: number
+  user_id: number
+  email: string
+  rate: number
+  created_at: string
+}
+
+export async function listAgents(): Promise<AdminAgent[]> {
+  const { data } = await http.get('/admin/agents', { headers: adminHeaders() })
+  return data.data as AdminAgent[]
+}
+
+export async function createAgent(userId: number, rate: number): Promise<AdminAgent> {
+  const { data } = await http.post('/admin/agents', { user_id: userId, rate }, { headers: adminHeaders() })
+  return data as AdminAgent
+}
+
+export async function updateAgentRate(id: number, rate: number): Promise<AdminAgent> {
+  const { data } = await http.put(`/admin/agents/${id}`, { rate }, { headers: adminHeaders() })
+  return data as AdminAgent
+}
+
+export async function deleteAgent(id: number): Promise<void> {
+  await http.delete(`/admin/agents/${id}`, { headers: adminHeaders() })
+}
+
+// --- P2-3: reseller subkeys (console, agent accounts only) ---
+
+export interface Subkey {
+  id: number
+  name: string
+  markup: number
+  user_id?: number
+  allowed_models: string[]
+  spend_micro: number
+  spend_usd: number
+  quota_usd?: number
+  expires_at?: string
+  created_at: string
+}
+
+export async function listSubkeys(): Promise<Subkey[]> {
+  const { data } = await http.get<{ data: Subkey[] }>('/api/me/subkeys')
+  return data.data
+}
+
+export async function createSubkey(body: {
+  name: string
+  markup?: number
+  quota_usd?: number
+  allowed_models?: string[]
+  expires_at?: string
+}): Promise<{ key: string; id: number; name: string }> {
+  const { data } = await http.post('/api/me/subkeys', body)
+  return data
+}
+
+export async function deleteSubkey(id: number): Promise<void> {
+  await http.delete(`/api/me/subkeys/${id}`)
 }

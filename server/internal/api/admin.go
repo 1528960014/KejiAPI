@@ -149,10 +149,14 @@ func keyJSON(k *store.APIKey) gin.H {
 		"allowed_models": k.AllowedModels,
 		"spend_micro":    k.Spend,
 		"spend_usd":      billing.USD(k.Spend),
+		"markup":         k.Markup,
 		"created_at":     k.CreatedAt,
 	}
 	if k.UserID != nil {
 		item["user_id"] = *k.UserID
+	}
+	if k.AgentID != nil {
+		item["agent_id"] = *k.AgentID
 	}
 	if k.Quota != nil {
 		item["quota_usd"] = billing.USD(*k.Quota)

@@ -9,7 +9,9 @@ import (
 )
 
 // User is a billing account. Balance is denominated in micro-USD and
-// mirrors SUM(ledger_entries.amount) for the user.
+// mirrors SUM(ledger_entries.amount) for the user. AgentRate is non-nil when
+// the user is a reseller agent (see agents table); it is populated by
+// GetUser only.
 type User struct {
 	ID           int64
 	Email        string
@@ -17,6 +19,7 @@ type User struct {
 	Balance      int64
 	Enabled      bool
 	CreatedAt    time.Time
+	AgentRate    *float64
 }
 
 // LedgerEntry is one immutable wallet transaction. Kind is one of
@@ -76,9 +79,19 @@ func (s *Store) CreateUser(ctx context.Context, email string, initialBalanceMicr
 	return u, nil
 }
 
-// GetUser fetches one user by ID.
+// GetUser fetches one user by ID, including the agent wholesale rate when
+// the user has one.
 func (s *Store) GetUser(ctx context.Context, id int64) (*User, error) {
-	return scanUser(s.pool.QueryRow(ctx, `SELECT `+userColumns+` FROM users WHERE id = $1`, id))
+	u := &User{}
+	err := s.pool.QueryRow(ctx, `
+		SELECT u.id, u.email, u.password_hash, u.balance, u.enabled, u.created_at, a.rate
+		FROM users u LEFT JOIN agents a ON a.user_id = u.id
+		WHERE u.id = $1`, id,
+	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Balance, &u.Enabled, &u.CreatedAt, &u.AgentRate)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	return u, err
 }
 
 // ListUsers returns all users, oldest first.

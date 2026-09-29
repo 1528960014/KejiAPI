@@ -15,6 +15,7 @@
 - **预估启发式**：prompt ≈ messages 文本总字节数 / 4（向上取整，对中文偏保守高估）；completion ≈ 请求里的 `max_tokens`（缺省 1024，上限 16384）。
 - **流式结算**：网关对 `stream: true` 的注入 `stream_options.include_usage=true`；上游最后一个 chunk 带回 usage 时按真实 token 结算，否则按预估计费（`usage_logs.status = ok_estimated`）。
 - **透支**：实际费用超过冻结额时允许余额为负（账本始终一致）。
+- **代理分销（P2-3）**：管理员可将某用户标记为代理并设批发系数 `rate ∈ (0, 1]`（如 0.85 = 八五折）。该用户**所有**冻结与结算金额都按 `ceil(金额 × rate)` 打折（正数永不断为 0）；代理可在控制台创建"子 key"分发给客户——子 key 共用代理余额、按代理批发价结算，各自独立的模型白名单 / 额度 / 有效期。`markup`（加价倍率）仅为代理向客户展示的建议价，平台不向终端客户收款。
 
 ## 开放接口
 
@@ -174,7 +175,7 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 
 ### GET /api/me
 
-当前用户：`id`、`email`、`balance_micro`、`balance_usd`、`enabled`、`created_at`。
+当前用户：`id`、`email`、`balance_micro`、`balance_usd`、`enabled`、`created_at`；是代理时另有 `agent_rate`（批发系数）。
 
 ### GET /api/me/ledger
 
@@ -187,6 +188,14 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 - `POST {"name": "dev"}` → 201 `{"key": "sk-...", "id": 1, "name": "dev"}`，**明文只返回一次**。
 - 列表返回 `id`、`name`、`allowed_models`、`spend_micro`/`spend_usd`、`created_at`（无明文）。
 - `DELETE` 仅能删自己的 key；删除后使用该 key 的请求立即 401。
+
+### 分销子 Key（P2-3，仅代理账号可用；非代理 403 `not_agent`）
+
+`GET /api/me/subkeys` / `POST /api/me/subkeys` / `DELETE /api/me/subkeys/:id`
+
+- `POST {"name": "客户-张三", "markup": 1.2, "quota_usd": 50, "allowed_models": ["gpt-4o-mini"], "expires_at": "2027-01-01T00:00:00Z"}`（后四项可选，`markup ∈ (0, 100]`）→ 201 `{"key": "sk-...", "id": 2, "name": "客户-张三"}`，**明文只返回一次**。
+- 列表返回 `id`、`name`、`markup`、`allowed_models`、`spend_micro`/`spend_usd`、`quota_usd`（如有）、`created_at`。
+- 子 key 的用量从**代理余额**按代理批发价扣减；`GET /api/me/keys`（自己的 key）不含子 key，两者互不越权。
 
 ## 管理接口
 
@@ -261,6 +270,25 @@ curl "$B/admin/users/1/ledger?limit=50&offset=0" -H "Authorization: Bearer $MAST
 ```
 
 返回中 `balance_micro` 为精确值（微美元），`balance_usd` 为展示值。
+
+### 代理分销（P2-3）
+
+```bash
+# 标记用户为代理（rate ∈ (0,1]，如 0.85 = 八五折批发）
+curl -X POST $B/admin/agents -H "Authorization: Bearer $MASTER_KEY" \
+  -d '{"user_id":1,"rate":0.85}'
+
+# 代理列表（含 email）
+curl $B/admin/agents -H "Authorization: Bearer $MASTER_KEY"
+
+# 修改批发系数 / 撤销代理（其子 key 降级为普通 key，不删除）
+curl -X PUT $B/admin/agents/1 -H "Authorization: Bearer $MASTER_KEY" -d '{"rate":0.8}'
+curl -X DELETE $B/admin/agents/1 -H "Authorization: Bearer $MASTER_KEY"
+```
+
+- 已是代理的用户重复创建 → 409 `already_agent`；`rate` 越界 → 400 `invalid_rate`。
+- 效果：该用户后续所有 hold/settle 按批发价执行（历史流水不受影响）；`/admin/users` 列表与 `GET /api/me` 中带 `agent_rate`。
+- 代理在 Web 控制台（或 `/api/me/subkeys`）自助创建子 key 分发给客户。
 
 ### 用量统计
 
