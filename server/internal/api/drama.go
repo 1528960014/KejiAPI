@@ -137,6 +137,13 @@ func (s *Server) handleDramaGenerate(c *gin.Context) {
 		}
 	}
 
+	if key != nil && s.limiter.Enabled() {
+		if ok, which := s.limiter.AllowRequest(key.ID); !ok {
+			abortWith(c, http.StatusTooManyRequests, "rate_limited", rateLimitMessage(which))
+			return
+		}
+	}
+
 	estMicro := billing.DramaCostMicro(imageModel, ttsModel, req.Shots)
 	reason := "drama:" + req.ImageModel
 

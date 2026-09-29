@@ -93,6 +93,15 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		return
 	}
 
+	// P4-3: per-key rate limits (RPM up front, TPM enforced from the
+	// previous minute's token window).
+	if key != nil && s.limiter.Enabled() {
+		if ok, which := s.limiter.AllowRequest(key.ID); !ok {
+			abortWith(c, http.StatusTooManyRequests, "rate_limited", rateLimitMessage(which))
+			return
+		}
+	}
+
 	ch, err := s.store.PickChannel(ctx, model.ModelID)
 	if errors.Is(err, store.ErrNotFound) {
 		abortWith(c, http.StatusBadGateway, "no_channel", "no enabled channel for model "+modelID)
@@ -251,6 +260,9 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 			prompt, completion = 0, 0
 		}
 		settle(actualMicro)
+		if key != nil {
+			s.limiter.AddTokens(key.ID, prompt+completion)
+		}
 		s.logUsage(ctx, key, model, true, prompt, completion, status, "", billing.USD(actualMicro))
 		return
 	}
@@ -283,6 +295,9 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		status = "ok_estimated"
 	}
 	settle(actualMicro)
+	if key != nil {
+		s.limiter.AddTokens(key.ID, prompt+completion)
+	}
 	s.logUsage(ctx, key, model, false, prompt, completion, status, "", billing.USD(actualMicro))
 }
 

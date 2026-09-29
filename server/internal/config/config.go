@@ -42,6 +42,10 @@ type Config struct {
 	WechatMerchantSerial string
 	WechatPrivateKey     string
 	WechatPlatformKey    string // WeChat Pay platform public key (PEM)
+
+	// P4-3: per-key in-memory rate limits (0 = disabled).
+	RPM int
+	TPM int
 }
 
 // Load reads configuration from the environment and validates required values.
@@ -71,6 +75,8 @@ func Load() (*Config, error) {
 		WechatPrivateKey:     expandNL(os.Getenv("PAY_WECHAT_PRIVATE_KEY")),
 		WechatPlatformKey:    expandNL(os.Getenv("PAY_WECHAT_PLATFORM_KEY")),
 	}
+	cfg.RPM = envInt(os.Getenv("MODELHUB_RPM"))
+	cfg.TPM = envInt(os.Getenv("MODELHUB_TPM"))
 	if v := os.Getenv("PAY_CNY_PER_USD"); v != "" {
 		rate, err := strconv.ParseFloat(v, 64)
 		if err != nil || rate <= 0 || rate > 100 {
@@ -108,4 +114,15 @@ func getEnv(key, def string) string {
 		return v
 	}
 	return def
+}
+
+func envInt(v string) int {
+	if v == "" {
+		return 0
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil || n < 0 {
+		return 0
+	}
+	return n
 }

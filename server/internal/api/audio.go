@@ -132,6 +132,13 @@ func (s *Server) handleAudioSpeech(c *gin.Context) {
 		return
 	}
 
+	if key != nil && s.limiter.Enabled() {
+		if ok, which := s.limiter.AllowRequest(key.ID); !ok {
+			abortWith(c, http.StatusTooManyRequests, "rate_limited", rateLimitMessage(which))
+			return
+		}
+	}
+
 	ch, err := s.store.PickChannel(ctx, model.ModelID)
 	if errors.Is(err, store.ErrNotFound) {
 		abortWith(c, http.StatusBadGateway, "no_channel", "no enabled channel for model "+req.Model)

@@ -27,19 +27,24 @@ type Server struct {
 	tokens   *auth.TokenService
 	payMu    sync.RWMutex
 	payState payConfigState // P3-2: hot-swappable payment config
+	limiter  *rateLimiter   // P4-3: per-key RPM/TPM (nil when disabled)
 }
 
 // New builds the API server. The payment state starts from the environment;
 // call ReloadPayConfig to seed the database and switch to it (hot-reloadable
 // via /admin/pay-config afterwards).
 func New(cfg *config.Config, st *store.Store, p *gateway.Provider) *Server {
-	return &Server{
+	s := &Server{
 		cfg:      cfg,
 		store:    st,
 		provider: p,
 		tokens:   auth.NewTokenService(cfg.MasterKey),
 		payState: envPayState(cfg),
 	}
+	if cfg.RPM > 0 || cfg.TPM > 0 {
+		s.limiter = newRateLimiter(cfg.RPM, cfg.TPM)
+	}
+	return s
 }
 
 // Engine wires all gin routes.

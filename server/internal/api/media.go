@@ -124,6 +124,13 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 		return
 	}
 
+	if key != nil && s.limiter.Enabled() {
+		if ok, which := s.limiter.AllowRequest(key.ID); !ok {
+			abortWith(c, http.StatusTooManyRequests, "rate_limited", rateLimitMessage(which))
+			return
+		}
+	}
+
 	n := req.N
 	if n <= 0 {
 		n = 1
