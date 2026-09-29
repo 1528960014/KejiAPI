@@ -147,6 +147,23 @@ export function authHeaders(): Record<string, string> {
   }
 }
 
+// --- P2-2: chat agents (predefined templates) ---
+
+export interface ChatAgent {
+  agent_id: string
+  name: string
+  description: string
+  model: string
+}
+
+// Lists enabled agent templates; call chat with model = <agent_id>.
+export async function listChatAgents(): Promise<ChatAgent[]> {
+  const { data } = await http.get('/v1/agents', {
+    headers: { Authorization: `Bearer ${getApiKey()}` },
+  })
+  return data.data as ChatAgent[]
+}
+
 export function adminHeaders(): Record<string, string> {
   return {
     Authorization: `Bearer ${getMasterKey()}`,

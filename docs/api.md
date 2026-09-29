@@ -16,12 +16,19 @@
 - **流式结算**：网关对 `stream: true` 的注入 `stream_options.include_usage=true`；上游最后一个 chunk 带回 usage 时按真实 token 结算，否则按预估计费（`usage_logs.status = ok_estimated`）。
 - **透支**：实际费用超过冻结额时允许余额为负（账本始终一致）。
 - **代理分销（P2-3）**：管理员可将某用户标记为代理并设批发系数 `rate ∈ (0, 1]`（如 0.85 = 八五折）。该用户**所有**冻结与结算金额都按 `ceil(金额 × rate)` 打折（正数永不断为 0）；代理可在控制台创建"子 key"分发给客户——子 key 共用代理余额、按代理批发价结算，各自独立的模型白名单 / 额度 / 有效期。`markup`（加价倍率）仅为代理向客户展示的建议价，平台不向终端客户收款。
+- **智能体（P2-2）**：`/v1/chat/completions` 的 `model` 可以填**智能体模板 id**（如 `agent-translator`）。网关识别后：把模板的 system prompt 注入到 messages 最前 → 走模板绑定的**真实模型**的通道与计费（按真实模型的 token 单价）；key 白名单校验"agent id 或真实模型"任一命中即可。无状态：多轮上下文由客户端保留（与现有 chat 一致）。首次启动自动播种 3 个内置模板（翻译官 / 写手 / 客服），绑定当时第一个启用的 chat 模型，可用 `/admin/assistants` 改绑 / 增删。
 
 ## 开放接口
 
 ### GET /v1/models
 
 返回启用的模型列表（OpenAI 兼容格式）。
+
+### GET /v1/agents（P2-2 智能体）
+
+需要 API key 鉴权。返回启用的智能体模板：`agent_id`、`name`、`description`、`model`（绑定的真实模型）。
+
+调用方式：`POST /v1/chat/completions`，`"model": "agent-translator"` 即可；system prompt 由网关注入，计费按绑定的真实模型。
 
 非标准附加字段（OpenAI SDK 会忽略）：`input_price_per_1k` / `output_price_per_1k`（token 计价），`price_unit`（`token` 默认 / `image` / `video` / `music` / `tts`）与 `unit_price`（每件 USD，媒体模型用）。
 
@@ -289,6 +296,27 @@ curl -X DELETE $B/admin/agents/1 -H "Authorization: Bearer $MASTER_KEY"
 - 已是代理的用户重复创建 → 409 `already_agent`；`rate` 越界 → 400 `invalid_rate`。
 - 效果：该用户后续所有 hold/settle 按批发价执行（历史流水不受影响）；`/admin/users` 列表与 `GET /api/me` 中带 `agent_rate`。
 - 代理在 Web 控制台（或 `/api/me/subkeys`）自助创建子 key 分发给客户。
+
+### 智能体模板（P2-2）
+
+```bash
+# 模板列表（含 system_prompt / enabled / created_at）
+curl $B/admin/assistants -H "Authorization: Bearer $MASTER_KEY"
+
+# 新建模板（agent_id 全局唯一；model 必须是已存在的模型）
+curl -X POST $B/admin/assistants -H "Authorization: Bearer $MASTER_KEY" \
+  -d '{"agent_id":"agent-poet","name":"诗人","description":"写诗","system_prompt":"你是一位诗人……","model":"gpt-4o-mini"}'
+
+# 局部更新（改绑模型 / 改 prompt / 启停）
+curl -X PATCH $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY" -d '{"model":"gpt-4o"}'
+curl -X PATCH $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY" -d '{"enabled":false}'
+
+# 删除
+curl -X DELETE $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY"
+```
+
+- `agent_id` 重复 → 409 `agent_exists`；改绑不存在的模型 → 400。
+- 停用的模板不出现在 `GET /v1/agents`，且以其 id 发起 chat 会 404。
 
 ### 用量统计
 

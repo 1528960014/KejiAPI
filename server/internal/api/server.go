@@ -42,6 +42,7 @@ func (s *Server) Engine() *gin.Engine {
 	{
 		v1.GET("/models", s.handleModels)
 		v1.POST("/chat/completions", s.handleChatCompletions)
+		v1.GET("/agents", s.handleListChatAgents)
 		v1.POST("/media/generate", s.handleMediaGenerate)
 		v1.GET("/media/status/:task_id", s.handleMediaStatus)
 		v1.POST("/drama/generate", s.handleDramaGenerate)
@@ -78,6 +79,12 @@ func (s *Server) Engine() *gin.Engine {
 		admin.POST("/agents", s.handleCreateAgent)
 		admin.PUT("/agents/:id", s.handleUpdateAgent)
 		admin.DELETE("/agents/:id", s.handleDeleteAgent)
+
+		// P2-2: chat agent templates (predefined assistants).
+		admin.GET("/assistants", s.handleListAssistants)
+		admin.POST("/assistants", s.handleCreateAssistant)
+		admin.PATCH("/assistants/:id", s.handleUpdateAssistant)
+		admin.DELETE("/assistants/:id", s.handleDeleteAssistant)
 	}
 
 	api := r.Group("/api")

@@ -202,6 +202,40 @@ CREATE TABLE IF NOT EXISTS agents (
 ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS agent_id BIGINT REFERENCES agents(id) ON DELETE SET NULL;
 ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS markup NUMERIC(8,4) NOT NULL DEFAULT 1;
 CREATE INDEX IF NOT EXISTS idx_api_keys_agent ON api_keys(agent_id);
+
+-- P2-2: chat agents (predefined assistant templates). A chat request with
+-- model = <agent_id> gets the template's system prompt injected and is
+-- routed to the bound real model (billing follows the real model's prices).
+CREATE TABLE IF NOT EXISTS assistants (
+    id BIGSERIAL PRIMARY KEY,
+    agent_id TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    system_prompt TEXT NOT NULL,
+    model_id TEXT NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- Built-in templates, seeded once per template and bound to the first
+-- enabled chat model at seed time (admins can rebind via /admin/assistants).
+INSERT INTO assistants (agent_id, name, description, system_prompt, model_id)
+SELECT 'agent-translator', '翻译官', '专业翻译：只输出译文，保留语气与格式。',
+       '你是一位专业翻译。将用户的消息翻译成目标语言（未指定时默认翻译成英文）。只输出译文，不要解释、不要附加原文。保留原文的语气、称谓与排版格式。',
+       first.model_id
+FROM (SELECT model_id FROM models WHERE enabled AND 'chat' = ANY(capabilities) ORDER BY id LIMIT 1) first
+WHERE NOT EXISTS (SELECT 1 FROM assistants WHERE agent_id = 'agent-translator');
+INSERT INTO assistants (agent_id, name, description, system_prompt, model_id)
+SELECT 'agent-writer', '写手', '内容写手：按主题产出结构清晰、可直接使用的文章或文案。',
+       '你是一位经验丰富的中文内容写手。根据用户给出的主题或大纲，产出结构清晰、语言流畅、可直接使用的文章或文案。用户未给具体要求时，给出一个完整初稿，并在结尾附 3 个备选标题。',
+       first.model_id
+FROM (SELECT model_id FROM models WHERE enabled AND 'chat' = ANY(capabilities) ORDER BY id LIMIT 1) first
+WHERE NOT EXISTS (SELECT 1 FROM assistants WHERE agent_id = 'agent-writer');
+INSERT INTO assistants (agent_id, name, description, system_prompt, model_id)
+SELECT 'agent-support', '客服', '客服助手：先共情再解决，给出可执行步骤，不确定的不编造。',
+       '你是一位友好、专业的客服助手。根据用户提供的产品背景回答客户问题：先共情、再解决，给出清晰可执行的步骤。不确定的信息要明确说明不确定，不要编造。',
+       first.model_id
+FROM (SELECT model_id FROM models WHERE enabled AND 'chat' = ANY(capabilities) ORDER BY id LIMIT 1) first
+WHERE NOT EXISTS (SELECT 1 FROM assistants WHERE agent_id = 'agent-support');
 `
 
 func (s *Store) migrate(ctx context.Context) error {

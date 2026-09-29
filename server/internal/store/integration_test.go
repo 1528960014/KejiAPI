@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	if _, err := conn.Exec(ctx, `
-		DROP TABLE IF EXISTS agents, dramas, refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
+		DROP TABLE IF EXISTS agents, assistants, dramas, refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
 	`); err != nil {
 		fmt.Println("drop schema:", err)
 		os.Exit(1)
@@ -544,6 +544,89 @@ func TestAgentAndSubkeys(t *testing.T) {
 	// the agent's own key can still be deleted through the user path
 	if err := st.DeleteAPIKeyByUser(ctx, u.ID, own.ID); err != nil {
 		t.Fatalf("delete own key: %v", err)
+	}
+}
+
+func TestAssistants(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+	if err := st.CreateModel(ctx, &Model{
+		ModelID: "gpt-a", Provider: "openai", UpstreamModel: "gpt-4o-mini",
+		Capabilities: []string{"chat"},
+	}); err != nil {
+		t.Fatalf("create model: %v", err)
+	}
+
+	// the bound model must exist
+	if _, err := st.CreateAssistant(ctx, &Assistant{AgentID: "agent-x", Name: "X", SystemPrompt: "p", ModelID: "missing"}); err == nil {
+		t.Fatalf("create with missing model = nil, want error")
+	}
+
+	a, err := st.CreateAssistant(ctx, &Assistant{AgentID: "agent-x", Name: "X", Description: "d", SystemPrompt: "p", ModelID: "gpt-a", Enabled: true})
+	if err != nil {
+		t.Fatalf("create assistant: %v", err)
+	}
+	// duplicate agent_id is rejected
+	if _, err := st.CreateAssistant(ctx, &Assistant{AgentID: "agent-x", Name: "Y", SystemPrompt: "p", ModelID: "gpt-a"}); err == nil {
+		t.Fatalf("duplicate agent_id = nil, want error")
+	}
+
+	byID, err := st.GetAssistantByID(ctx, "agent-x")
+	if err != nil || byID.ID != a.ID || byID.ModelID != "gpt-a" {
+		t.Fatalf("get by id = %+v (%v), want the created row", byID, err)
+	}
+	if _, err := st.GetAssistantByID(ctx, "nope"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("get missing = %v, want ErrNotFound", err)
+	}
+
+	// list: only enabled ones are public
+	all, err := st.ListAssistants(ctx)
+	if err != nil || len(all) != 1 {
+		t.Fatalf("list all = %+v (%v), want 1", all, err)
+	}
+	enabled, err := st.ListEnabledAssistants(ctx)
+	if err != nil || len(enabled) != 1 {
+		t.Fatalf("list enabled = %+v (%v), want 1", enabled, err)
+	}
+
+	// partial update, including a model rebind
+	name := "X2"
+	updated, err := st.UpdateAssistant(ctx, a.ID, &AssistantPatch{Name: &name})
+	if err != nil || updated.Name != "X2" || updated.ModelID != "gpt-a" {
+		t.Fatalf("update = %+v (%v), want renamed, same model", updated, err)
+	}
+	if err := st.CreateModel(ctx, &Model{ModelID: "gpt-b", Provider: "openai", UpstreamModel: "gpt-4o", Capabilities: []string{"chat"}}); err != nil {
+		t.Fatalf("create model2: %v", err)
+	}
+	model := "gpt-b"
+	updated, err = st.UpdateAssistant(ctx, a.ID, &AssistantPatch{ModelID: &model})
+	if err != nil || updated.ModelID != "gpt-b" {
+		t.Fatalf("rebind = %+v (%v), want gpt-b", updated, err)
+	}
+	badModel := "missing"
+	if _, err := st.UpdateAssistant(ctx, a.ID, &AssistantPatch{ModelID: &badModel}); err == nil {
+		t.Fatalf("rebind to missing model = nil, want error")
+	}
+
+	// disable -> hidden from the public list
+	disabled := false
+	if _, err := st.UpdateAssistant(ctx, a.ID, &AssistantPatch{Enabled: &disabled}); err != nil {
+		t.Fatalf("disable: %v", err)
+	}
+	enabled, err = st.ListEnabledAssistants(ctx)
+	if err != nil || len(enabled) != 0 {
+		t.Fatalf("list enabled after disable = %+v (%v), want 0", enabled, err)
+	}
+	all, _ = st.ListAssistants(ctx)
+	if len(all) != 1 || all[0].Enabled {
+		t.Fatalf("list all = %+v, want 1 disabled row", all)
+	}
+
+	if err := st.DeleteAssistant(ctx, a.ID); err != nil {
+		t.Fatalf("delete: %v", err)
+	}
+	if err := st.DeleteAssistant(ctx, a.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("second delete = %v, want ErrNotFound", err)
 	}
 }
 

@@ -57,6 +57,13 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 业务模型：代理预购制——代理按零售价充值、按批发价消费，与客户之间的收款（markup）在平台之外进行；平台不向终端客户收款（在线支付为 P2-4）。
 - 撤销代理（DELETE /admin/agents/:id）只解除代理身份，子 key 降级为代理用户的普通 key。
 
+### 智能体（P2-2，预定义 agent 模板）
+- `assistants` 表：公开 `agent_id` + 名称/描述/system prompt + 绑定的真实 `model_id` + enabled；首次启动播种 3 个内置模板（翻译官/写手/客服），绑定当时第一个启用的 chat 模型（幂等，可改绑）。
+- 复用 chat 通道：`/v1/chat/completions` 的 `model` 命中 agent_id 时，`injectSystemPrompt` 在 messages 头部注入模板 system prompt，随后按真实模型取通道、估价（注入后的 body）、hold/settle——worker、账本、用量日志零改动；usage 日志记真实模型。
+- key 白名单：agent id 或绑定模型任一命中即放行；空白名单全放行。
+- 无状态多轮：历史由客户端维护（与现有 chat 页一致）；`GET /v1/agents` 供前端/SDK 列模板。
+- 管理端 `/admin/assistants` CRUD（改绑模型校验存在性）；Web 聊天页"智能体"下拉选择后锁定模型列。
+
 ### Web 控制台（M3）
 - 多模型对比聊天（同一 prompt 并排 N 个模型，SSE 流式渲染）
 - 生成工作台（图/视频/音乐/TTS 表单 + 任务列表 + 结果预览）
@@ -65,7 +72,7 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 
 ## 核心数据表
 
-users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup）、tasks、dramas、usage_logs、agents
+users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup）、tasks、dramas、usage_logs、agents、assistants
 
 ## 技术选型
 

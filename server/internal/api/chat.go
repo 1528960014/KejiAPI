@@ -39,9 +39,37 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		return
 	}
 
-	model, err := s.store.GetModel(ctx, modelID)
+	// P2-2: the requested model may be a chat agent template; when it is,
+	// inject its system prompt and route through the bound real model.
+	var assistant *store.Assistant
+	assistant, err = s.store.GetAssistantByID(ctx, modelID)
+	if errors.Is(err, store.ErrNotFound) {
+		assistant = nil
+		err = nil
+	}
+	if err != nil {
+		httpErr(c, err)
+		return
+	}
+	if assistant != nil && !assistant.Enabled {
+		abortWith(c, http.StatusNotFound, "model_not_found", "agent not found or disabled: "+modelID)
+		return
+	}
+	if assistant != nil {
+		body, err = injectSystemPrompt(body, assistant.SystemPrompt)
+		if err != nil {
+			abortWith(c, http.StatusBadRequest, "invalid_request", "cannot parse request body")
+			return
+		}
+	}
+
+	targetModel := modelID
+	if assistant != nil {
+		targetModel = assistant.ModelID
+	}
+	model, err := s.store.GetModel(ctx, targetModel)
 	if errors.Is(err, store.ErrNotFound) || (model != nil && !model.Enabled) {
-		abortWith(c, http.StatusNotFound, "model_not_found", "model not found or disabled: "+modelID)
+		abortWith(c, http.StatusNotFound, "model_not_found", "model not found or disabled: "+targetModel)
 		return
 	}
 	if err != nil {
@@ -49,12 +77,14 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		return
 	}
 
-	if !modelAllowed(key, modelID) {
+	// An agent is allowed when the key allowlist covers the agent id or the
+	// bound real model; an empty allowlist allows everything.
+	if !modelAllowed(key, modelID) && !modelAllowed(key, model.ModelID) {
 		abortWith(c, http.StatusForbidden, "model_not_allowed", "API key is not allowed to use model "+modelID)
 		return
 	}
 
-	ch, err := s.store.PickChannel(ctx, modelID)
+	ch, err := s.store.PickChannel(ctx, model.ModelID)
 	if errors.Is(err, store.ErrNotFound) {
 		abortWith(c, http.StatusBadGateway, "no_channel", "no enabled channel for model "+modelID)
 		return
@@ -241,6 +271,21 @@ func modelAllowed(key *store.APIKey, modelID string) bool {
 		}
 	}
 	return false
+}
+
+// injectSystemPrompt prepends a system message to the request body's message
+// list and returns the re-serialized body.
+func injectSystemPrompt(body []byte, system string) ([]byte, error) {
+	var payload map[string]any
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return nil, err
+	}
+	msgs, _ := payload["messages"].([]any)
+	next := make([]any, 0, len(msgs)+1)
+	next = append(next, map[string]any{"role": "system", "content": system})
+	next = append(next, msgs...)
+	payload["messages"] = next
+	return json.Marshal(payload)
 }
 
 // newRequestID builds a unique request ID used to tag ledger entries.

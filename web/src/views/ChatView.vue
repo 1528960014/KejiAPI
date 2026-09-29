@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { authHeaders, getApiKey, listModels, setApiKey } from '../api/client'
+import { authHeaders, getApiKey, listChatAgents, listModels, setApiKey, type ChatAgent } from '../api/client'
 
 const { t } = useI18n()
 
@@ -22,6 +22,8 @@ interface Round {
 const apiKey = ref(getApiKey())
 const models = ref<string[]>([])
 const selectedModels = ref<string[]>([])
+const agents = ref<ChatAgent[]>([])
+const selectedAgent = ref('')
 const input = ref('')
 const busy = ref(false)
 const error = ref('')
@@ -36,21 +38,57 @@ async function loadModels() {
   try {
     const list = await listModels()
     models.value = list.map((m) => m.id)
-    // keep previously selected models that still exist, default to first
-    selectedModels.value = selectedModels.value.filter((m) => models.value.includes(m))
-    if (!selectedModels.value.length && models.value.length) {
-      selectedModels.value = [models.value[0]]
+    if (selectedAgent.value) {
+      // an agent owns the model choice
+      selectedModels.value = [selectedAgent.value]
+    } else {
+      // keep previously selected models that still exist, default to first
+      selectedModels.value = selectedModels.value.filter((m) => models.value.includes(m))
+      if (!selectedModels.value.length && models.value.length) {
+        selectedModels.value = [models.value[0]]
+      }
     }
   } catch {
     models.value = []
   }
 }
 
-onMounted(loadModels)
+async function loadAgents() {
+  if (!apiKey.value) {
+    agents.value = []
+    return
+  }
+  try {
+    agents.value = await listChatAgents()
+  } catch {
+    agents.value = []
+  }
+}
+
+onMounted(() => {
+  void loadModels()
+  void loadAgents()
+})
 
 function onKeyChange() {
   setApiKey(apiKey.value.trim())
   void loadModels()
+  void loadAgents()
+}
+
+function onAgentChange(value: string) {
+  selectedAgent.value = value
+  const agent = agents.value.find((a) => a.agent_id === value)
+  if (agent) {
+    selectedModels.value = [agent.agent_id]
+  } else if (!selectedModels.value.length && models.value.length) {
+    selectedModels.value = [models.value[0]]
+  }
+}
+
+function modelLabel(id: string): string {
+  const agent = agents.value.find((a) => a.agent_id === id)
+  return agent ? `${agent.name} · ${agent.model}` : id
 }
 
 // history for one model: all previous user turns plus that model's own
@@ -168,13 +206,30 @@ const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0,
           <el-input v-model="apiKey" :placeholder="t('chat.apiKeyPlaceholder')" @change="onKeyChange" />
         </label>
         <label>
+          {{ t('chat.agents') }}
+          <el-select
+            v-model="selectedAgent"
+            style="min-width: 220px"
+            @change="onAgentChange"
+          >
+            <el-option :label="t('chat.agentNone')" value="" />
+            <el-option
+              v-for="a in agents"
+              :key="a.agent_id"
+              :label="`${a.name} · ${a.model}`"
+              :value="a.agent_id"
+              :title="a.description"
+            />
+          </el-select>
+        </label>
+        <label>
           {{ t('chat.models') }}
           <el-select
             v-model="selectedModels"
             multiple
             collapse-tags
             collapse-tags-tooltip
-            :disabled="!models.length"
+            :disabled="!models.length || !!selectedAgent"
             style="min-width: 320px"
           >
             <el-option
@@ -188,7 +243,7 @@ const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0,
         </label>
         <el-button v-if="rounds.length" @click="clearRounds">{{ t('chat.clear') }}</el-button>
       </div>
-      <p class="muted hint">{{ t('chat.compareHint') }}</p>
+      <p class="muted hint">{{ selectedAgent ? t('chat.agentHint') : t('chat.compareHint') }}</p>
     </div>
 
     <div class="chat">
@@ -201,7 +256,7 @@ const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0,
         <div class="cols" :style="gridStyle(round.columns.length)">
           <div v-for="col in round.columns" :key="col.model" class="card col">
             <div class="col-head">
-              <span class="col-model">{{ col.model }}</span>
+              <span class="col-model">{{ modelLabel(col.model) }}</span>
               <span v-if="col.done && !col.error && col.promptTokens + col.completionTokens > 0" class="muted">
                 {{ col.promptTokens }}+{{ col.completionTokens }} {{ t('chat.tokens') }}
               </span>
