@@ -100,3 +100,22 @@ func TestMediaCostMicro(t *testing.T) {
 		t.Errorf("MediaCostMicro(n=0) = %d, want 0", got)
 	}
 }
+
+func TestDramaCostMicro(t *testing.T) {
+	image := &store.Model{PriceUnit: "image", UnitPrice: 0.02}
+	tts := &store.Model{PriceUnit: "tts", UnitPrice: 0.005}
+	// 8 shots x (0.02 + 0.005) = 0.2 USD = 200000 micro
+	if got := DramaCostMicro(image, tts, 8); got != 200_000 {
+		t.Errorf("DramaCostMicro(image+tts, 8) = %d, want 200000", got)
+	}
+	// no TTS: 8 x 0.02 = 160000 micro
+	if got := DramaCostMicro(image, nil, 8); got != 160_000 {
+		t.Errorf("DramaCostMicro(image only, 8) = %d, want 160000", got)
+	}
+	if got := DramaCostMicro(nil, tts, 8); got != 0 {
+		t.Errorf("DramaCostMicro(nil image) = %d, want 0", got)
+	}
+	if got := DramaCostMicro(image, tts, 0); got != 0 {
+		t.Errorf("DramaCostMicro(shots=0) = %d, want 0", got)
+	}
+}

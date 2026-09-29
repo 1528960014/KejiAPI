@@ -93,6 +93,20 @@ func MediaCostMicro(m *store.Model, n int) int64 {
 	return int64(math.Ceil(m.UnitPrice * float64(n) * MicrosPerUSD))
 }
 
+// DramaCostMicro returns the frozen amount for a comic drama: each planned
+// shot costs one image item plus, when a TTS model is given, one TTS item.
+// The drama is billed all-or-nothing (any failed shot releases the hold).
+func DramaCostMicro(imageModel, ttsModel *store.Model, shots int) int64 {
+	if imageModel == nil || shots <= 0 {
+		return 0
+	}
+	per := MediaCostMicro(imageModel, 1)
+	if ttsModel != nil {
+		per += MediaCostMicro(ttsModel, 1)
+	}
+	return per * int64(shots)
+}
+
 // USD converts micro-USD to a display float.
 func USD(micro int64) float64 { return float64(micro) / MicrosPerUSD }
 

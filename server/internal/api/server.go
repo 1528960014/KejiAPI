@@ -44,6 +44,8 @@ func (s *Server) Engine() *gin.Engine {
 		v1.POST("/chat/completions", s.handleChatCompletions)
 		v1.POST("/media/generate", s.handleMediaGenerate)
 		v1.GET("/media/status/:task_id", s.handleMediaStatus)
+		v1.POST("/drama/generate", s.handleDramaGenerate)
+		v1.GET("/drama/status/:drama_id", s.handleDramaStatus)
 	}
 
 	admin := r.Group("/admin")
@@ -69,6 +71,7 @@ func (s *Server) Engine() *gin.Engine {
 		admin.GET("/usage", s.handleListUsage)
 		admin.GET("/usage/summary", s.handleUsageSummary)
 		admin.GET("/tasks", s.handleListTasks)
+		admin.GET("/dramas", s.handleListDramas)
 	}
 
 	api := r.Group("/api")

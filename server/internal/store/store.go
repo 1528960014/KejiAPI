@@ -157,6 +157,31 @@ ALTER TABLE models ADD COLUMN IF NOT EXISTS unit_price NUMERIC(18,10) NOT NULL D
 -- M4: frozen amount (micro-USD) per task, fixed at submission so the worker
 -- can settle or release exactly what was held.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS hold_micro BIGINT NOT NULL DEFAULT 0;
+
+-- P2-1: comic-drama pipeline. A drama fans a script out into storyboard
+-- shots (image + optional TTS per shot); the shots array is the exportable
+-- asset pack (JSONB), held cost is frozen at submission and settled
+-- all-or-nothing (any failed shot releases the whole hold).
+CREATE TABLE IF NOT EXISTS dramas (
+    id BIGSERIAL PRIMARY KEY,
+    drama_uuid TEXT UNIQUE NOT NULL,
+    api_key_id BIGINT REFERENCES api_keys(id),
+    title TEXT NOT NULL DEFAULT '',
+    script TEXT NOT NULL,
+    style TEXT NOT NULL DEFAULT '',
+    storyboard_model TEXT NOT NULL DEFAULT '',
+    image_model TEXT NOT NULL,
+    tts_model TEXT,
+    shots_planned INT NOT NULL DEFAULT 8,
+    status TEXT NOT NULL DEFAULT 'queued',
+    hold_micro BIGINT NOT NULL DEFAULT 0,
+    shots JSONB NOT NULL DEFAULT '[]',
+    cost NUMERIC(18,10) NOT NULL DEFAULT 0,
+    error_msg TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_dramas_key ON dramas(api_key_id, created_at DESC);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

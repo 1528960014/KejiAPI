@@ -51,6 +51,10 @@ func main() {
 	worker := task.NewWorker(st, provider)
 	go worker.Run(ctx)
 
+	// P2-1: comic-drama worker (storyboard + per-shot media fan-out).
+	dramaWorker := task.NewDramaWorker(st, provider)
+	go dramaWorker.Run(ctx)
+
 	httpServer := &http.Server{
 		Addr:         ":" + cfg.Port,
 		Handler:      srv.Engine(),

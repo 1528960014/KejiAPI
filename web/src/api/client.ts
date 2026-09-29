@@ -496,3 +496,53 @@ export async function mediaStatus(taskId: string): Promise<MediaTask> {
   })
   return data
 }
+
+// --- P2-1: comic drama (storyboard + asset pack) ---
+
+export interface DramaShot {
+  shot_no: number
+  scene: string
+  dialogue: string
+  image_prompt: string
+  status: string
+  image_url?: string
+  audio_url?: string
+  error?: string
+}
+
+export interface Drama {
+  drama_id: string
+  status: string
+  title: string
+  style: string
+  storyboard_model: string
+  image_model: string
+  tts_model?: string | null
+  shots_planned: number
+  shots: DramaShot[]
+  cost_usd: number
+  error: string
+  created_at: string
+  updated_at: string
+}
+
+export interface DramaRequest {
+  script: string
+  style?: string
+  shots?: number
+  storyboard_model?: string
+  image_model: string
+  tts_model?: string
+}
+
+export async function submitDrama(body: DramaRequest): Promise<{ drama_id: string; status: string }> {
+  const { data } = await http.post('/v1/drama/generate', body, { headers: authHeaders() })
+  return data
+}
+
+export async function dramaStatus(dramaId: string): Promise<Drama> {
+  const { data } = await http.get(`/v1/drama/status/${encodeURIComponent(dramaId)}`, {
+    headers: authHeaders(),
+  })
+  return data
+}

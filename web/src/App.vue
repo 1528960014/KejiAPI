@@ -16,6 +16,7 @@ const nav = [
   { to: '/', label: 'nav.home' },
   { to: '/chat', label: 'nav.chat' },
   { to: '/workbench', label: 'nav.workbench' },
+  { to: '/drama', label: 'nav.drama' },
   { to: '/pricing', label: 'nav.pricing' },
   { to: '/console', label: 'nav.console' },
 ]

@@ -14,6 +14,7 @@ Nginx/Traefik（静态资源 + 反代）
         │    ├── 路由：model → channel（priority + 故障切换）
         │    └── 计费钩子（估算→冻结→结算，M2）
         ├── 任务管线（M4：DB 轮询 worker → provider 适配器 → 上游任务 → 轮询产物）
+        ├── 漫剧管线（P2-1：drama worker → LLM 分镜 → 逐镜复用 M4 适配器 → 素材包）
         └── 管理 API（用户、key、模型、通道、站点配置）
 
 PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物，后续）
@@ -40,6 +41,14 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 产物直接用上游返回的 URL；`b64_json` 结果明确报错（产物下载至 MinIO 并返回签名 URL 为后续里程碑）。
 - 统一轮询 `/v1/media/status/{task_id}`（仅属主 key 可读）；管理端 `GET /admin/tasks`。
 
+### 漫剧管线（P2-1）
+- `dramas` 单表：script/style/模型选择/status/hold_micro + `shots JSONB`（分镜数组即素材包）。
+- 独立的 drama worker（与 media worker 同套路：SKIP LOCKED 认领、启动恢复、超时 30min）。
+- 分镜：配置了 `storyboard_model`（chat 模型）时走网关自己的 chat 通道，system prompt 约束严格 JSON（容忍 code fence）；未配置时按句子/段落简单拆分。
+- 逐镜头复用 M4 的 image/tts 适配器；每完成一镜更新 JSONB（前端轮询可见进度）。
+- 计费 all-or-nothing：提交时冻结 `shots × (图像+配音 单价)`，全部成功结算、任一失败全额退回；drama UUID 为账本 request_id。
+- 产物：JSON 素材包（shots + URL，前端可下载）；MP4 成片合成（ffmpeg）为后续里程碑。
+
 ### Web 控制台（M3）
 - 多模型对比聊天（同一 prompt 并排 N 个模型，SSE 流式渲染）
 - 生成工作台（图/视频/音乐/TTS 表单 + 任务列表 + 结果预览）
@@ -48,7 +57,7 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 
 ## 核心数据表
 
-users、ledger_entries、models、channels、api_keys、tasks、usage_logs
+users、ledger_entries、models、channels、api_keys、tasks、dramas、usage_logs
 
 ## 技术选型
 

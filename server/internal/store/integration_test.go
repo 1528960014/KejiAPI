@@ -363,3 +363,98 @@ func TestTaskLifecycle(t *testing.T) {
 		t.Errorf("running = %+v, want [task-2]", running)
 	}
 }
+
+func TestDramaLifecycle(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+	u := mustCreditUser(t, st, "drama@test.local", 0)
+	if err := st.CreateModel(ctx, &Model{
+		ModelID: "flux-d", Provider: "openai", UpstreamModel: "flux",
+		Capabilities: []string{"image"}, PriceUnit: "image", UnitPrice: 0.02,
+	}); err != nil {
+		t.Fatalf("create model: %v", err)
+	}
+	_, key, err := st.CreateAPIKey(ctx, "drama-key")
+	if err != nil {
+		t.Fatalf("create key: %v", err)
+	}
+	if _, err := st.UpdateAPIKey(ctx, key.ID, &KeyPatch{UserID: &u.ID}); err != nil {
+		t.Fatalf("bind key: %v", err)
+	}
+
+	tts := "cosyvoice-v1"
+	if err := st.CreateDrama(ctx, &Drama{
+		DramaUUID: "drama-1", APIKeyID: &key.ID, Title: "t", Script: "s",
+		ImageModel: "flux-d", TTSModel: &tts, ShotsPlanned: 4,
+		HoldMicro: 100_000, Shots: []byte("[]"),
+	}); err != nil {
+		t.Fatalf("create drama: %v", err)
+	}
+
+	claimed, err := st.ClaimNextQueuedDrama(ctx)
+	if err != nil {
+		t.Fatalf("claim drama: %v", err)
+	}
+	if claimed.DramaUUID != "drama-1" || claimed.Status != "running" {
+		t.Fatalf("claimed = %+v, want running drama-1", claimed)
+	}
+	if claimed.KeyUserID == nil || *claimed.KeyUserID != u.ID {
+		t.Fatalf("drama key user = %v, want %d", claimed.KeyUserID, u.ID)
+	}
+	if _, err := st.ClaimNextQueuedDrama(ctx); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("second claim = %v, want ErrNotFound", err)
+	}
+
+	// progress updates only apply while running
+	if err := st.UpdateDramaShots(ctx, "drama-1", []byte(`[{"shot_no":1,"status":"succeeded","image_url":"https://cdn/a.png"}]`)); err != nil {
+		t.Fatalf("update shots: %v", err)
+	}
+	if err := st.CompleteDrama(ctx, "drama-1", 0.1); err != nil {
+		t.Fatalf("complete drama: %v", err)
+	}
+	got, err := st.GetDramaByUUID(ctx, "drama-1")
+	if err != nil {
+		t.Fatalf("get drama: %v", err)
+	}
+	if got.Status != "succeeded" || got.Cost != 0.1 {
+		t.Errorf("drama = %+v, want succeeded cost 0.1", got)
+	}
+	if !contains(got.Shots, "cdn/a.png") {
+		t.Errorf("shots = %s, want to contain the result url", got.Shots)
+	}
+	// finishing twice is a no-op error
+	if err := st.CompleteDrama(ctx, "drama-1", 0); !errors.Is(err, ErrNotFound) {
+		t.Errorf("second complete = %v, want ErrNotFound", err)
+	}
+	if err := st.FailDrama(ctx, "drama-1", "x"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("fail succeeded drama = %v, want ErrNotFound", err)
+	}
+
+	// a running drama shows up in the recovery list
+	if err := st.CreateDrama(ctx, &Drama{DramaUUID: "drama-2", ImageModel: "flux-d", ShotsPlanned: 2, HoldMicro: 1, Shots: []byte("[]")}); err != nil {
+		t.Fatalf("create drama2: %v", err)
+	}
+	if _, err := st.ClaimNextQueuedDrama(ctx); err != nil {
+		t.Fatalf("claim drama2: %v", err)
+	}
+	running, err := st.ListRunningDramas(ctx, 100)
+	if err != nil {
+		t.Fatalf("list running dramas: %v", err)
+	}
+	if len(running) != 1 || running[0].DramaUUID != "drama-2" {
+		t.Errorf("running = %+v, want [drama-2]", running)
+	}
+}
+
+func contains(b []byte, sub string) bool {
+	return len(b) > 0 && len(sub) > 0 && (len(b) < len(sub) || indexOf(b, sub) >= 0)
+}
+
+func indexOf(b []byte, sub string) int {
+	for i := 0; i+len(sub) <= len(b); i++ {
+		if string(b[i:i+len(sub)]) == sub {
+			return i
+		}
+	}
+	return -1
+}

@@ -88,6 +88,43 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 - 上游返回 `b64_json`（而非 URL）时任务失败并提示（产物持久化到 MinIO 为后续里程碑）。
 - 任务默认超时 10 分钟（超时按失败处理，冻结退回）；服务重启时残留的 running 任务会被标记失败并退回。
 
+### POST /v1/drama/generate（P2-1 漫剧）
+
+异步漫剧生成：剧本 → LLM 分镜 → 逐镜生成画面（+可选配音），API key 鉴权，返回 `202 {drama_id, status: "queued"}`。
+
+```json
+{
+  "script": "雨夜，巷口。他撑着伞……",
+  "style": "水墨国风",
+  "shots": 8,                  // 2-24，默认 8
+  "storyboard_model": "gpt-4o-mini",  // 可选：chat 模型做分镜；缺省按句子简单拆分
+  "image_model": "flux-1",           // 必填：image 能力 + unit_price
+  "tts_model": "cosyvoice-v1"        // 可选：tts 能力 + unit_price
+}
+```
+
+- 计费：提交时冻结 `shots × (图像 unit_price + 配音 unit_price)`，**全部镜头成功才结算；任一镜头失败 → 整部失败并全额退回**（无部分计费）。分镜 LLM 调用暂不单独计费。
+- 单部总超时 30 分钟；重启时残留 running 的漫剧标记失败并退回。
+
+### GET /v1/drama/status/{drama_id}
+
+查询漫剧进度。仅属主 key 可读。返回含 `shots` 数组（即**分镜素材包**）：
+
+```json
+{
+  "drama_id": "…", "status": "running", "title": "…", "style": "水墨国风",
+  "image_model": "flux-1", "tts_model": "cosyvoice-v1", "shots_planned": 8,
+  "shots": [
+    {"shot_no": 1, "scene": "雨夜巷口", "dialogue": "你终于来了",
+     "image_prompt": "ink wash, rainy alley at night…",
+     "status": "succeeded", "image_url": "https://…", "audio_url": "https://…"}
+  ],
+  "cost_usd": 0, "error": "", "created_at": "…", "updated_at": "…"
+}
+```
+
+- 前端提供"导出素材包"：即此 JSON（shots + 元数据）下载。MP4 成片合成为后续里程碑。
+
 ## 账号接口（M3）
 
 认证模型：邮箱 + 密码（argon2id）。登录/注册返回 token 对：
@@ -252,3 +289,12 @@ curl "$B/admin/tasks?api_key_id=1&limit=50" -H "Authorization: Bearer $MASTER_KE
 ```
 
 返回结构与 `GET /v1/media/status/{task_id}` 相同（列表包在 `data` 里）。
+
+### 漫剧（P2-1）
+
+```bash
+# 最近漫剧（新→旧，可按 key 过滤，limit 上限 200）
+curl "$B/admin/dramas?api_key_id=1&limit=50" -H "Authorization: Bearer $MASTER_KEY"
+```
+
+返回结构与 `GET /v1/drama/status/{drama_id}` 相同（列表包在 `data` 里）。

@@ -146,6 +146,9 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 	}
 	held := false
 	userID := keyUserID(key)
+	// The task UUID doubles as the ledger request ID, so the hold entry and
+	// the worker's settle/release stay auditable against the same ID.
+	taskUUID := newTaskUUID()
 	if userID != nil && estMicro > 0 {
 		user, err := s.store.GetUser(ctx, *userID)
 		if errors.Is(err, store.ErrNotFound) {
@@ -160,7 +163,7 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 			abortWith(c, http.StatusForbidden, "user_disabled", "billing user is disabled")
 			return
 		}
-		if err := s.store.HoldFunds(ctx, *userID, estMicro, newRequestID(), reason); err != nil {
+		if err := s.store.HoldFunds(ctx, *userID, estMicro, taskUUID, reason); err != nil {
 			if errors.Is(err, store.ErrInsufficientBalance) {
 				abortWith(c, http.StatusPaymentRequired, "insufficient_balance", "insufficient balance; top up this user via the admin API")
 				return
@@ -172,7 +175,7 @@ func (s *Server) handleMediaGenerate(c *gin.Context) {
 	}
 
 	t := &store.Task{
-		TaskUUID:  newTaskUUID(),
+		TaskUUID:  taskUUID,
 		Type:      mediaType,
 		ModelID:   req.Model,
 		Payload:   body,
