@@ -91,7 +91,7 @@
     "clearFinished": "완료 항목 지우기",
     "clearAll": "모두 지우기",
     "open": "새 탭에서 열기",
-    "musicHint": "참고: 음악 어댑터는 아직 없습니다. 제출 시 명확한 실패 메시지가 표시됩니다 (나중에 구현 예정).",
+    "musicHint": "음악에는 provider=suno 모델이 필요합니다(커뮤니티 API, 자체 키). 설정 후 생성됩니다.",
     "status": { "queued": "대기 중", "running": "생성 중", "succeeded": "완료", "failed": "실패", "unknown": "확인 중" },
     "type": { "image": "이미지", "video": "영상", "music": "음악", "tts": "음성" }
   },

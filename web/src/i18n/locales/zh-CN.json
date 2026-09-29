@@ -91,7 +91,7 @@
     "clearFinished": "清除已完成",
     "clearAll": "全部清除",
     "open": "新标签打开",
-    "musicHint": "注意：当前暂无音乐适配器，提交后会收到明确的失败提示（后续里程碑实现）。",
+    "musicHint": "音乐需配置 provider=suno 的模型（社区 API，自备 key）；配置后即可生成。",
     "status": { "queued": "排队中", "running": "生成中", "succeeded": "已完成", "failed": "失败", "unknown": "查询中" },
     "type": { "image": "图像", "video": "视频", "music": "音乐", "tts": "语音" }
   },

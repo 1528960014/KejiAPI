@@ -91,7 +91,7 @@
     "clearFinished": "完了分をクリア",
     "clearAll": "すべてクリア",
     "open": "新しいタブで開く",
-    "musicHint": "注意：音楽アダプターはまだ未提供です。提出すると明確な失敗メッセージが表示されます（後のマイルストーンで実装予定）。",
+    "musicHint": "音楽には provider=suno のモデルが必要です（コミュニティ API、API key はご準備ください）。設定後に生成できます。",
     "status": { "queued": "待機中", "running": "生成中", "succeeded": "完了", "failed": "失敗", "unknown": "照会中" },
     "type": { "image": "画像", "video": "動画", "music": "音楽", "tts": "音声" }
   },

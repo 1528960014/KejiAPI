@@ -91,7 +91,7 @@
     "clearFinished": "Limpiar terminadas",
     "clearAll": "Limpiar todo",
     "open": "Abrir en nueva pestaña",
-    "musicHint": "Nota: aún no hay adaptador de música; el envío fallará con un mensaje claro (planeado para una fase posterior).",
+    "musicHint": "La música necesita un modelo con provider=suno (API comunitario, clave propia); una vez configurado genera.",
     "status": { "queued": "En cola", "running": "Generando", "succeeded": "Hecho", "failed": "Falló", "unknown": "Comprobando" },
     "type": { "image": "Imagen", "video": "Vídeo", "music": "Música", "tts": "Voz" }
   },

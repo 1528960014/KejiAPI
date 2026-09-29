@@ -46,6 +46,12 @@ func adapterFor(provider, taskType string) Adapter {
 		if provider == "dashscope" {
 			return dashscopeTTSAdapter{}
 		}
+	case "music":
+		// Suno's API (community/BYO key, api.suno.com): submit + poll for a
+		// finished audio_url. Other providers have no standard music API.
+		if provider == "suno" {
+			return sunoMusicAdapter{}
+		}
 	}
 	return nil
 }
@@ -200,8 +206,8 @@ func pollDashscopeTask(ctx context.Context, p *gateway.Provider, ch *store.Chann
 		}
 		var out struct {
 			Output struct {
-				TaskStatus string   `json:"task_status"`
-				VideoURL   string   `json:"video_url"`
+				TaskStatus string `json:"task_status"`
+				VideoURL   string `json:"video_url"`
 				Results    []struct {
 					URL string `json:"url"`
 				} `json:"results"`
@@ -314,6 +320,75 @@ func pollKlingTask(ctx context.Context, p *gateway.Provider, ch *store.Channel, 
 			return urls, nil
 		case "failed":
 			return nil, fmt.Errorf("upstream task failed: %s", info.FailReason)
+		}
+		if err := sleepCtx(ctx, pollInterval); err != nil {
+			return nil, err
+		}
+	}
+}
+
+// --- Suno async text-to-music (community API, BYO key) ---
+
+type sunoMusicAdapter struct{}
+
+func (sunoMusicAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store.Channel, m *store.Model, payload []byte) ([]string, error) {
+	parsed, err := parsePayload(payload)
+	if err != nil {
+		return nil, err
+	}
+	text := parsed.Prompt
+	if text == "" {
+		text = parsed.Text
+	}
+	body := map[string]any{"text": text}
+	if m.UpstreamModel != "" {
+		body["model"] = m.UpstreamModel
+	}
+	raw, _ := json.Marshal(body)
+	status, respBody, err := p.DoJSON(ctx, ch, http.MethodPost, "/api/v1/generate", raw, nil)
+	if err != nil {
+		return nil, err
+	}
+	if status >= 400 {
+		return nil, upstreamError(status, respBody)
+	}
+	var sub struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(respBody, &sub); err != nil {
+		return nil, fmt.Errorf("parse upstream response: %w", err)
+	}
+	if sub.ID == "" {
+		return nil, fmt.Errorf("upstream did not return a task id: %s", trimBody(respBody))
+	}
+	return pollSunoTask(ctx, p, ch, sub.ID)
+}
+
+func pollSunoTask(ctx context.Context, p *gateway.Provider, ch *store.Channel, taskID string) ([]string, error) {
+	for {
+		status, respBody, err := p.DoJSON(ctx, ch, http.MethodGet, "/api/v1/generate/"+taskID, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		if status >= 400 {
+			return nil, upstreamError(status, respBody)
+		}
+		var out struct {
+			Status     string `json:"status"`
+			AudioURL   string `json:"audio_url"`
+			FailReason string `json:"fail_reason"`
+		}
+		if err := json.Unmarshal(respBody, &out); err != nil {
+			return nil, fmt.Errorf("parse upstream response: %w", err)
+		}
+		switch out.Status {
+		case "complete", "succeeded":
+			if out.AudioURL == "" {
+				return nil, fmt.Errorf("upstream succeeded but returned no audio url")
+			}
+			return []string{out.AudioURL}, nil
+		case "failed", "canceled", "unknown":
+			return nil, fmt.Errorf("upstream task failed: %s", out.FailReason)
 		}
 		if err := sleepCtx(ctx, pollInterval); err != nil {
 			return nil, err

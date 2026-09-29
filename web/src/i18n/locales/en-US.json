@@ -91,7 +91,7 @@
     "clearFinished": "Clear finished",
     "clearAll": "Clear all",
     "open": "Open in new tab",
-    "musicHint": "Note: no music adapter is available yet; submissions will fail with a clear message (planned for a later milestone).",
+    "musicHint": "Music needs a model with provider=suno (community API, bring your own key); once configured it generates.",
     "status": { "queued": "Queued", "running": "Generating", "succeeded": "Done", "failed": "Failed", "unknown": "Checking" },
     "type": { "image": "Image", "video": "Video", "music": "Music", "tts": "Voice" }
   },

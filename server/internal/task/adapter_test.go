@@ -56,6 +56,76 @@ func TestOpenAIImageAdapterSuccess(t *testing.T) {
 	}
 }
 
+func TestSunoMusicAdapterSuccess(t *testing.T) {
+	var polls int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/v1/generate":
+			var req map[string]any
+			_ = json.NewDecoder(r.Body).Decode(&req)
+			if req["text"] != "a chill track" {
+				t.Errorf("text = %v", req["text"])
+			}
+			_, _ = w.Write([]byte(`{"id":"suno-1"}`))
+		case "/api/v1/generate/suno-1":
+			if n := atomic.AddInt32(&polls, 1); n == 1 {
+				_, _ = w.Write([]byte(`{"id":"suno-1","status":"processing"}`))
+				return
+			}
+			_, _ = w.Write([]byte(`{"id":"suno-1","status":"complete","audio_url":"https://cdn/suno-1.mp3"}`))
+		default:
+			t.Errorf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer srv.Close()
+
+	old := pollInterval
+	pollInterval = time.Millisecond
+	defer func() { pollInterval = old }()
+
+	m := &store.Model{ModelID: "m", Provider: "suno", UpstreamModel: "v3.5", Capabilities: []string{"music"}, PriceUnit: "music", UnitPrice: 0.05}
+	urls, err := (sunoMusicAdapter{}).Run(context.Background(), newTestProvider(srv.URL), testChannel(srv.URL), m, []byte(`{"prompt":"a chill track"}`))
+	if err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	if len(urls) != 1 || urls[0] != "https://cdn/suno-1.mp3" {
+		t.Errorf("urls = %v", urls)
+	}
+	if atomic.LoadInt32(&polls) < 2 {
+		t.Errorf("polls = %d, want >= 2 (queued then complete)", polls)
+	}
+}
+
+func TestSunoMusicAdapterFailed(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/v1/generate":
+			_, _ = w.Write([]byte(`{"id":"suno-2"}`))
+		default:
+			_, _ = w.Write([]byte(`{"id":"suno-2","status":"failed","fail_reason":"safety"}`))
+		}
+	}))
+	defer srv.Close()
+
+	_, err := (sunoMusicAdapter{}).Run(context.Background(), newTestProvider(srv.URL), testChannel(srv.URL), testModel(), []byte(`{"prompt":"x"}`))
+	if err == nil || !containsString(err.Error(), "failed") {
+		t.Fatalf("want upstream failed error, got %v", err)
+	}
+}
+
+func containsString(s, sub string) bool {
+	return len(s) >= len(sub) && (func() bool {
+		for i := 0; i+len(sub) <= len(s); i++ {
+			if s[i:i+len(sub)] == sub {
+				return true
+			}
+		}
+		return false
+	})()
+}
+
 func TestOpenAIImageAdapterB64Fails(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{"data":[{"b64_json":"aGVsbG8="}]}`))
