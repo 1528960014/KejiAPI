@@ -69,7 +69,7 @@ modelhub/
 - [x] M1 网关核心（OpenAI 兼容聊天 / 流式 / API key）
 - [x] M2 计费账本（余额冻结与结算、用量统计、管理端手动充值）
 - [x] M3 Web 控制台（多模型聊天、API 控制台、i18n、主题）
-- [x] M4 任务管线（图像 → 视频 / 音乐 / TTS；图像/视频/TTS 已落地，音乐适配器见 docs/api.md）
+- [x] M4 任务管线（图像 → 视频 / 音乐 / TTS，适配器全部落地；音乐 = suno 社区 API）
 - [x] P2-1a 漫剧管线（分镜 + 逐镜素材包 + JSON 导出）
 - [x] P2-1b 漫剧成片（ffmpeg 合成 MP4：画面+字幕+配音）
 - [x] P2-2 智能体（预定义 agent 模板，model=agent_id + system prompt 注入）
@@ -80,6 +80,9 @@ modelhub/
 - [x] P3-2 支付渠道后台配置（/admin/pay-config 热更新，env 仅首次启动默认）
 - [x] P3-3 多租户（组织：独立钱包 + 成员 owner/admin/member + 组织 Key 按列表价计费）
 - [x] P3-4 实时语音（OpenAI 兼容 POST /v1/audio/speech 同步 TTS，聊天页朗读按钮）
+- [x] P4-1 双向实时语音（OpenAI Realtime WS 透传，`/v1/realtime` 子协议鉴权，会话用量结算）
+- [x] P4-2 音乐适配器（suno 社区 API，`/v1/media/generate` type=music）
+- [x] P4-3 每 key 限流（`MODELHUB_RPM`/`MODELHUB_TPM`，429 `rate_limited`）
 - [ ] 后续：双向实时语音（麦克风↔麦克风，OpenAI Realtime 类协议）
 
 ## 合规说明

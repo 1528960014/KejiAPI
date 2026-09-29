@@ -53,6 +53,7 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 - 404 `model_not_found`
 - 402 `insufficient_balance`
 - 429 `quota_exceeded`
+- 429 `rate_limited`（P4-3：网关级 RPM/TPM 限流触发，见"限流"）
 - 502 `no_channel` / `upstream_error`
 
 ### POST /v1/media/generate（M4）
@@ -75,7 +76,7 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
   - `image`：所有 OpenAI 兼容 `/images/generations` 的 provider（openai、硅基流动、dashscope 兼容模式、自建网关等）
   - `video`：`dashscope`（原生异步 + 任务轮询）、`kling`（异步 + 任务轮询）
   - `tts`：`dashscope`（CosyVoice 同步）
-  - `music`：**暂无适配器**，提交会排队但任务以明确错误失败并退回冻结
+  - `music`：`suno`（**社区 API，非 Suno 官方**，自备 key 与 base_url；异步提交 + 任务轮询，成功后 `audio_url` 进 `result_urls`）
 - 错误：400 `invalid_request`（缺 model/type/prompt、模型无该能力、无媒体价格）；401/403/404/402/429 同 chat 接口；429 时冻结已退回。
 
 ### GET /v1/media/status/{task_id}
@@ -162,6 +163,34 @@ audio.write_to_file("out.mp3")
 - **上游协议**：`provider=dashscope` 走 CosyVoice（返回音频 URL，网关下载后转发为字节流）；其余 provider 按 OpenAI 兼容 `POST /audio/speech` 处理（二进制响应）。
 - **计费**：按模型 `unit_price` 计 1 个单位（与 `/v1/media/generate` 的 TTS 一致），调用前冻结、成功结算、失败全额解冻；组织 key 扣组织钱包（列表价）。
 - 失败（上游错误/无通道/余额不足等）返回对应 4xx/502，冻结全额解冻，不落任务、不扣费。
+
+### POST /v1/realtime（P4-1 双向实时语音）
+
+OpenAI Realtime API（麦克风↔麦克风）的 WebSocket 透传代理。客户端走标准 OpenAI WS 协议，**鉴权在子协议头里**（不是 Bearer）：
+
+```python
+import websockets, json
+
+uri = "wss://<host>/v1/realtime"
+proto = "openai-insecure-api-key.sk-xxxx"   # ModelHub 的 API key
+async with websockets.connect(uri, subprotocols=[proto]) as ws:
+    await ws.send(json.dumps({
+        "type": "session.update",
+        "session": {"model": "gpt-realtime-1", "modalities": ["text", "audio"]},
+    }))
+    # 之后原样透传：input_audio_buffer.append / response.audio.delta / ...
+```
+
+- 流程：upgrade（回显 `openai-insecure-api-key.*` 子协议）→ 等待首个带 `model` 的 `session.update`（此前帧被缓冲）→ 校验模型 enabled + `realtime` capability + key 白名单 → 拨号该模型通道的 `/realtime` WS 端点 → 双向透传。
+- **计费**：按会话累计 `response.done` 的用量——优先上游报告的 `usage.cost`（USD），缺失则按 `input_tokens`/`output_tokens` × 模型每 1k 单价。会话结束按实际用量结算（**无预冻结**；进程中途崩溃最多丢该会话计费）。组织 key 扣组织钱包（列表价），用量日志记 `realtime:<model>`。
+- 模型需在 `capabilities` 里带 `"realtime"`（自由数组，建模型时直接加）。
+- 边界：SDK 级能力，无 Web UI；WS 帧直接透传，网关不改协议；上游断开会向客户端发 `error: realtime_upstream_closed`。
+
+## 限流（P4-3）
+
+- 环境变量 `MODELHUB_RPM` / `MODELHUB_TPM`（请求/分钟、token/分钟，按 **API key** 计数；0 或未设 = 关闭）。
+- 固定 1 分钟窗口（Unix 分钟桶，非滑动窗口）：RPM 在请求进入时计数，TPM 在请求结算后按**实际** token 记账（超限在下一个请求入口拦截）。
+- 超限返回 **429 `rate_limited`**（错误消息指明是 rpm 还是 tpm）。四个计费入口 + realtime 统一生效；单实例内存实现，多实例部署时限流为每实例近似值。
 
 ## 账号接口（M3）
 

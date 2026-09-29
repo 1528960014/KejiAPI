@@ -95,7 +95,24 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 上游两条协议：OpenAI 兼容 `/audio/speech`（二进制响应，默认路径）与 DashScope CosyVoice（返回签名 URL，网关下载后转发字节流，`provider=dashscope` 自动选择）。
 - 计费复用 M2 钱包：按模型 `unit_price` 冻结 1 单位 → 成功结算 / 失败解冻（含 P2-3 代理批发、P3-3 组织钱包分支），用量日志记 `speech:<model>`。
 - Web 聊天页：可选"语音"模型（`/api/models` 按 `tts` capability 过滤，localStorage 记忆），每条助手回复带"朗读"按钮，`fetch` 取音频流播放。
-- 边界：这是**文本→语音**的实时合成；双向实时语音（麦克风↔麦克风，如 OpenAI Realtime WS 协议）不在本里程碑，列为后续。
+- 边界：这是**文本→语音**的实时合成；双向实时语音（麦克风↔麦克风，OpenAI Realtime WS 协议）由 P4-1 落地（见下）。
+
+### 双向实时语音（P4-1，OpenAI Realtime WS 透传）
+- `POST /v1/realtime`：OpenAI Realtime API 的 WebSocket 透传代理。客户端用标准 OpenAI WS 鉴权子协议 `Sec-WebSocket-Protocol: openai-insecure-api-key.<sk-…>` 连接（不走 Bearer 头，因此路由挂在 v1 group 之外）；网关校验 key 与过期后 upgrade，并在响应中回显该子协议完成握手。
+- 模型解析：缓冲客户端帧，直到收到带 `model` 的 `session.update`（缓冲上限 16 帧 / 1 MB）→ 校验模型 enabled + `realtime` capability + key 白名单 → `PickChannel` → 用通道 key 拨号上游 `<base_url>/realtime`（http→ws / https→wss）→ 冲刷缓冲帧 → 双向 pump。
+- 计费：pump 上游方向时 peek `response.done`，优先取上游报告的 `usage.cost`（USD），缺失则用 `input_tokens`/`output_tokens` × 模型每 1k 单价兜底。会话结束（任一侧断开即拆连）按**实际用量**结算：`SettleFunds(hold=0)`（org key 走 `SettleOrgFunds`），记 `usage_logs`（`realtime:<model>`）并计入限流 token 窗口。**无预冻结**——会话可长达数分钟，不做 hold；进程在会话中途崩溃最多丢该会话自己的计费（文档化边界）。session.update 未带 model 就断开的会话不计费、仅告警。
+- 并发：client 连接写锁串行化（upstream pump 与错误发送并发写）；upstream 侧仅 clientPump 一个 goroutine 写。客户端侧不设读超时（用户可长时间静默），上游侧靠 OpenAI 的 15s ping 保活。
+- 边界：SDK 级能力，Web 控制台未提供 Realtime UI；`realtime` capability 是自由数组，管理员建模型时直接加即可，无 schema 变更。
+
+### 音乐适配器（P4-2，suno 社区 API）
+- `POST /v1/media/generate` 的 `type: "music"` 由 `sunoMusicAdapter` 承接：`POST {base_url}/api/v1/generate`（`{text, model?}` → `{id}`）提交，随后 `GET /api/v1/generate/{id}` 轮询（复用任务管线 `pollInterval`），`complete`/`succeeded` → `audio_url`，`failed` → 任务失败并解冻。
+- **suno 是社区逆向/第三方 API**（非 Suno 官方），BYO key、BYO base_url，合规风险由部署方自负；因此不做"官方"宣称，文档与前端提示均注明"社区 API，自备 key"。
+- 计费沿用 M4 媒体任务：`unit_price` 冻结 1 单位 → 成功结算 / 失败退回，无其他变化。
+
+### 每 key 限流（P4-3，内存固定 1 分钟窗口）
+- `MODELHUB_RPM` / `MODELHUB_TPM`（>0 启用，0/未设 = 关闭），网关启动时构造 `rateLimiter`，四个计费入口（chat 同步/流式、audio/speech、media/generate、drama/generate）+ P4-1 的 realtime 入口统一在鉴权后 `AllowRequest(keyID)`，超限返回 **429 `rate_limited`**（与 429 `quota_exceeded` 区分：后者是 key 自身额度）。
+- 语义：固定 Unix 分钟桶，先查 token 窗口（`AddTokens` 在请求结算后按**实际** token 记账）再查请求窗口；窗口惰性清理（>1024 个 key 时清理 2 分钟前的条目），无后台 sweeper。
+- 边界：**单实例内存实现，多实例部署时限流是每实例的近似值**（精确全局限流需共享存储，如 Redis——技术选型表已预留）；分钟边界不滑动（边界处瞬时吞吐可达 2× 配额，量级可接受）。
 
 ## 核心数据表
 
