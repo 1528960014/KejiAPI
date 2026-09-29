@@ -522,6 +522,8 @@ export interface Drama {
   shots: DramaShot[]
   cost_usd: number
   error: string
+  video_url?: string
+  video_error?: string
   created_at: string
   updated_at: string
 }

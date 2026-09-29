@@ -123,7 +123,10 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 }
 ```
 
-- 前端提供"导出素材包"：即此 JSON（shots + 元数据）下载。MP4 成片合成为后续里程碑。
+- 前端提供"导出素材包"：即此 JSON（shots + 元数据）下载。
+- **成片（P2-1b）**：所有镜头成功后，服务端用 ffmpeg 自动合成 MP4（1280x720@30：画面信箱铺满 + 台词字幕烧录 + 配音/静音，镜头间直接拼接），完成后响应里多一个 `video_url`（`/media/dramas/{drama_id}.mp4`，公开访问，UUID 即凭证）与 `video_error`（未生成时的原因，如服务器没装 ffmpeg）。
+  - 成片在**结算之后**渲染：渲染失败不影响扣费，素材包仍然有效。
+  - 服务器主机需安装 `ffmpeg`/`ffprobe`（`apk add ffmpeg` / `apt install ffmpeg`）；中文字幕建议安装 CJK 字体（如 `font-noto-cjk`）。视频存于 `MODELHUB_MEDIA_DIR`（默认 `./media`）。
 
 ## 账号接口（M3）
 

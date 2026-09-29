@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -47,12 +48,17 @@ func main() {
 	provider := gateway.NewProvider()
 	srv := api.New(cfg, st, provider)
 
+	// P2-1b: composed drama videos live under <MediaDir>/dramas/.
+	if err := os.MkdirAll(filepath.Join(cfg.MediaDir, "dramas"), 0o755); err != nil {
+		slog.Warn("create media dir", "dir", cfg.MediaDir, "error", err)
+	}
+
 	// M4: media task worker (DB-poll loop; recovers stale tasks on start).
 	worker := task.NewWorker(st, provider)
 	go worker.Run(ctx)
 
 	// P2-1: comic-drama worker (storyboard + per-shot media fan-out).
-	dramaWorker := task.NewDramaWorker(st, provider)
+	dramaWorker := task.NewDramaWorker(st, provider, task.NewComposer(cfg.MediaDir))
 	go dramaWorker.Run(ctx)
 
 	httpServer := &http.Server{

@@ -47,7 +47,8 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 分镜：配置了 `storyboard_model`（chat 模型）时走网关自己的 chat 通道，system prompt 约束严格 JSON（容忍 code fence）；未配置时按句子/段落简单拆分。
 - 逐镜头复用 M4 的 image/tts 适配器；每完成一镜更新 JSONB（前端轮询可见进度）。
 - 计费 all-or-nothing：提交时冻结 `shots × (图像+配音 单价)`，全部成功结算、任一失败全额退回；drama UUID 为账本 request_id。
-- 产物：JSON 素材包（shots + URL，前端可下载）；MP4 成片合成（ffmpeg）为后续里程碑。
+- 产物：JSON 素材包（shots + URL，前端可下载）。
+- **成片（P2-1b）**：结算后由 `Composer`（task 包）调主机上的 `ffmpeg`/`ffprobe`：下载各镜素材 → 每镜渲染一段固定 1280x720@30 的 h264+aac 片段（图像信箱铺满、台词 SRT 字幕烧录、无配音补静音、时长=配音+0.5s）→ concat demuxer 免重编码拼接 → `MEDIA_DIR/dramas/{uuid}.mp4`，经 `GET /media/dramas/:uuid` 公开服务（UUID 即凭证）。渲染失败只记 `video_error`，不动钱、不动素材包。
 
 ### Web 控制台（M3）
 - 多模型对比聊天（同一 prompt 并排 N 个模型，SSE 流式渲染）

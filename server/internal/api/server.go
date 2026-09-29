@@ -79,6 +79,10 @@ func (s *Server) Engine() *gin.Engine {
 		api.GET("/models", s.handlePublicModels)
 	}
 
+	// P2-1b: composed drama videos. Public by design: the drama UUID (32 hex
+	// chars) is the unguessable token.
+	r.GET("/media/dramas/:uuid", s.handleDramaVideo)
+
 	authAPI := r.Group("/api/auth")
 	{
 		authAPI.POST("/register", s.handleRegister)

@@ -8,14 +8,14 @@
 
 - **模型网关**：OpenAI 兼容 `/v1/chat/completions`（SSE 流式）、`/v1/models`；通道（channel）级多上游凭据、优先级与故障切换
 - **异步任务管线**（M4）：`/v1/media/generate` 图像/视频/TTS 生成任务（DB 队列 + worker）、按件计价与冻结/结算、状态轮询；音乐适配器规划中
-- **漫剧工坊**（P2-1）：`/v1/drama/generate` 剧本 → LLM 分镜 → 逐镜图+配音，all-or-nothing 计费，分镜素材包 JSON 导出；MP4 成片合成规划中
+- **漫剧工坊**（P2-1）：`/v1/drama/generate` 剧本 → LLM 分镜 → 逐镜图+配音，all-or-nothing 计费；分镜素材包 JSON 导出 + ffmpeg 自动合成 MP4 成片（画面+字幕+配音）
 - **计费**：账本式余额（预估 → 冻结 → 结算）、API Key 管理（sk- 前缀，仅存哈希）、用量统计
 - **Web 控制台**：多模型对比聊天、生成工作台、API 控制台、中英双语、深浅主题
 - **部署简单**：`docker compose up -d` 起依赖（PostgreSQL / Redis / MinIO），服务端单二进制
 
 ## 快速开始
 
-前置：Go 1.24+、Docker、pnpm（仅前端开发需要）。
+前置：Go 1.24+、Docker、pnpm（仅前端开发需要）。漫剧 MP4 成片需要主机安装 `ffmpeg`/`ffprobe`（`apk add ffmpeg` / `apt install ffmpeg`，中文字幕建议另装 CJK 字体）。
 
 ```bash
 # 1. 启动依赖服务
@@ -67,8 +67,8 @@ modelhub/
 - [x] M2 计费账本（余额冻结与结算、用量统计、管理端手动充值）
 - [x] M3 Web 控制台（多模型聊天、API 控制台、i18n、主题）
 - [x] M4 任务管线（图像 → 视频 / 音乐 / TTS；图像/视频/TTS 已落地，音乐适配器见 docs/api.md）
-- [x] P2-1a 漫剧管线（分镜 + 逐镜素材包 + JSON 导出；MP4 成片合成待做）
-- [ ] P2-1b 漫剧成片（ffmpeg 合成 MP4：画面+配音+字幕）
+- [x] P2-1a 漫剧管线（分镜 + 逐镜素材包 + JSON 导出）
+- [x] P2-1b 漫剧成片（ffmpeg 合成 MP4：画面+字幕+配音）
 - [ ] 二期：智能体、代理分销、在线支付、更多语言
 
 ## 合规说明

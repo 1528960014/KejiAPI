@@ -83,6 +83,8 @@
     "clearFinished": "清除已完成",
     "clearAll": "全部清除",
     "export": "导出素材包",
+    "openVideo": "新标签打开",
+    "videoMissing": "成片未生成",
     "status": { "queued": "排队中", "running": "制作中", "succeeded": "已完成", "failed": "失败", "unknown": "查询中" },
     "shotStatus": { "pending": "等待中", "running": "生成中", "succeeded": "完成", "failed": "失败", "unknown": "未知" }
   },

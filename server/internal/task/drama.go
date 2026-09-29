@@ -33,15 +33,18 @@ type Shot struct {
 // DramaWorker runs queued dramas: storyboard the script (LLM or naive split),
 // then generate each shot's image (and optional TTS) through the M4 adapters.
 // Billing is all-or-nothing: success settles the whole hold, any failure
-// releases it. The drama UUID is the ledger request ID.
+// releases it. The drama UUID is the ledger request ID. After settlement the
+// worker composes the shots into one MP4 (P2-1b; best effort — a missing
+// ffmpeg or a failed render only leaves video_url empty).
 type DramaWorker struct {
 	store    *store.Store
 	provider *gateway.Provider
+	composer *Composer
 }
 
 // NewDramaWorker builds a drama worker.
-func NewDramaWorker(st *store.Store, p *gateway.Provider) *DramaWorker {
-	return &DramaWorker{store: st, provider: p}
+func NewDramaWorker(st *store.Store, p *gateway.Provider, composer *Composer) *DramaWorker {
+	return &DramaWorker{store: st, provider: p, composer: composer}
 }
 
 // Run blocks until ctx is cancelled; it first recovers dramas a dead worker
@@ -194,6 +197,39 @@ func (w *DramaWorker) runDrama(ctx context.Context, d *store.Drama) {
 	}
 	if err := w.store.SettleFunds(sc, d.KeyUserID, d.HoldMicro, d.HoldMicro, d.DramaUUID, reason, d.APIKeyID); err != nil {
 		slog.Error("settle drama funds", "drama", d.DramaUUID, "error", err)
+	}
+
+	// P2-1b: compose the MP4 after billing is closed — a render failure can
+	// never affect money, and upstream result URLs expire, so we do it while
+	// they are still fresh.
+	w.composeVideo(ctx, d, shots)
+}
+
+// composeVideo renders the final MP4 and records video_url (or the reason it
+// is missing). Never fails the drama: the asset pack already succeeded.
+func (w *DramaWorker) composeVideo(ctx context.Context, d *store.Drama, shots []Shot) {
+	if w.composer == nil || !w.composer.Available() {
+		w.setVideo(ctx, d.DramaUUID, "", "ffmpeg not installed on the server host")
+		return
+	}
+	composeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), ComposeTimeout)
+	defer cancel()
+	outPath := w.composer.VideoPath(d.DramaUUID)
+	slog.Info("composing drama video", "drama", d.DramaUUID, "shots", len(shots))
+	if err := w.composer.Compose(composeCtx, shots, outPath); err != nil {
+		slog.Warn("compose drama video", "drama", d.DramaUUID, "error", err)
+		w.setVideo(ctx, d.DramaUUID, "", err.Error())
+		return
+	}
+	w.setVideo(ctx, d.DramaUUID, "/media/dramas/"+d.DramaUUID+".mp4", "")
+	slog.Info("drama video ready", "drama", d.DramaUUID)
+}
+
+func (w *DramaWorker) setVideo(ctx context.Context, dramaUUID, videoURL, videoErr string) {
+	sc, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	if err := w.store.SetDramaVideo(sc, dramaUUID, videoURL, videoErr); err != nil {
+		slog.Warn("set drama video", "drama", dramaUUID, "error", err)
 	}
 }
 

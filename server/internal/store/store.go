@@ -182,6 +182,10 @@ CREATE TABLE IF NOT EXISTS dramas (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_dramas_key ON dramas(api_key_id, created_at DESC);
+-- P2-1b: composed MP4 (local file under MEDIA_DIR, served at
+-- /media/dramas/{uuid}.mp4) and the reason a video is missing.
+ALTER TABLE dramas ADD COLUMN IF NOT EXISTS video_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE dramas ADD COLUMN IF NOT EXISTS video_error TEXT NOT NULL DEFAULT '';
 `
 
 func (s *Store) migrate(ctx context.Context) error {

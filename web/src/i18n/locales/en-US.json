@@ -83,6 +83,8 @@
     "clearFinished": "Clear finished",
     "clearAll": "Clear all",
     "export": "Export asset pack",
+    "openVideo": "Open in new tab",
+    "videoMissing": "No final video",
     "status": { "queued": "Queued", "running": "Producing", "succeeded": "Done", "failed": "Failed", "unknown": "Checking" },
     "shotStatus": { "pending": "Pending", "running": "Generating", "succeeded": "Done", "failed": "Failed", "unknown": "Unknown" }
   },

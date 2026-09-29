@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -13,6 +14,7 @@ import (
 
 	"modelhub/internal/billing"
 	"modelhub/internal/store"
+	"modelhub/internal/task"
 )
 
 // drama shot-count bounds (clamped server-side).
@@ -224,6 +226,8 @@ func dramaJSON(d *store.Drama) gin.H {
 		"shots":            shots,
 		"cost_usd":         d.Cost,
 		"error":            d.ErrorMsg,
+		"video_url":        d.VideoURL,
+		"video_error":      d.VideoError,
 		"created_at":       d.CreatedAt,
 		"updated_at":       d.UpdatedAt,
 	}
@@ -272,6 +276,18 @@ func (s *Server) handleListDramas(c *gin.Context) {
 		data = append(data, dramaJSON(&dramas[i]))
 	}
 	c.JSON(http.StatusOK, gin.H{"data": data})
+}
+
+// handleDramaVideo serves a composed drama MP4 (P2-1b). The 32-hex drama
+// UUID is the only credential; the file must have been written by the
+// composer for that exact UUID.
+func (s *Server) handleDramaVideo(c *gin.Context) {
+	uuid := c.Param("uuid")
+	if !task.IsValidDramaUUID(uuid) {
+		abortWith(c, http.StatusNotFound, "not_found", "not found")
+		return
+	}
+	c.File(filepath.Join(s.cfg.MediaDir, "dramas", uuid+".mp4"))
 }
 
 // firstLine derives a short display title from the script.

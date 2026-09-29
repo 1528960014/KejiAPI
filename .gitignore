@@ -10,6 +10,9 @@ server/bin/
 *.test
 *.out
 
+# Runtime data (composed drama videos, MODELHUB_MEDIA_DIR)
+media/
+
 # Env & secrets
 .env
 .env.*

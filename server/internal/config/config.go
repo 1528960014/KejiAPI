@@ -12,6 +12,9 @@ type Config struct {
 	RedisURL    string
 	MasterKey   string
 	LogLevel    string
+	// MediaDir is where composed drama videos are written and served from
+	// (GET /media/dramas/{uuid}.mp4).
+	MediaDir string
 }
 
 // Load reads configuration from the environment and validates required values.
@@ -22,6 +25,7 @@ func Load() (*Config, error) {
 		RedisURL:    os.Getenv("REDIS_URL"),
 		MasterKey:   os.Getenv("MASTER_KEY"),
 		LogLevel:    getEnv("LOG_LEVEL", "info"),
+		MediaDir:    getEnv("MODELHUB_MEDIA_DIR", "./media"),
 	}
 	if cfg.DatabaseURL == "" {
 		return nil, errors.New("DATABASE_URL is required")

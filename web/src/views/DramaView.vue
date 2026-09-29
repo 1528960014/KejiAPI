@@ -86,6 +86,8 @@ function loadRefs() {
       shots: [],
       cost_usd: 0,
       error: '',
+      video_url: '',
+      video_error: '',
       created_at: '',
       updated_at: '',
     }))
@@ -131,6 +133,8 @@ async function submit() {
       shots: [],
       cost_usd: 0,
       error: '',
+      video_url: '',
+      video_error: '',
       created_at: '',
       updated_at: '',
     })
@@ -342,6 +346,13 @@ onBeforeUnmount(stopPolling)
           </el-button>
         </div>
         <p v-if="d.error" class="drama-error">{{ d.error }}</p>
+        <div v-if="d.video_url" class="final-video-wrap">
+          <video :src="d.video_url" controls class="final-video" />
+          <a :href="d.video_url" target="_blank" rel="noreferrer" class="muted">{{ t('drama.openVideo') }}</a>
+        </div>
+        <p v-else-if="d.status === 'succeeded' && d.video_error" class="muted video-missing">
+          {{ t('drama.videoMissing') }}: {{ d.video_error }}
+        </p>
         <div v-if="d.shots.length" class="shots">
           <div v-for="shot in d.shots" :key="shot.shot_no" class="shot">
             <div class="shot-head">
@@ -447,6 +458,25 @@ h2 {
   margin: 8px 0 0;
   color: #f87171;
   font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.final-video-wrap {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.final-video {
+  max-width: 100%;
+  max-height: 360px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.video-missing {
+  margin: 8px 0 0;
+  font-size: 12px;
   white-space: pre-wrap;
   word-break: break-word;
 }
