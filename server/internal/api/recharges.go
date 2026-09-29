@@ -45,10 +45,11 @@ func rechargeJSON(r *store.Recharge) gin.H {
 
 // handleRechargeConfig exposes which channels are enabled and the rate.
 func (s *Server) handleRechargeConfig(c *gin.Context) {
+	st := s.paySnapshot()
 	c.JSON(http.StatusOK, gin.H{
-		"enabled":     s.payCfg.CNYPerUSD > 0 && len(s.pays) > 0,
-		"cny_per_usd": s.payCfg.CNYPerUSD,
-		"methods":     pay.Methods(s.pays),
+		"enabled":     st.cfg.CNYPerUSD > 0 && len(st.channels) > 0,
+		"cny_per_usd": st.cfg.CNYPerUSD,
+		"methods":     pay.Methods(st.channels),
 		"min_cny":     minRechargeCNY,
 		"max_cny":     maxRechargeCNY,
 	})
@@ -69,20 +70,21 @@ func (s *Server) handleCreateRecharge(c *gin.Context) {
 		abortWith(c, http.StatusBadRequest, "invalid_request", "amount_cny (fen) and method are required")
 		return
 	}
-	if s.payCfg.CNYPerUSD <= 0 {
-		abortWith(c, http.StatusServiceUnavailable, "recharge_disabled", "online recharge is not configured")
-		return
-	}
-	ch, ok := s.pays[req.Method]
-	if !ok {
-		abortWith(c, http.StatusBadRequest, "invalid_method", "payment method is not enabled")
-		return
-	}
 	if req.AmountCNY < minRechargeCNY || req.AmountCNY > maxRechargeCNY {
 		abortWith(c, http.StatusBadRequest, "invalid_amount", "amount_cny must be between 100 and 1000000 fen")
 		return
 	}
-	credit := pay.CreditMicro(req.AmountCNY, s.payCfg.CNYPerUSD)
+	st := s.paySnapshot()
+	if st.cfg.CNYPerUSD <= 0 {
+		abortWith(c, http.StatusServiceUnavailable, "recharge_disabled", "online recharge is not configured")
+		return
+	}
+	ch, ok := st.channels[req.Method]
+	if !ok {
+		abortWith(c, http.StatusBadRequest, "invalid_method", "payment method is not enabled")
+		return
+	}
+	credit := pay.CreditMicro(req.AmountCNY, st.cfg.CNYPerUSD)
 	if credit <= 0 {
 		abortWith(c, http.StatusBadRequest, "invalid_amount", "amount too small to credit any balance")
 		return
@@ -116,8 +118,8 @@ func (s *Server) handleCreateRecharge(c *gin.Context) {
 
 // publicBaseURL resolves the externally reachable base URL for notify URLs.
 func (s *Server) publicBaseURL(r *http.Request) string {
-	if s.payCfg.PublicURL != "" {
-		return s.payCfg.PublicURL
+	if s.paySnapshot().cfg.PublicURL != "" {
+		return s.paySnapshot().cfg.PublicURL
 	}
 	scheme := "http"
 	if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {
@@ -166,7 +168,7 @@ func (s *Server) handleGetMyRecharge(c *gin.Context) {
 // transaction. Duplicate notifies are safe (idempotent).
 func (s *Server) handlePayNotify(method string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ch, ok := s.pays[method]
+		ch, ok := s.paySnapshot().channels[method]
 		if !ok {
 			c.String(http.StatusNotFound, "channel disabled")
 			return

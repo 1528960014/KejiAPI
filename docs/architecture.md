@@ -72,7 +72,7 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
   - `Alipay`（官方当面付）：`alipay.trade.precreate` 取 `qr_code`；RSA2（SHA256withRSA）对原始参数值签名，回调验支付宝公钥 + 校验 app_id/TRADE_SUCCESS。需要商户开通"当面付"产品。
   - `Wechat`（官方 v3 Native）：`POST /v3/pay/transactions/native` 取 `code_url`；请求用商户 API 证书私钥签名（WECHATPAY2-SHA256-RSA2048），回调验微信**平台公钥**签名 + AES-256-GCM（APIv3Key）解密 resource。
 - 入账事务：回调验签 → 订单存在且 method 匹配、金额（分）一致、`status='pending'` → 单事务翻转 paid + ledger `credit`（request_id = order_no，ledger 唯一索引兜底）+ 用户余额。重复回调返回成功但不重复入账。
-- 配置：渠道凭据全部在环境变量（server/.env.example），凭据齐备才启用该渠道；`PAY_PUBLIC_URL` 指定回调可达的外网地址（缺省用请求 Host）。未做退款（充值类订单通常线下处理）。
+- 配置（P3-2 起）：渠道凭据存 `pay_settings`（汇率/公网地址）+ `pay_channels`（每渠道 enabled + 凭据 JSONB）两表。**env `PAY_*` 只是首次启动的初始默认**（`api.ReloadPayConfig` 播种一次），之后管理端 `GET/PUT /admin/pay-config` 是唯一事实来源，保存后**热加载**（内存态整体换锁替换，读写互斥，无需重启）。凭据缺失/非法的渠道不启用，`status.error` 说明原因（如 RSA 解析失败），不影响其他渠道。`PAY_PUBLIC_URL`/`public_url` 指定回调可达的外网地址（缺省用请求 Host）。未做退款（充值类订单通常线下处理）。
 - Web：`/recharge` 页面（金额预设+自定义、渠道选择、易支付内部支付宝/微信二选一、QR 码渲染、3s 轮询最长 5 分钟、充值记录列表）；管理端 `GET /admin/recharges` 全平台订单审计。
 
 ### Web 控制台（M3）

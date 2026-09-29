@@ -647,6 +647,56 @@ func TestAssistants(t *testing.T) {
 	}
 }
 
+func TestPayConfig(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+
+	// fresh database: no settings row, zero values
+	exists, err := st.PaySettingsExists(ctx)
+	if err != nil || exists {
+		t.Fatalf("fresh settings = %v (%v), want (false, nil)", exists, err)
+	}
+	s, err := st.GetPaySettings(ctx)
+	if err != nil || s.CNYPerUSD != 0 || s.PublicURL != "" {
+		t.Fatalf("fresh settings read = %+v (%v), want zero values", s, err)
+	}
+
+	// upsert settings (twice: insert then update)
+	if err := st.SetPaySettings(ctx, PaySettings{CNYPerUSD: 7.2, PublicURL: "https://a.example"}); err != nil {
+		t.Fatalf("set settings: %v", err)
+	}
+	if err := st.SetPaySettings(ctx, PaySettings{CNYPerUSD: 7.3, PublicURL: "https://b.example"}); err != nil {
+		t.Fatalf("set settings again: %v", err)
+	}
+	s, err = st.GetPaySettings(ctx)
+	if err != nil || s.CNYPerUSD != 7.3 || s.PublicURL != "https://b.example" {
+		t.Fatalf("settings = %+v (%v), want 7.3 / b.example", s, err)
+	}
+	exists, _ = st.PaySettingsExists(ctx)
+	if !exists {
+		t.Fatalf("settings should exist after upsert")
+	}
+
+	// channel rows: insert, update, read
+	if err := st.SetPayChannel(ctx, &PayChannel{ChannelID: "yipay", Enabled: true, Config: json.RawMessage(`{"pid":"1"}`)}); err != nil {
+		t.Fatalf("set channel: %v", err)
+	}
+	if err := st.SetPayChannel(ctx, &PayChannel{ChannelID: "yipay", Enabled: false, Config: json.RawMessage(`{"pid":"2","key":"k"}`)}); err != nil {
+		t.Fatalf("update channel: %v", err)
+	}
+	rows, err := st.ListPayChannels(ctx)
+	if err != nil || len(rows) != 1 {
+		t.Fatalf("list channels = %+v (%v), want 1 row", rows, err)
+	}
+	if rows[0].ChannelID != "yipay" || rows[0].Enabled {
+		t.Fatalf("channel row = %+v, want yipay disabled", rows[0])
+	}
+	var m map[string]string
+	if err := json.Unmarshal(rows[0].Config, &m); err != nil || m["pid"] != "2" || m["key"] != "k" {
+		t.Fatalf("channel config = %s (%v), want the updated json", rows[0].Config, err)
+	}
+}
+
 func TestRecharges(t *testing.T) {
 	st := newTestStore(t)
 	ctx := context.Background()

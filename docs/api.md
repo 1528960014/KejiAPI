@@ -349,6 +349,36 @@ curl -X DELETE $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY"
 - `agent_id` 重复 → 409 `agent_exists`；改绑不存在的模型 → 400；`tools` 非数组或元素缺 `function` 对象 → 400 `invalid_tools`。
 - 停用的模板不出现在 `GET /v1/agents`，且以其 id 发起 chat 会 404。
 
+### 支付配置（P3-2，渠道凭据后台热配置）
+
+渠道凭据**运行时可改**，存 `pay_settings` / `pay_channels` 表。env 里的 `PAY_*` 只是**首次启动的初始默认**（播种一次，之后 env 改动不生效）；播种后管理端是唯一事实来源，保存即热加载、无需重启。
+
+```bash
+# 查看当前配置（敏感字段返回 ********；每渠道带 status.ok 表示凭据能否成功构建）
+curl $B/admin/pay-config -H "Authorization: Bearer $MASTER_KEY"
+
+# 改汇率 / 公网地址（0 = 关闭充值）
+curl -X PUT $B/admin/pay-config -H "Authorization: Bearer $MASTER_KEY" \
+  -d '{"cny_per_usd":7.2,"public_url":"https://api.example.com"}'
+
+# 配置易支付并启用（enabled 缺省保持原值；敏感字段回传 ******** 或空 = 保持不变，传新值 = 替换）
+curl -X PUT $B/admin/pay-config -H "Authorization: Bearer $MASTER_KEY" \
+  -d '{"channels":{"yipay":{"enabled":true,"config":{"mapi_url":"https://pay.example.com/mapi.php","pid":"1001","key":"***"}}}}'
+
+# 配置支付宝（private_key / public_key 支持 PEM 文本，多行直接放 JSON 字符串）
+curl -X PUT $B/admin/pay-config -H "Authorization: Bearer $MASTER_KEY" \
+  -d '{"channels":{"alipay":{"enabled":true,"config":{"app_id":"2021...","private_key":"***\n...","public_key":"***\n..."}}}}'
+
+# 停用某渠道（保留已存凭据）
+curl -X PUT $B/admin/pay-config -H "Authorization: Bearer $MASTER_KEY" \
+  -d '{"channels":{"wechat":{"enabled":false}}}'
+```
+
+- 渠道字段：`yipay: mapi_url / pid / key`；`alipay: app_id / private_key / public_key`；`wechat: mch_id / app_id / api_v3_key / merchant_serial / private_key / platform_key`（app_id 对微信 Native 可空）。
+- 凭据缺失或非法（如 RSA 解析失败）的渠道**不启用**，并在 `status.error` 说明原因，不影响其他渠道与服务器运行。
+- PUT 响应与 GET 同形（脱敏后的最新配置 + status），一次往返即可刷新界面。
+- `cny_per_usd = 0` 时所有渠道一律不启用（`status.error = "recharge disabled"`）。
+
 ### 充值订单（P2-4）
 
 ```bash

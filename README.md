@@ -77,6 +77,7 @@ modelhub/
 - [x] P2-5 更多语言（ja/ko/ru/es，共 6 语言切换）
 - [x] P2-4 在线支付（易支付 / 支付宝官方 / 微信官方，人民币 → USD 余额）
 - [x] P3-1 智能体工具调用（模板 tools 注入，OpenAI function calling，客户端执行工具）
+- [x] P3-2 支付渠道后台配置（/admin/pay-config 热更新，env 仅首次启动默认）
 - [ ] 三期（规划）：实时语音、多租户
 
 ## 合规说明

@@ -48,6 +48,12 @@ func main() {
 	provider := gateway.NewProvider()
 	srv := api.New(cfg, st, provider)
 
+	// P3-2: seed the payment config from env (first start only), then make the
+	// database the runtime source of truth (hot-reloadable via /admin/pay-config).
+	if err := srv.ReloadPayConfig(ctx); err != nil {
+		slog.Warn("pay config: keeping environment defaults", "error", err)
+	}
+
 	// P2-1b: composed drama videos live under <MediaDir>/dramas/.
 	if err := os.MkdirAll(filepath.Join(cfg.MediaDir, "dramas"), 0o755); err != nil {
 		slog.Warn("create media dir", "dir", cfg.MediaDir, "error", err)

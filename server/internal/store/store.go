@@ -255,6 +255,19 @@ CREATE TABLE IF NOT EXISTS recharges (
     paid_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_recharges_user ON recharges(user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS pay_settings (
+    id INT PRIMARY KEY DEFAULT 1,
+    cny_per_usd DOUBLE PRECISION NOT NULL DEFAULT 0,
+    public_url TEXT NOT NULL DEFAULT '',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS pay_channels (
+    channel_id TEXT PRIMARY KEY,
+    enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    config JSONB NOT NULL DEFAULT '{}',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

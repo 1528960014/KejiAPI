@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,6 @@ import (
 	"modelhub/internal/auth"
 	"modelhub/internal/config"
 	"modelhub/internal/gateway"
-	"modelhub/internal/pay"
 	"modelhub/internal/store"
 )
 
@@ -25,14 +25,21 @@ type Server struct {
 	store    *store.Store
 	provider *gateway.Provider
 	tokens   *auth.TokenService
-	payCfg   pay.Config
-	pays     map[string]pay.Channel
+	payMu    sync.RWMutex
+	payState payConfigState // P3-2: hot-swappable payment config
 }
 
-// New builds the API server.
+// New builds the API server. The payment state starts from the environment;
+// call ReloadPayConfig to seed the database and switch to it (hot-reloadable
+// via /admin/pay-config afterwards).
 func New(cfg *config.Config, st *store.Store, p *gateway.Provider) *Server {
-	payCfg, pays := pay.Build(cfg)
-	return &Server{cfg: cfg, store: st, provider: p, tokens: auth.NewTokenService(cfg.MasterKey), payCfg: payCfg, pays: pays}
+	return &Server{
+		cfg:      cfg,
+		store:    st,
+		provider: p,
+		tokens:   auth.NewTokenService(cfg.MasterKey),
+		payState: envPayState(cfg),
+	}
 }
 
 // Engine wires all gin routes.
@@ -90,6 +97,10 @@ func (s *Server) Engine() *gin.Engine {
 		admin.POST("/assistants", s.handleCreateAssistant)
 		admin.PATCH("/assistants/:id", s.handleUpdateAssistant)
 		admin.DELETE("/assistants/:id", s.handleDeleteAssistant)
+
+		// P3-2: payment channel configuration (hot reload, no restart).
+		admin.GET("/pay-config", s.handleGetPayConfig)
+		admin.PUT("/pay-config", s.handlePutPayConfig)
 	}
 
 	api := r.Group("/api")
