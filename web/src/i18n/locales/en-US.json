@@ -1,0 +1,48 @@
+{
+  "nav": { "home": "Home", "chat": "Multi-model Chat", "pricing": "Pricing", "console": "API Console" },
+  "home": {
+    "heroTitle": "A Unified Multi-Model AI Gateway",
+    "heroSub": "One API key for many models: chat, image, video, music and voice. Self-hosted, auditable, OpenAI-compatible.",
+    "start": "Get Started",
+    "features": [
+      { "title": "OpenAI Compatible", "desc": "Standard /v1/chat/completions with SSE streaming; your existing SDKs just work." },
+      { "title": "Channel Failover", "desc": "Route one model across multiple upstream channels by priority." },
+      { "title": "Ledger Billing", "desc": "Balance holds and settlements with auditable usage entries." },
+      { "title": "Self-Hosted", "desc": "One docker compose for dependencies, single binary for the server." }
+    ]
+  },
+  "chat": {
+    "title": "Multi-model Chat",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "sk-...",
+    "model": "Model",
+    "placeholder": "Type a message and press Enter…",
+    "send": "Send",
+    "noKey": "Enter an API key first (create one via /admin/api-keys)",
+    "noModels": "No models available yet (configure via /admin/models and /admin/channels)",
+    "loadingModels": "Loading models…",
+    "error": "Request failed"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "model": "Model",
+    "provider": "Provider",
+    "input": "Input / 1K tokens",
+    "output": "Output / 1K tokens",
+    "dash": "—",
+    "coming": "Live prices and balances arrive with the M2 billing module."
+  },
+  "console": {
+    "title": "API Console",
+    "quickstart": "Quickstart",
+    "docs": "See docs/api.md for the full reference. API key management lives at /admin/api-keys for now (moves into this console in M3).",
+    "usageComing": "Usage charts and cost breakdowns arrive in M2."
+  },
+  "login": {
+    "title": "Sign In",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "coming": "Accounts land in M3. In the meantime, use an API key against the open API."
+  }
+}

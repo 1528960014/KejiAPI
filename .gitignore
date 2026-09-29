@@ -1,0 +1,22 @@
+# Node
+node_modules/
+dist/
+*.local
+.vite/
+
+# Go
+server/modelhub
+server/bin/
+*.test
+*.out
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

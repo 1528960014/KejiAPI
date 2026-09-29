@@ -1,0 +1,48 @@
+{
+  "nav": { "home": "首页", "chat": "多模型聊天", "pricing": "定价", "console": "API 控制台" },
+  "home": {
+    "heroTitle": "统一的多模型 AI 网关",
+    "heroSub": "一个 API Key，接入多家模型：聊天、生图、生视频、音乐与语音。自托管、可审计、OpenAI 兼容。",
+    "start": "开始使用",
+    "features": [
+      { "title": "OpenAI 兼容", "desc": "标准 /v1/chat/completions 接口，支持 SSE 流式，现有 SDK 无缝切换。" },
+      { "title": "多通道故障切换", "desc": "同一模型可配置多个上游通道，按优先级自动路由。" },
+      { "title": "账本式计费", "desc": "余额冻结与结算，用量明细可审计。" },
+      { "title": "自托管", "desc": "docker compose 一键启动依赖，服务端单二进制部署。" }
+    ]
+  },
+  "chat": {
+    "title": "多模型聊天",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "sk-...",
+    "model": "模型",
+    "placeholder": "输入消息，回车发送…",
+    "send": "发送",
+    "noKey": "请先填入 API Key（通过 /admin/api-keys 创建）",
+    "noModels": "暂无可用模型（请先通过 /admin/models 与 /admin/channels 配置）",
+    "loadingModels": "加载模型中…",
+    "error": "请求失败"
+  },
+  "pricing": {
+    "title": "定价",
+    "model": "模型",
+    "provider": "Provider",
+    "input": "输入 / 1K tokens",
+    "output": "输出 / 1K tokens",
+    "dash": "—",
+    "coming": "实时价格与余额展示随 M2 计费模块上线。"
+  },
+  "console": {
+    "title": "API 控制台",
+    "quickstart": "快速开始",
+    "docs": "完整接口文档见 docs/api.md；API Key 管理当前通过 /admin/api-keys 完成（M3 上线账号体系后移入控制台）。",
+    "usageComing": "用量图表与消费明细将在 M2 上线。"
+  },
+  "login": {
+    "title": "登录",
+    "email": "邮箱",
+    "password": "密码",
+    "submit": "登录",
+    "coming": "账号体系在 M3 上线。当前请先使用 API Key 调用开放接口。"
+  }
+}

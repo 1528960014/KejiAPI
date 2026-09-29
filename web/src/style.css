@@ -1,0 +1,44 @@
+:root {
+  --bg: #0f0f12;
+  --bg-panel: #17171c;
+  --bg-hover: #1f1f26;
+  --text: #e8e8ec;
+  --text-dim: #9a9aa5;
+  --accent: #22d3ee;
+  --border: #2a2a33;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.muted {
+  color: var(--text-dim);
+}
