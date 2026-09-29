@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Inicio", "chat": "Chat multi-modelo", "workbench": "Mesa de trabajo", "drama": "Drama cómic", "pricing": "Precios", "console": "Consola API" },
+  "nav": { "home": "Inicio", "chat": "Chat multi-modelo", "workbench": "Mesa de trabajo", "drama": "Drama cómic", "pricing": "Precios", "recharge": "Recargar", "console": "Consola API" },
   "theme": { "toggle": "Cambiar tema" },
   "home": {
     "heroTitle": "Una pasarela IA multi-modelo unificada",
@@ -136,6 +136,31 @@
     "amount": "Importe",
     "reason": "Motivo",
     "time": "Hora"
+  },
+  "recharge": {
+    "title": "Recargar saldo",
+    "sub": "Recarga en CNY; el crédito se convierte a USD al tipo de cambio {rate} (fijado al crear el pedido).",
+    "amount": "Monto (¥)",
+    "creditPreview": "Crédito previsto",
+    "methodLabel": "Método de pago",
+    "method": { "yipay": "YiPay (Alipay/WeChat)", "alipay": "Alipay (QR oficial)", "wechat": "WeChat Pay (QR oficial)" },
+    "yipaySub": { "alipay": "Alipay", "wxpay": "WeChat" },
+    "minHint": "¥1 – ¥10000 por pedido",
+    "confirm": "Crear pedido de pago",
+    "creating": "Creando…",
+    "qr": "Escanea con {method} para pagar",
+    "payBtn": "Ir a pagar",
+    "wait": "Esperando el pago: el saldo se acredita automáticamente al pagarse (esta página espera hasta 5 minutos).",
+    "paid": "¡Recarga exitosa — saldo acreditado!",
+    "failed": "El canal de pago no pudo crear el pedido. Reintenta o contacta a un administrador.",
+    "noMethods": "No hay canal de pago configurado. Un administrador debe fijar las variables PAY_* y reiniciar el servicio.",
+    "loginCta": "Iniciar sesión / Registrarse",
+    "loginHint": "Inicia sesión para recargar tu saldo y ver el historial de recargas.",
+    "history": "Historial de recargas",
+    "historyEmpty": "Aún no hay recargas.",
+    "orderNo": "Nº de pedido",
+    "credit": "Crédito",
+    "status": { "pending": "Pendiente", "paid": "Pagado", "failed": "Fallido" }
   },
   "login": {
     "title": "Iniciar sesión",

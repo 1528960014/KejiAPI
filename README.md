@@ -11,6 +11,7 @@
 - **漫剧工坊**（P2-1）：`/v1/drama/generate` 剧本 → LLM 分镜 → 逐镜图+配音，all-or-nothing 计费；分镜素材包 JSON 导出 + ffmpeg 自动合成 MP4 成片（画面+字幕+配音）
 - **代理分销**（P2-3）：代理用户按批发系数结算全部消费，控制台自助创建/管理分销子 Key（独立白名单/额度/有效期 + 加价倍率展示）
 - **智能体**（P2-2）：预定义 agent 模板（固定 system prompt + 绑定模型），`model: agent_id` 直接调用、按真实模型计费；内置翻译官/写手/客服，聊天页可选、管理端可编辑
+- **在线支付**（P2-4）：人民币充值 → USD 余额；支持开源易支付（聚合）/ 支付宝官方（当面付）/ 微信支付官方（v3 扫码），回调验签、下单锁价、幂等入账
 - **计费**：账本式余额（预估 → 冻结 → 结算）、API Key 管理（sk- 前缀，仅存哈希）、用量统计
 - **Web 控制台**：多模型对比聊天、生成工作台、API 控制台、6 语言（中/英/日/韩/俄/西）、深浅主题
 - **部署简单**：`docker compose up -d` 起依赖（PostgreSQL / Redis / MinIO），服务端单二进制
@@ -25,7 +26,7 @@ cd deploy
 docker compose up -d
 
 # 2. 配置并启动服务端
-cp .env.example .env   # 修改 MASTER_KEY
+cp server/.env.example server/.env   # 修改 MASTER_KEY；在线充值可选配 PAY_*
 cd server
 go mod tidy
 go run ./cmd/modelhub
@@ -74,7 +75,8 @@ modelhub/
 - [x] P2-2 智能体（预定义 agent 模板，model=agent_id + system prompt 注入）
 - [x] P2-3 代理分销（批发价结算 + 分销子 Key）
 - [x] P2-5 更多语言（ja/ko/ru/es，共 6 语言切换）
-- [ ] 二期：在线支付
+- [x] P2-4 在线支付（易支付 / 支付宝官方 / 微信官方，人民币 → USD 余额）
+- [ ] 三期（规划）：智能体工具调用、实时语音、多租户
 
 ## 合规说明
 

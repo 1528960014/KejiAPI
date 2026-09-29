@@ -19,13 +19,12 @@ import (
 
 // drama shot-count bounds (clamped server-side).
 const (
-	minDramaShots   = 2
-	maxDramaShots   = 24
+	minDramaShots     = 2
+	maxDramaShots     = 24
 	defaultDramaShots = 8
 )
 
 // handleDramaGenerate submits an async comic-drama generation.
-//
 //
 //	POST /v1/drama/generate
 //	{"script": "...", "style": "水墨", "shots": 8,

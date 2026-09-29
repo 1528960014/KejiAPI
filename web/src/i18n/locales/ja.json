@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "ホーム", "chat": "マルチモデルチャット", "workbench": "ワークベンチ", "drama": "コミックドラマ", "pricing": "料金", "console": "API コンソール" },
+  "nav": { "home": "ホーム", "chat": "マルチモデルチャット", "workbench": "ワークベンチ", "drama": "コミックドラマ", "pricing": "料金", "recharge": "チャージ", "console": "API コンソール" },
   "theme": { "toggle": "テーマを切替" },
   "home": {
     "heroTitle": "統合型マルチモデル AI ゲートウェイ",
@@ -136,6 +136,31 @@
     "amount": "金額",
     "reason": "説明",
     "time": "日時"
+  },
+  "recharge": {
+    "title": "残高チャージ",
+    "sub": "CNY で残高にチャージできます。入金額はレート {rate} で USD 残高に換算されます（注文時に確定）。",
+    "amount": "チャージ金額（¥）",
+    "creditPreview": "予定入金額",
+    "methodLabel": "支払い方法",
+    "method": { "yipay": "易支付（Alipay/WeChat 統合）", "alipay": "Alipay（公式QR）", "wechat": "WeChat Pay（公式QR）" },
+    "yipaySub": { "alipay": "Alipay", "wxpay": "WeChat" },
+    "minHint": "1件あたり ¥1 – ¥10000",
+    "confirm": "支払い注文を作成",
+    "creating": "作成中…",
+    "qr": "{method} で QR コードをスキャンして支払い",
+    "payBtn": "支払いへ",
+    "wait": "支払い結果を待機中：支払いが成功すると自動で入金されます。このページは最大 5 分間待機します。",
+    "paid": "チャージ成功！残高に入金されました。",
+    "failed": "支払いチャネルの注文作成に失敗しました。再試行するか、管理者にお問い合わせください。",
+    "noMethods": "支払いチャネルが未設定です。管理者が PAY_* 環境変数を設定してサービスを再起動する必要があります。",
+    "loginCta": "ログイン / 登録",
+    "loginHint": "ログインすると、ここで残高にチャージし、チャージ履歴を表示できます。",
+    "history": "チャージ履歴",
+    "historyEmpty": "チャージ履歴はありません。",
+    "orderNo": "注文番号",
+    "credit": "入金額",
+    "status": { "pending": "支払い待ち", "paid": "支払い済み", "failed": "失敗" }
   },
   "login": {
     "title": "ログイン",

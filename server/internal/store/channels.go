@@ -93,4 +93,3 @@ func (s *Store) EnsureSeedModel(ctx context.Context) error {
 	)
 	return err
 }
-

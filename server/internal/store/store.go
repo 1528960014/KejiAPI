@@ -236,6 +236,23 @@ SELECT 'agent-support', '客服', '客服助手：先共情再解决，给出可
        first.model_id
 FROM (SELECT model_id FROM models WHERE enabled AND 'chat' = ANY(capabilities) ORDER BY id LIMIT 1) first
 WHERE NOT EXISTS (SELECT 1 FROM assistants WHERE agent_id = 'agent-support');
+
+-- P2-4: online recharge orders. Users pay CNY via a payment channel
+-- (yipay / alipay / wechat) and the fixed credit_micro (micro-USD, locked
+-- at order time) is credited to their balance when the notify verifies.
+CREATE TABLE IF NOT EXISTS recharges (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    order_no TEXT UNIQUE NOT NULL,
+    method TEXT NOT NULL,
+    amount_cny BIGINT NOT NULL,
+    credit_micro BIGINT NOT NULL,
+    channel_trade_no TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    paid_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_recharges_user ON recharges(user_id, created_at DESC);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

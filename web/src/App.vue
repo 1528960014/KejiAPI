@@ -18,6 +18,7 @@ const nav = [
   { to: '/workbench', label: 'nav.workbench' },
   { to: '/drama', label: 'nav.drama' },
   { to: '/pricing', label: 'nav.pricing' },
+  { to: '/recharge', label: 'nav.recharge' },
   { to: '/console', label: 'nav.console' },
 ]
 

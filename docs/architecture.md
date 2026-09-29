@@ -64,15 +64,26 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 无状态多轮：历史由客户端维护（与现有 chat 页一致）；`GET /v1/agents` 供前端/SDK 列模板。
 - 管理端 `/admin/assistants` CRUD（改绑模型校验存在性）；Web 聊天页"智能体"下拉选择后锁定模型列。
 
+### 在线支付（P2-4，人民币充值 → USD 余额）
+- 订单模型：`recharges` 表，商户订单号 `order_no`（`RH…`，DB 唯一）+ 渠道（yipay/alipay/wechat）+ 金额（分）+ **下单时锁定**的入账 `credit_micro`（= 金额 / `PAY_CNY_PER_USD`），渠道后改汇率不影响在途订单。
+- 渠道抽象 `internal/pay`：`Channel{ID, Name, CreateOrder, ParseNotify}` 三实现——
+  - `YiPay`（开源易支付 V1 mapi）：MD5 签名（参数 ASCII 排序拼 `k=v&`，末尾直接拼商户密钥）；下单 `POST mapi.php` 得 `payurl`/`qrcode`；回调 GET/POST，验签后应答纯文本 `success`。
+  - `Alipay`（官方当面付）：`alipay.trade.precreate` 取 `qr_code`；RSA2（SHA256withRSA）对原始参数值签名，回调验支付宝公钥 + 校验 app_id/TRADE_SUCCESS。需要商户开通"当面付"产品。
+  - `Wechat`（官方 v3 Native）：`POST /v3/pay/transactions/native` 取 `code_url`；请求用商户 API 证书私钥签名（WECHATPAY2-SHA256-RSA2048），回调验微信**平台公钥**签名 + AES-256-GCM（APIv3Key）解密 resource。
+- 入账事务：回调验签 → 订单存在且 method 匹配、金额（分）一致、`status='pending'` → 单事务翻转 paid + ledger `credit`（request_id = order_no，ledger 唯一索引兜底）+ 用户余额。重复回调返回成功但不重复入账。
+- 配置：渠道凭据全部在环境变量（server/.env.example），凭据齐备才启用该渠道；`PAY_PUBLIC_URL` 指定回调可达的外网地址（缺省用请求 Host）。未做退款（充值类订单通常线下处理）。
+- Web：`/recharge` 页面（金额预设+自定义、渠道选择、易支付内部支付宝/微信二选一、QR 码渲染、3s 轮询最长 5 分钟、充值记录列表）；管理端 `GET /admin/recharges` 全平台订单审计。
+
 ### Web 控制台（M3）
 - 多模型对比聊天（同一 prompt 并排 N 个模型，SSE 流式渲染）
 - 生成工作台（图/视频/音乐/TTS 表单 + 任务列表 + 结果预览）
 - API 控制台（key 管理、用量与消费）
+- 充值页（P2-4：人民币充值，渠道 QR/跳转、自动到账轮询）
 - i18n 六语言（P2-5：zh-CN/en-US/ja/ko/ru/es，顶栏下拉切换、localStorage 记忆）；深浅主题
 
 ## 核心数据表
 
-users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup）、tasks、dramas、usage_logs、agents、assistants
+users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup）、tasks、dramas、usage_logs、agents、assistants、recharges
 
 ## 技术选型
 

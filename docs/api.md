@@ -17,6 +17,7 @@
 - **透支**：实际费用超过冻结额时允许余额为负（账本始终一致）。
 - **代理分销（P2-3）**：管理员可将某用户标记为代理并设批发系数 `rate ∈ (0, 1]`（如 0.85 = 八五折）。该用户**所有**冻结与结算金额都按 `ceil(金额 × rate)` 打折（正数永不断为 0）；代理可在控制台创建"子 key"分发给客户——子 key 共用代理余额、按代理批发价结算，各自独立的模型白名单 / 额度 / 有效期。`markup`（加价倍率）仅为代理向客户展示的建议价，平台不向终端客户收款。
 - **智能体（P2-2）**：`/v1/chat/completions` 的 `model` 可以填**智能体模板 id**（如 `agent-translator`）。网关识别后：把模板的 system prompt 注入到 messages 最前 → 走模板绑定的**真实模型**的通道与计费（按真实模型的 token 单价）；key 白名单校验"agent id 或真实模型"任一命中即可。无状态：多轮上下文由客户端保留（与现有 chat 一致）。首次启动自动播种 3 个内置模板（翻译官 / 写手 / 客服），绑定当时第一个启用的 chat 模型，可用 `/admin/assistants` 改绑 / 增删。
+- **在线充值（P2-4）**：用户通过易支付 / 支付宝官方 / 微信支付官方以人民币充值，按 `PAY_CNY_PER_USD` 汇率在**下单时**锁定入账的 micro-USD；渠道异步回调验签（易支付 MD5、支付宝 RSA2、微信 v3 平台密钥 + AES-256-GCM）后，在单事务内把订单置为 paid 并记 `credit` 流水入账。入账前校验渠道金额与订单金额一致；幂等，重复回调不重复入账。
 
 ## 开放接口
 
@@ -204,6 +205,34 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 - 列表返回 `id`、`name`、`markup`、`allowed_models`、`spend_micro`/`spend_usd`、`quota_usd`（如有）、`created_at`。
 - 子 key 的用量从**代理余额**按代理批发价扣减；`GET /api/me/keys`（自己的 key）不含子 key，两者互不越权。
 
+### 在线充值（P2-4）
+
+用户用人民币充值账户余额（USD 计价）。渠道：`yipay`（开源易支付 mapi，聚合支付宝/微信）、`alipay`（支付宝官方当面付二维码）、`wechat`（微信支付官方 v3 扫码）。渠道凭据在环境变量中配置（见 server/.env.example），**全部凭据齐备的渠道才启用**；`PAY_CNY_PER_USD` 为折算汇率（如 `7.2` = 1 USD 收 7.2 CNY），未设置时充值功能关闭。
+
+```bash
+# 可用渠道与汇率（JWT 登录态）
+curl $B/api/me/recharge/config -H "Authorization: Bearer <access_token>"
+# → {"enabled":true,"cny_per_usd":7.2,"methods":["yipay","alipay","wechat"],"min_cny":100,"max_cny":1000000}
+
+# 创建充值订单（金额单位：分；¥100 = 10000）
+curl -X POST $B/api/me/recharges -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"amount_cny":10000,"method":"alipay"}'
+# yipay 可加 "sub_type":"alipay"|"wxpay"
+# → 201 {"order":{...,"order_no":"RH...","status":"pending","credit_micro":...},
+#       "payment":{"qr_code":"...","pay_url":"..."}}
+#    qr_code 非空 → 前端渲染成二维码扫码支付；pay_url 非空（yipay）→ 跳转支付页
+
+# 查询自己的订单 / 单个订单（状态轮询：pending → paid / failed）
+curl $B/api/me/recharges -H "Authorization: Bearer <access_token>"
+curl $B/api/me/recharges/1 -H "Authorization: Bearer <access_token>"
+```
+
+- **入账时机**：以渠道**异步回调**为准（回调先验签/验密，再入账）。下单时 `credit_micro` 已按当时汇率锁定，回调只入账这个固定值。
+- **回调端点**（公网可达、无鉴权，靠渠道签名保护）：`GET|POST /pay/notify/yipay`、`POST /pay/notify/alipay`、`POST /pay/notify/wechat`。需将 `PAY_PUBLIC_URL`（或反代域名）配置为渠道可达的地址。
+- **幂等**：同一订单重复回调不会重复入账（订单状态翻转 + ledger request_id 唯一约束双重保险）；回调金额与订单不符则拒绝。
+- 单笔限额 ¥1 – ¥10000（`min_cny`/`max_cny` 分）。
+
 ## 管理接口
 
 ### POST /admin/models
@@ -317,6 +346,15 @@ curl -X DELETE $B/admin/assistants/1 -H "Authorization: Bearer $MASTER_KEY"
 
 - `agent_id` 重复 → 409 `agent_exists`；改绑不存在的模型 → 400。
 - 停用的模板不出现在 `GET /v1/agents`，且以其 id 发起 chat 会 404。
+
+### 充值订单（P2-4）
+
+```bash
+# 全平台充值订单（新→旧，含 email，limit 上限 200）
+curl "$B/admin/recharges?limit=50" -H "Authorization: Bearer $MASTER_KEY"
+```
+
+返回 `id`、`user_id`、`email`、`order_no`、`method`、`amount_cny`/`amount_yuan`、`credit_micro`/`credit_usd`、`status`（pending/paid/failed）、`created_at`、`paid_at`。`failed` = 渠道下单失败（用户可重新下单）；`pending` 超期未付的订单无需处理（不会入账）。
 
 ### 用量统计
 

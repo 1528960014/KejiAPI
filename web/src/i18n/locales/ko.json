@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "홈", "chat": "멀티모델 채팅", "workbench": "워크벤치", "drama": "코믹 드라마", "pricing": "요금", "console": "API 콘솔" },
+  "nav": { "home": "홈", "chat": "멀티모델 채팅", "workbench": "워크벤치", "drama": "코믹 드라마", "pricing": "요금", "recharge": "충전", "console": "API 콘솔" },
   "theme": { "toggle": "테마 전환" },
   "home": {
     "heroTitle": "통합 멀티모델 AI 게이트웨이",
@@ -136,6 +136,31 @@
     "amount": "금액",
     "reason": "설명",
     "time": "시간"
+  },
+  "recharge": {
+    "title": "잔액 충전",
+    "sub": "CNY로 잔액을 충전할 수 있습니다. 입금 금액은 환율 {rate} 기준으로 USD 잔액으로 환산됩니다(주문 시점에 고정).",
+    "amount": "충전 금액(¥)",
+    "creditPreview": "예상 입금",
+    "methodLabel": "결제 방법",
+    "method": { "yipay": "易支付(알리페이/위챗 통합)", "alipay": "알리페이(공식 QR)", "wechat": "위챗페이(공식 QR)" },
+    "yipaySub": { "alipay": "알리페이", "wxpay": "위챗" },
+    "minHint": "건당 ¥1 – ¥10000",
+    "confirm": "결제 주문 생성",
+    "creating": "생성 중…",
+    "qr": "{method} 로 QR을 스캔하여 결제",
+    "payBtn": "결제하러 가기",
+    "wait": "결제 결과를 기다리는 중입니다: 결제 성공 후 자동으로 입금되며, 이 페이지는 최대 5분까지 대기합니다.",
+    "paid": "충전 성공! 잔액에 입금되었습니다.",
+    "failed": "결제 채널 주문 생성에 실패했습니다. 재시도하거나 관리자에게 문의하세요.",
+    "noMethods": "결제 채널이 구성되지 않았습니다. 관리자가 PAY_* 환경 변수를 설정하고 서비스를 다시 시작해야 합니다.",
+    "loginCta": "로그인 / 회원가입",
+    "loginHint": "로그인 후 여기에 잔액을 충전하고 충전 내역을 확인하세요.",
+    "history": "충전 내역",
+    "historyEmpty": "충전 내역이 없습니다.",
+    "orderNo": "주문 번호",
+    "credit": "입금",
+    "status": { "pending": "결제 대기", "paid": "결제 완료", "failed": "실패" }
   },
   "login": {
     "title": "로그인",

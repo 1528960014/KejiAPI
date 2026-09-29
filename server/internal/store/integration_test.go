@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	if _, err := conn.Exec(ctx, `
-		DROP TABLE IF EXISTS agents, assistants, dramas, refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
+		DROP TABLE IF EXISTS agents, assistants, dramas, recharges, refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
 	`); err != nil {
 		fmt.Println("drop schema:", err)
 		os.Exit(1)
@@ -627,6 +627,77 @@ func TestAssistants(t *testing.T) {
 	}
 	if err := st.DeleteAssistant(ctx, a.ID); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("second delete = %v, want ErrNotFound", err)
+	}
+}
+
+func TestRecharges(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+
+	u, err := st.CreateUser(ctx, "recharge@example.com", 0)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	// create + fetch
+	r, err := st.CreateRecharge(ctx, u.ID, "alipay", 10000, 13888889)
+	if err != nil {
+		t.Fatalf("create recharge: %v", err)
+	}
+	if r.Status != "pending" || r.OrderNo == "" || r.OrderNo[:2] != "RH" {
+		t.Fatalf("bad order: %+v", r)
+	}
+	byNo, err := st.GetRechargeByOrderNo(ctx, r.OrderNo)
+	if err != nil || byNo.ID != r.ID {
+		t.Fatalf("by order no: %+v (%v)", byNo, err)
+	}
+
+	// other users cannot fetch it
+	other, _ := st.CreateUser(ctx, "other@example.com", 0)
+	if _, err := st.GetRecharge(ctx, r.ID, other.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("cross-user get = %v, want ErrNotFound", err)
+	}
+
+	// first mark pays, duplicate is a no-op (idempotent notify)
+	paid, err := st.MarkRechargePaid(ctx, r.OrderNo, "CH123", 13888889)
+	if err != nil || !paid {
+		t.Fatalf("mark paid = %v (%v), want true", paid, err)
+	}
+	paid, err = st.MarkRechargePaid(ctx, r.OrderNo, "CH123", 13888889)
+	if err != nil || paid {
+		t.Fatalf("duplicate mark = %v (%v), want false (idempotent)", paid, err)
+	}
+
+	// balance credited exactly once
+	after, err := st.GetUser(ctx, u.ID)
+	if err != nil {
+		t.Fatalf("get user: %v", err)
+	}
+	if after.Balance != 13888889 {
+		t.Fatalf("balance = %d, want 13888889 (credited once)", after.Balance)
+	}
+
+	// a second order fails cleanly (channel create-order error path)
+	f, err := st.CreateRecharge(ctx, u.ID, "wechat", 500, 69444)
+	if err != nil {
+		t.Fatalf("create failed-order: %v", err)
+	}
+	if err := st.FailRecharge(ctx, f.OrderNo); err != nil {
+		t.Fatalf("fail: %v", err)
+	}
+	got, _ := st.GetRechargeByOrderNo(ctx, f.OrderNo)
+	if got.Status != "failed" {
+		t.Fatalf("status = %s, want failed", got.Status)
+	}
+
+	// listing
+	list, err := st.ListRecharges(ctx, u.ID, 10)
+	if err != nil || len(list) != 2 {
+		t.Fatalf("list = %d (%v), want 2", len(list), err)
+	}
+	admin, err := st.AdminListRecharges(ctx, 10, 0)
+	if err != nil || len(admin) != 2 || admin[0].Email == "" {
+		t.Fatalf("admin list = %+v (%v)", admin, err)
 	}
 }
 

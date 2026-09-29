@@ -633,3 +633,61 @@ export async function createSubkey(body: {
 export async function deleteSubkey(id: number): Promise<void> {
   await http.delete(`/api/me/subkeys/${id}`)
 }
+
+// --- P2-4: online recharge (CNY payment -> USD balance) ---
+
+export interface RechargeConfig {
+  enabled: boolean
+  cny_per_usd: number
+  methods: string[]
+  min_cny: number // fen
+  max_cny: number // fen
+}
+
+export interface Recharge {
+  id: number
+  order_no: string
+  method: string
+  amount_cny: number // fen
+  amount_yuan: number
+  credit_micro: number
+  credit_usd: number
+  status: 'pending' | 'paid' | 'failed'
+  created_at: string
+  paid_at: string | null
+}
+
+export interface RechargePayment {
+  qr_code: string
+  pay_url: string
+}
+
+export async function rechargeConfig(): Promise<RechargeConfig> {
+  const { data } = await http.get<RechargeConfig>('/api/me/recharge/config')
+  return data
+}
+
+export async function createRecharge(
+  amountCnyFen: number,
+  method: string,
+  subType?: string,
+): Promise<{ order: Recharge; payment: RechargePayment }> {
+  const { data } = await http.post('/api/me/recharges', {
+    amount_cny: amountCnyFen,
+    method,
+    sub_type: subType || undefined,
+  })
+  return data
+}
+
+export async function myRecharges(limit = 20): Promise<Recharge[]> {
+  const { data } = await http.get<{ data: Recharge[] }>('/api/me/recharges', {
+    params: { limit },
+  })
+  return data.data
+}
+
+export async function rechargeStatus(id: number): Promise<Recharge> {
+  const { data } = await http.get<Recharge>(`/api/me/recharges/${id}`)
+  return data
+}

@@ -12,8 +12,8 @@ func TestInjectSystemPrompt(t *testing.T) {
 		t.Fatalf("inject: %v", err)
 	}
 	var parsed struct {
-		Model   string `json:"model"`
-		Stream  bool   `json:"stream"`
+		Model    string `json:"model"`
+		Stream   bool   `json:"stream"`
 		Messages []struct {
 			Role    string `json:"role"`
 			Content string `json:"content"`

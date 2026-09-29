@@ -12,6 +12,7 @@ import (
 	"modelhub/internal/auth"
 	"modelhub/internal/config"
 	"modelhub/internal/gateway"
+	"modelhub/internal/pay"
 	"modelhub/internal/store"
 )
 
@@ -24,11 +25,14 @@ type Server struct {
 	store    *store.Store
 	provider *gateway.Provider
 	tokens   *auth.TokenService
+	payCfg   pay.Config
+	pays     map[string]pay.Channel
 }
 
 // New builds the API server.
 func New(cfg *config.Config, st *store.Store, p *gateway.Provider) *Server {
-	return &Server{cfg: cfg, store: st, provider: p, tokens: auth.NewTokenService(cfg.MasterKey)}
+	payCfg, pays := pay.Build(cfg)
+	return &Server{cfg: cfg, store: st, provider: p, tokens: auth.NewTokenService(cfg.MasterKey), payCfg: payCfg, pays: pays}
 }
 
 // Engine wires all gin routes.
@@ -73,6 +77,7 @@ func (s *Server) Engine() *gin.Engine {
 		admin.GET("/usage/summary", s.handleUsageSummary)
 		admin.GET("/tasks", s.handleListTasks)
 		admin.GET("/dramas", s.handleListDramas)
+		admin.GET("/recharges", s.handleAdminRecharges)
 
 		// P2-3: reseller agents (wholesale rate on a billing user).
 		admin.GET("/agents", s.handleListAgents)
@@ -116,6 +121,22 @@ func (s *Server) Engine() *gin.Engine {
 		me.GET("/me/subkeys", s.handleListSubkeys)
 		me.POST("/me/subkeys", s.handleCreateSubkey)
 		me.DELETE("/me/subkeys/:id", s.handleDeleteSubkey)
+	}
+
+	// P2-4: online recharge (JWT user).
+	{
+		me.GET("/me/recharge/config", s.handleRechargeConfig)
+		me.POST("/me/recharges", s.handleCreateRecharge)
+		me.GET("/me/recharges", s.handleMyRecharges)
+		me.GET("/me/recharges/:id", s.handleGetMyRecharge)
+	}
+
+	// P2-4: public payment channel callbacks (signature-verified, no auth).
+	// yipay notify may arrive as GET or POST; alipay/wechat POST.
+	for _, m := range []string{"yipay", "alipay", "wechat"} {
+		method := m
+		r.GET("/pay/notify/"+method, s.handlePayNotify(method))
+		r.POST("/pay/notify/"+method, s.handlePayNotify(method))
 	}
 	return r
 }

@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "chat": "Multi-model Chat", "workbench": "Workbench", "drama": "Drama", "pricing": "Pricing", "console": "API Console" },
+  "nav": { "home": "Home", "chat": "Multi-model Chat", "workbench": "Workbench", "drama": "Drama", "pricing": "Pricing", "recharge": "Top up", "console": "API Console" },
   "theme": { "toggle": "Toggle theme" },
   "home": {
     "heroTitle": "A Unified Multi-Model AI Gateway",
@@ -136,6 +136,31 @@
     "amount": "Amount",
     "reason": "Reason",
     "time": "Time"
+  },
+  "recharge": {
+    "title": "Top up balance",
+    "sub": "Top up with CNY; the credit is converted to USD at the rate {rate} (locked in when the order is created).",
+    "amount": "Amount (¥)",
+    "creditPreview": "Expected credit",
+    "methodLabel": "Payment method",
+    "method": { "yipay": "YiPay (Alipay/WeChat)", "alipay": "Alipay (official QR)", "wechat": "WeChat Pay (official QR)" },
+    "yipaySub": { "alipay": "Alipay", "wxpay": "WeChat" },
+    "minHint": "¥1 – ¥10000 per order",
+    "confirm": "Create payment order",
+    "creating": "Creating…",
+    "qr": "Scan with {method} to pay",
+    "payBtn": "Go to payment",
+    "wait": "Waiting for the payment: the balance is credited automatically after it succeeds (this page waits up to 5 minutes).",
+    "paid": "Top-up successful — balance credited!",
+    "failed": "Payment channel order failed. Please retry or contact an administrator.",
+    "noMethods": "No payment channel is configured. An administrator must set the PAY_* environment variables and restart the service.",
+    "loginCta": "Log in / Register",
+    "loginHint": "Log in to top up your balance and view your top-up history here.",
+    "history": "Top-up history",
+    "historyEmpty": "No top-ups yet.",
+    "orderNo": "Order no.",
+    "credit": "Credit",
+    "status": { "pending": "Pending", "paid": "Paid", "failed": "Failed" }
   },
   "login": {
     "title": "Sign In",

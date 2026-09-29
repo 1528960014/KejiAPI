@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "首页", "chat": "多模型聊天", "workbench": "生成工作台", "drama": "漫剧", "pricing": "定价", "console": "API 控制台" },
+  "nav": { "home": "首页", "chat": "多模型聊天", "workbench": "生成工作台", "drama": "漫剧", "pricing": "定价", "recharge": "充值", "console": "API 控制台" },
   "theme": { "toggle": "切换主题" },
   "home": {
     "heroTitle": "统一的多模型 AI 网关",
@@ -136,6 +136,31 @@
     "amount": "金额",
     "reason": "说明",
     "time": "时间"
+  },
+  "recharge": {
+    "title": "余额充值",
+    "sub": "使用人民币为账户余额充值；入账金额按汇率 {rate} 折算为美元余额（下单时锁定）。",
+    "amount": "充值金额（¥）",
+    "creditPreview": "预计入账",
+    "methodLabel": "支付方式",
+    "method": { "yipay": "易支付（聚合支付宝/微信）", "alipay": "支付宝（官方扫码）", "wechat": "微信支付（官方扫码）" },
+    "yipaySub": { "alipay": "支付宝", "wxpay": "微信" },
+    "minHint": "单笔 ¥1 – ¥10000",
+    "confirm": "创建支付订单",
+    "creating": "创建中…",
+    "qr": "请用{method}扫码支付",
+    "payBtn": "前往支付",
+    "wait": "等待支付结果：支付成功后自动到账，本页面最长等待 5 分钟。",
+    "paid": "充值成功，余额已到账！",
+    "failed": "支付渠道下单失败，请重试或联系管理员。",
+    "noMethods": "暂未配置支付渠道（管理员需配置 PAY_* 环境变量并重启服务）。",
+    "loginCta": "登录 / 注册",
+    "loginHint": "登录后在这里充值余额、查看充值记录。",
+    "history": "充值记录",
+    "historyEmpty": "暂无充值记录。",
+    "orderNo": "订单号",
+    "credit": "入账",
+    "status": { "pending": "待支付", "paid": "已支付", "failed": "失败" }
   },
   "login": {
     "title": "登录",
