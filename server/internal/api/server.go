@@ -27,8 +27,8 @@ type Server struct {
 }
 
 // New builds the API server.
-func New(cfg *config.Config, st *store.Store) *Server {
-	return &Server{cfg: cfg, store: st, provider: gateway.NewProvider(), tokens: auth.NewTokenService(cfg.MasterKey)}
+func New(cfg *config.Config, st *store.Store, p *gateway.Provider) *Server {
+	return &Server{cfg: cfg, store: st, provider: p, tokens: auth.NewTokenService(cfg.MasterKey)}
 }
 
 // Engine wires all gin routes.
@@ -42,6 +42,8 @@ func (s *Server) Engine() *gin.Engine {
 	{
 		v1.GET("/models", s.handleModels)
 		v1.POST("/chat/completions", s.handleChatCompletions)
+		v1.POST("/media/generate", s.handleMediaGenerate)
+		v1.GET("/media/status/:task_id", s.handleMediaStatus)
 	}
 
 	admin := r.Group("/admin")
@@ -66,6 +68,7 @@ func (s *Server) Engine() *gin.Engine {
 
 		admin.GET("/usage", s.handleListUsage)
 		admin.GET("/usage/summary", s.handleUsageSummary)
+		admin.GET("/tasks", s.handleListTasks)
 	}
 
 	api := r.Group("/api")

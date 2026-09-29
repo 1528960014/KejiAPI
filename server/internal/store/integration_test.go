@@ -293,3 +293,73 @@ func TestRefreshTokenRotation(t *testing.T) {
 		t.Fatalf("second redeem = %v, want ErrNotFound (single use)", err)
 	}
 }
+
+func TestTaskLifecycle(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+	u := mustCreditUser(t, st, "tasks@test.local", 0)
+	_, key, err := st.CreateAPIKey(ctx, "task-key")
+	if err != nil {
+		t.Fatalf("create key: %v", err)
+	}
+	if _, err := st.UpdateAPIKey(ctx, key.ID, &KeyPatch{UserID: &u.ID}); err != nil {
+		t.Fatalf("bind key: %v", err)
+	}
+
+	if err := st.CreateTask(ctx, &Task{
+		TaskUUID: "task-1", APIKeyID: &key.ID, Type: "image",
+		ModelID: "flux", Payload: []byte(`{"prompt":"cat"}`), HoldMicro: 200_000,
+	}); err != nil {
+		t.Fatalf("create task: %v", err)
+	}
+
+	claimed, err := st.ClaimNextQueued(ctx)
+	if err != nil {
+		t.Fatalf("claim: %v", err)
+	}
+	if claimed.TaskUUID != "task-1" || claimed.Status != "running" {
+		t.Fatalf("claimed = %+v, want running task-1", claimed)
+	}
+	if claimed.KeyUserID == nil || *claimed.KeyUserID != u.ID {
+		t.Fatalf("key user = %v, want %d", claimed.KeyUserID, u.ID)
+	}
+	// nothing left in the queue
+	if _, err := st.ClaimNextQueued(ctx); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("second claim = %v, want ErrNotFound", err)
+	}
+
+	if err := st.CompleteTask(ctx, "task-1", []string{"https://cdn/a.png"}, 0.2); err != nil {
+		t.Fatalf("complete: %v", err)
+	}
+	got, err := st.GetTaskByUUID(ctx, "task-1")
+	if err != nil {
+		t.Fatalf("get task: %v", err)
+	}
+	if got.Status != "succeeded" || len(got.ResultURLs) != 1 || got.Cost != 0.2 {
+		t.Errorf("task = %+v, want succeeded with url and cost 0.2", got)
+	}
+	// completing twice is a no-op error
+	if err := st.CompleteTask(ctx, "task-1", nil, 0); !errors.Is(err, ErrNotFound) {
+		t.Errorf("second complete = %v, want ErrNotFound", err)
+	}
+
+	// failing a succeeded task is a no-op error
+	if err := st.FailTask(ctx, "task-1", "x"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("fail succeeded task = %v, want ErrNotFound", err)
+	}
+
+	// a running task shows up in the recovery list
+	if err := st.CreateTask(ctx, &Task{TaskUUID: "task-2", Type: "video", ModelID: "wan", Payload: []byte(`{}`), HoldMicro: 1}); err != nil {
+		t.Fatalf("create task2: %v", err)
+	}
+	if _, err := st.ClaimNextQueued(ctx); err != nil {
+		t.Fatalf("claim task2: %v", err)
+	}
+	running, err := st.ListRunningTasks(ctx, 100)
+	if err != nil {
+		t.Fatalf("list running: %v", err)
+	}
+	if len(running) != 1 || running[0].TaskUUID != "task-2" {
+		t.Errorf("running = %+v, want [task-2]", running)
+	}
+}

@@ -148,6 +148,15 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+
+-- M4: per-unit pricing for media models. price_unit is 'token' (default,
+-- priced per 1K tokens via the *_price_per_1k columns) or one of
+-- 'image'/'video'/'music'/'tts' (priced per generated item via unit_price).
+ALTER TABLE models ADD COLUMN IF NOT EXISTS price_unit TEXT NOT NULL DEFAULT 'token';
+ALTER TABLE models ADD COLUMN IF NOT EXISTS unit_price NUMERIC(18,10) NOT NULL DEFAULT 0;
+-- M4: frozen amount (micro-USD) per task, fixed at submission so the worker
+-- can settle or release exactly what was held.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS hold_micro BIGINT NOT NULL DEFAULT 0;
 `
 
 func (s *Store) migrate(ctx context.Context) error {

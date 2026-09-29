@@ -450,9 +450,49 @@ export interface PublicModel {
   capabilities: string[]
   input_price_per_1k: number
   output_price_per_1k: number
+  price_unit?: string
+  unit_price?: number
 }
 
 export async function listPublicModels(): Promise<PublicModel[]> {
   const { data } = await http.get<{ data: PublicModel[] }>('/api/models')
   return data.data
+}
+
+// --- M4: async media tasks ---
+
+export type MediaStatus = 'queued' | 'running' | 'succeeded' | 'failed'
+
+export interface MediaTask {
+  task_id: string
+  status: MediaStatus | string
+  type: string
+  model: string
+  result_urls: string[]
+  cost_usd: number
+  error: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MediaRequest {
+  model: string
+  type?: string
+  prompt?: string
+  text?: string
+  n?: number
+  size?: string
+  duration?: string
+}
+
+export async function submitMedia(body: MediaRequest): Promise<{ task_id: string; status: string }> {
+  const { data } = await http.post('/v1/media/generate', body, { headers: authHeaders() })
+  return data
+}
+
+export async function mediaStatus(taskId: string): Promise<MediaTask> {
+  const { data } = await http.get(`/v1/media/status/${encodeURIComponent(taskId)}`, {
+    headers: authHeaders(),
+  })
+  return data
 }

@@ -15,6 +15,7 @@ const session = useSession()
 const nav = [
   { to: '/', label: 'nav.home' },
   { to: '/chat', label: 'nav.chat' },
+  { to: '/workbench', label: 'nav.workbench' },
   { to: '/pricing', label: 'nav.pricing' },
   { to: '/console', label: 'nav.console' },
 ]

@@ -83,6 +83,16 @@ func CostMicro(m *store.Model, prompt, completion int) int64 {
 	return int64(math.Ceil(usd * MicrosPerUSD))
 }
 
+// MediaCostMicro returns the charge for generating n media items with a
+// per-unit priced model, rounded up. Token-priced models return 0: media
+// generation is always billed per item via unit_price.
+func MediaCostMicro(m *store.Model, n int) int64 {
+	if m == nil || n <= 0 {
+		return 0
+	}
+	return int64(math.Ceil(m.UnitPrice * float64(n) * MicrosPerUSD))
+}
+
 // USD converts micro-USD to a display float.
 func USD(micro int64) float64 { return float64(micro) / MicrosPerUSD }
 

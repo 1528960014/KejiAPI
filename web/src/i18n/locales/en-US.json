@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "chat": "Multi-model Chat", "pricing": "Pricing", "console": "API Console" },
+  "nav": { "home": "Home", "chat": "Multi-model Chat", "workbench": "Workbench", "pricing": "Pricing", "console": "API Console" },
   "theme": { "toggle": "Toggle theme" },
   "home": {
     "heroTitle": "A Unified Multi-Model AI Gateway",
@@ -27,6 +27,33 @@
     "noModels": "No models available yet (configure via /admin/models and /admin/channels)",
     "loadingModels": "Loading models…",
     "error": "Request failed"
+  },
+  "workbench": {
+    "title": "Generation Workbench",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "sk-...",
+    "model": "Model",
+    "noModel": "No media model of this type yet (configure one via /admin/models with the matching capabilities)",
+    "noKey": "Enter an API key first",
+    "noPrompt": "Enter a prompt or text",
+    "prompt": "Prompt",
+    "text": "Text",
+    "promptPlaceholder": "Describe what to generate…",
+    "textPlaceholder": "Text to speak…",
+    "n": "Count (1-4)",
+    "size": "Size",
+    "duration": "Duration (s)",
+    "submit": "Submit",
+    "priceHint": "Unit price",
+    "tasks": "Tasks",
+    "tasksEmpty": "No tasks yet — submit a generation above.",
+    "cost": "Cost",
+    "clearFinished": "Clear finished",
+    "clearAll": "Clear all",
+    "open": "Open in new tab",
+    "musicHint": "Note: no music adapter is available yet; submissions will fail with a clear message (planned for a later milestone).",
+    "status": { "queued": "Queued", "running": "Generating", "succeeded": "Done", "failed": "Failed", "unknown": "Checking" },
+    "type": { "image": "Image", "video": "Video", "music": "Music", "tts": "Voice" }
   },
   "pricing": {
     "title": "Pricing",

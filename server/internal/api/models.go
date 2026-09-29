@@ -27,6 +27,9 @@ func (s *Server) handleModels(c *gin.Context) {
 			// page can show live prices without an admin call.
 			"input_price_per_1k":  m.InputPricePer1k,
 			"output_price_per_1k": m.OutputPricePer1k,
+			// M4: per-item pricing for media models (image/video/tts/music).
+			"price_unit": m.PriceUnit,
+			"unit_price": m.UnitPrice,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"object": "list", "data": data})
@@ -51,6 +54,8 @@ func (s *Server) handlePublicModels(c *gin.Context) {
 			"capabilities":        m.Capabilities,
 			"input_price_per_1k":  m.InputPricePer1k,
 			"output_price_per_1k": m.OutputPricePer1k,
+			"price_unit":          m.PriceUnit,
+			"unit_price":          m.UnitPrice,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"data": data})

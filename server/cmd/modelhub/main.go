@@ -12,7 +12,9 @@ import (
 
 	"modelhub/internal/api"
 	"modelhub/internal/config"
+	"modelhub/internal/gateway"
 	"modelhub/internal/store"
+	"modelhub/internal/task"
 )
 
 func main() {
@@ -42,7 +44,12 @@ func main() {
 		slog.Warn("seed model", "error", err)
 	}
 
-	srv := api.New(cfg, st)
+	provider := gateway.NewProvider()
+	srv := api.New(cfg, st, provider)
+
+	// M4: media task worker (DB-poll loop; recovers stale tasks on start).
+	worker := task.NewWorker(st, provider)
+	go worker.Run(ctx)
 
 	httpServer := &http.Server{
 		Addr:         ":" + cfg.Port,

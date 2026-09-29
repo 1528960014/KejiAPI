@@ -69,3 +69,33 @@ func (p *Provider) Chat(ctx context.Context, ch *store.Channel, body []byte) (*C
 		Body:       resp.Body,
 	}, nil
 }
+
+// DoJSON performs a JSON request against the channel's base URL and returns
+// the upstream status code and raw body. Non-2xx responses are returned (not
+// errors) so callers can surface the upstream error payload; only transport
+// failures are errors. Extra headers are applied after the defaults.
+func (p *Provider) DoJSON(ctx context.Context, ch *store.Channel, method, path string, body []byte, extraHeaders map[string]string) (int, []byte, error) {
+	var reader io.Reader
+	if body != nil {
+		reader = bytes.NewReader(body)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, strings.TrimSuffix(ch.BaseURL, "/")+path, reader)
+	if err != nil {
+		return 0, nil, fmt.Errorf("build upstream request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+ch.APIKey)
+	req.Header.Set("Content-Type", "application/json")
+	for k, v := range extraHeaders {
+		req.Header.Set(k, v)
+	}
+	resp, err := p.HTTP.Do(req)
+	if err != nil {
+		return 0, nil, fmt.Errorf("upstream request: %w", err)
+	}
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(io.LimitReader(resp.Body, 16*1024*1024))
+	if err != nil {
+		return 0, nil, fmt.Errorf("read upstream body: %w", err)
+	}
+	return resp.StatusCode, raw, nil
+}

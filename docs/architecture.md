@@ -13,10 +13,10 @@ Nginx/Traefik（静态资源 + 反代）
         │    ├── Provider 适配器（OpenAI 兼容透传；Anthropic 等后续）
         │    ├── 路由：model → channel（priority + 故障切换）
         │    └── 计费钩子（估算→冻结→结算，M2）
-        ├── 任务管线（M4：worker → 上游任务 → 产物落 MinIO）
+        ├── 任务管线（M4：DB 轮询 worker → provider 适配器 → 上游任务 → 轮询产物）
         └── 管理 API（用户、key、模型、通道、站点配置）
 
-PostgreSQL（用户/账本/模型/通道/任务）  Redis（限流/队列，M2+）  MinIO（媒体产物）
+PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物，后续）
 ```
 
 ## 模块说明
@@ -34,8 +34,11 @@ PostgreSQL（用户/账本/模型/通道/任务）  Redis（限流/队列，M2+�
 - 管理端：创建用户、手动充值（ledger credit）、账本流水查询、用量明细/汇总。
 
 ### 任务管线（M4）
-- task 表（uuid、type、status、payload、result_urls、cost）；Redis 队列 + worker。
-- 产物下载至 MinIO，对外返回签名 URL；统一轮询 `/v1/media/status/{id}`。
+- task 表（uuid、type、status、payload、hold_micro、result_urls、cost）；**DB 轮询队列**（`FOR UPDATE SKIP LOCKED` 认领，2s 间隔，多实例天然安全），不引入 Redis（有意偏离早期草案，v1 量级够用）。
+- 适配器按 `channel.provider` + 任务类型注册：image 走 OpenAI 兼容 `/images/generations`；video 走 dashscope 原生异步（`X-DashScope-Async` + `/api/v1/tasks/{id}` 轮询）与 kling（`/v1/videos/text2video` + 同路径轮询）；tts 走 dashscope CosyVoice（同步）；music 暂无适配器（任务以明确错误失败）。
+- 计费：提交时冻结 `unit_price × n`（models 表 `price_unit`/`unit_price`）；worker 成功结算、失败/超时（默认 10min）退回；进程重启时残留 running 任务标记失败并退回。
+- 产物直接用上游返回的 URL；`b64_json` 结果明确报错（产物下载至 MinIO 并返回签名 URL 为后续里程碑）。
+- 统一轮询 `/v1/media/status/{task_id}`（仅属主 key 可读）；管理端 `GET /admin/tasks`。
 
 ### Web 控制台（M3）
 - 多模型对比聊天（同一 prompt 并排 N 个模型，SSE 流式渲染）
@@ -54,6 +57,6 @@ users、ledger_entries、models、channels、api_keys、tasks、usage_logs
 | 网关语言 | Go (Gin) | 流式代理性能、单二进制部署 |
 | 前端 | Vue3 + Vite + TS + Element Plus + vue-i18n | 生态与贡献者熟悉度 |
 | 数据库 | PostgreSQL 16 | JSONB、事务、成熟 |
-| 队列/缓存 | Redis 7 | v1 量级足够，避免引入 MQ |
-| 媒体存储 | MinIO (S3 API) | docker 内可跑，生产可换 S3/R2 |
+| 任务队列 | DB 轮询（`FOR UPDATE SKIP LOCKED`） | v1 量级够用，少一个依赖；Redis 留作限流等后续 |
+| 媒体存储 | MinIO (S3 API) | 产物持久化（后续里程碑）；当前直接返回上游 URL |
 | 许可证 | MIT | 采用率优先 |

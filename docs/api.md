@@ -22,6 +22,8 @@
 
 返回启用的模型列表（OpenAI 兼容格式）。
 
+非标准附加字段（OpenAI SDK 会忽略）：`input_price_per_1k` / `output_price_per_1k`（token 计价），`price_unit`（`token` 默认 / `image` / `video` / `music` / `tts`）与 `unit_price`（每件 USD，媒体模型用）。
+
 ### POST /v1/chat/completions
 
 OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传上游（流式请求会被注入 `stream_options.include_usage`）。
@@ -45,7 +47,46 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 
 ### POST /v1/media/generate（M4）
 
-异步生成任务（image/video/music/tts），返回 `task_id`；用 `GET /v1/media/status/{task_id}` 轮询。
+异步媒体生成（`image` / `video` / `music` / `tts`），API key 鉴权。提交成功返回 `202 {task_id, status: "queued"}`，用 `GET /v1/media/status/{task_id}` 轮询。
+
+```json
+{
+  "model": "flux-1",
+  "type": "image",          // 可省略：模型只有一个媒体能力时自动推断
+  "prompt": "a cat astronaut",
+  "n": 1,                   // 1-4，默认 1；video/music/tts 忽略
+  "size": "1024x1024"       // image 可选
+}
+```
+
+- video 额外支持 `duration`（字符串秒数，如 `"5"`）；tts 用 `text` 字段而不是 `prompt`。
+- 计费：提交时冻结 `unit_price × n`（`unit_price` 为每件 USD），worker 成功后结算、失败/超时全额退回（失败不扣费）。
+- 支持的 provider × 类型（适配器矩阵）：
+  - `image`：所有 OpenAI 兼容 `/images/generations` 的 provider（openai、硅基流动、dashscope 兼容模式、自建网关等）
+  - `video`：`dashscope`（原生异步 + 任务轮询）、`kling`（异步 + 任务轮询）
+  - `tts`：`dashscope`（CosyVoice 同步）
+  - `music`：**暂无适配器**，提交会排队但任务以明确错误失败并退回冻结
+- 错误：400 `invalid_request`（缺 model/type/prompt、模型无该能力、无媒体价格）；401/403/404/402/429 同 chat 接口；429 时冻结已退回。
+
+### GET /v1/media/status/{task_id}
+
+查询任务状态。仅持有该任务的 API key 可读（403 `forbidden`）。
+
+```json
+{
+  "task_id": "…",
+  "status": "queued | running | succeeded | failed",
+  "type": "image",
+  "model": "flux-1",
+  "result_urls": ["https://…"],
+  "cost_usd": 0.02,
+  "error": "",
+  "created_at": "…", "updated_at": "…"
+}
+```
+
+- 上游返回 `b64_json`（而非 URL）时任务失败并提示（产物持久化到 MinIO 为后续里程碑）。
+- 任务默认超时 10 分钟（超时按失败处理，冻结退回）；服务重启时残留的 running 任务会被标记失败并退回。
 
 ## 账号接口（M3）
 
@@ -193,6 +234,21 @@ curl "$B/admin/usage/summary?api_key_id=1&since=2026-09-01T00:00:00Z" -H "Author
 
 汇总返回：`{"requests":n,"prompt_tokens":n,"completion_tokens":n,"cost_micro":n,"cost_usd":x}`。
 
-### GET /admin/models / DELETE /admin/models/:id
+### GET /admin/models / DELETE /admin/models/:id / POST /admin/models
+
+创建模型时的价格字段：
+
+- `input_price_per_1k` / `output_price_per_1k`：token 计价（chat 模型用）。
+- `price_unit`：`token`（默认）或 `image` / `video` / `music` / `tts`。
+- `unit_price`：每件 USD（`price_unit != token` 时必填，如一张图 $0.02、一条视频 $0.3）。
 
 ### GET /admin/channels / DELETE /admin/channels/:id
+
+### 媒体任务（M4）
+
+```bash
+# 最近任务（新→旧，可按 key 过滤，limit 上限 200）
+curl "$B/admin/tasks?api_key_id=1&limit=50" -H "Authorization: Bearer $MASTER_KEY"
+```
+
+返回结构与 `GET /v1/media/status/{task_id}` 相同（列表包在 `data` 里）。

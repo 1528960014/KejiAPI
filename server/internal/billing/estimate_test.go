@@ -77,3 +77,26 @@ func TestUSDConversions(t *testing.T) {
 		t.Errorf("ToMicro(10.5) = %d, want 10500000", ToMicro(10.5))
 	}
 }
+
+func TestMediaCostMicro(t *testing.T) {
+	m := &store.Model{PriceUnit: "image", UnitPrice: 0.02}
+	if got := MediaCostMicro(m, 2); got != 40_000 {
+		t.Errorf("MediaCostMicro = %d, want 40000", got)
+	}
+	// rounds up: 0.0000005 USD -> 1 micro
+	cheap := &store.Model{PriceUnit: "tts", UnitPrice: 0.0000005}
+	if got := MediaCostMicro(cheap, 1); got != 1 {
+		t.Errorf("MediaCostMicro(cheap) = %d, want 1", got)
+	}
+	// token-priced models are not billed per item
+	token := &store.Model{PriceUnit: "token", InputPricePer1k: 0.15}
+	if got := MediaCostMicro(token, 3); got != 0 {
+		t.Errorf("MediaCostMicro(token model) = %d, want 0", got)
+	}
+	if got := MediaCostMicro(nil, 3); got != 0 {
+		t.Errorf("MediaCostMicro(nil) = %d, want 0", got)
+	}
+	if got := MediaCostMicro(m, 0); got != 0 {
+		t.Errorf("MediaCostMicro(n=0) = %d, want 0", got)
+	}
+}

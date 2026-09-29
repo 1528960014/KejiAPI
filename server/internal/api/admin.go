@@ -30,6 +30,8 @@ type createModelReq struct {
 	Capabilities     []string `json:"capabilities"`
 	InputPricePer1k  float64  `json:"input_price_per_1k"`
 	OutputPricePer1k float64  `json:"output_price_per_1k"`
+	PriceUnit        string   `json:"price_unit"` // 'token' (default) | 'image' | 'video' | 'music' | 'tts'
+	UnitPrice        float64  `json:"unit_price"` // USD per generated item when price_unit != 'token'
 	Enabled          *bool    `json:"enabled"`
 }
 
@@ -58,6 +60,8 @@ func (s *Server) handleCreateModel(c *gin.Context) {
 		Capabilities:     capabilities,
 		InputPricePer1k:  req.InputPricePer1k,
 		OutputPricePer1k: req.OutputPricePer1k,
+		PriceUnit:        req.PriceUnit,
+		UnitPrice:        req.UnitPrice,
 		Enabled:          enabled,
 	})
 	if err != nil {

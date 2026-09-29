@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "首页", "chat": "多模型聊天", "pricing": "定价", "console": "API 控制台" },
+  "nav": { "home": "首页", "chat": "多模型聊天", "workbench": "生成工作台", "pricing": "定价", "console": "API 控制台" },
   "theme": { "toggle": "切换主题" },
   "home": {
     "heroTitle": "统一的多模型 AI 网关",
@@ -27,6 +27,33 @@
     "noModels": "暂无可用模型（请先配置 /admin/models 与 /admin/channels）",
     "loadingModels": "加载模型中…",
     "error": "请求失败"
+  },
+  "workbench": {
+    "title": "生成工作台",
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "sk-...",
+    "model": "模型",
+    "noModel": "暂无该类型的媒体模型（请先通过 /admin/models 配置带对应 capabilities 的模型）",
+    "noKey": "请先填入 API Key",
+    "noPrompt": "请输入提示词或文本",
+    "prompt": "提示词",
+    "text": "文本",
+    "promptPlaceholder": "描述你想生成的内容…",
+    "textPlaceholder": "要朗读的文本…",
+    "n": "数量（1-4）",
+    "size": "尺寸",
+    "duration": "时长（秒）",
+    "submit": "提交生成",
+    "priceHint": "单价",
+    "tasks": "任务列表",
+    "tasksEmpty": "还没有任务，在上方提交一次生成。",
+    "cost": "费用",
+    "clearFinished": "清除已完成",
+    "clearAll": "全部清除",
+    "open": "新标签打开",
+    "musicHint": "注意：当前暂无音乐适配器，提交后会收到明确的失败提示（后续里程碑实现）。",
+    "status": { "queued": "排队中", "running": "生成中", "succeeded": "已完成", "failed": "失败", "unknown": "查询中" },
+    "type": { "image": "图像", "video": "视频", "music": "音乐", "tts": "语音" }
   },
   "pricing": {
     "title": "定价",

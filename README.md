@@ -7,7 +7,7 @@
 ## 特性（v1）
 
 - **模型网关**：OpenAI 兼容 `/v1/chat/completions`（SSE 流式）、`/v1/models`；通道（channel）级多上游凭据、优先级与故障切换
-- **异步任务管线**（M4）：`/v1/media/generate` 图像/视频/音乐/TTS 生成任务，轮询 + 产物存储
+- **异步任务管线**（M4）：`/v1/media/generate` 图像/视频/TTS 生成任务（DB 队列 + worker）、按件计价与冻结/结算、状态轮询；音乐适配器规划中
 - **计费**：账本式余额（预估 → 冻结 → 结算）、API Key 管理（sk- 前缀，仅存哈希）、用量统计
 - **Web 控制台**：多模型对比聊天、生成工作台、API 控制台、中英双语、深浅主题
 - **部署简单**：`docker compose up -d` 起依赖（PostgreSQL / Redis / MinIO），服务端单二进制
