@@ -33,7 +33,11 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # Optional object storage, off by default (the app stores media on the
+  # local `mediadata` volume). Enable with:  --profile minio
+  #   (or MINIO=1 ./deploy/deploy.sh)
   minio:
+    profiles: ["minio"]
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     environment:

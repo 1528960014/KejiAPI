@@ -3,16 +3,19 @@
 # Run from anywhere: ./deploy/deploy.sh   (optionally: ./deploy/deploy.sh host80)
 #
 # Optional env:
-#   COMPOSE_OVERRIDES="docker-compose.host-80.yml docker-compose.nominio.yml"
+#   COMPOSE_OVERRIDES="docker-compose.host-80.yml"
 #     extra -f overrides appended after the base (and host-80) file
 #   BUILD_ARGS="GOPROXY=https://goproxy.cn,direct NPM_CONFIG_REGISTRY=https://registry.npmmirror.com"
 #     --build-arg KEY=VALUE pairs for the image builds (e.g. CN mirrors)
+#   MINIO=1
+#     start the optional MinIO object storage service (profile "minio")
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 COMPOSE=(docker compose -f deploy/docker-compose.yml)
 [ "${1:-}" = "host80" ] && COMPOSE+=( -f deploy/docker-compose.host-80.yml )
 for f in ${COMPOSE_OVERRIDES:-}; do COMPOSE+=( -f "deploy/$f" ); done
+[ "${MINIO:-}" = "1" ] && COMPOSE+=( --profile minio )
 
 BUILD_ARGS=()
 for kv in ${BUILD_ARGS:-}; do BUILD_ARGS+=( --build-arg "$kv" ); done
