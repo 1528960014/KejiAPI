@@ -61,7 +61,9 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
 curl http://127.0.0.1/healthz
 ```
 
-- 入口：`web` 容器占 80 端口（SPA + `/v1`、`/admin` 反代到 `app`）；`app` 直连 8080 可留作调试。
+- 入口：`web` 容器默认占 80 端口（SPA + `/v1`、`/admin` 反代到 `app`）；`app` 直连 8080 可留作调试。
+- 宿主机 80 已被占用（如宝塔面板 nginx）：`./deploy/deploy.sh host80`（web 改映射 8000），再在宿主机 Web 服务器上加一条反代 → `http://127.0.0.1:8000`。宝塔面板：网站 → 创建站点（IP 或域名）→ 反向代理 → `http://127.0.0.1:8000`。
+- 一键脚本 `deploy/deploy.sh`：校验 Docker、生成 `.env` 提示、构建启动、健康检查。
 - 数据都在命名卷（`pgdata` / `mediadata` / `miniodata`）；PostgreSQL/Redis/MinIO 只绑 `127.0.0.1`。
 - 漫剧合成需要镜像内 ffmpeg + Noto CJK 字体（`Dockerfile.server` 已含）。
 - 防火墙/安全组放行 80（如需 443 用面板或 certbot 再套一层 TLS）。
