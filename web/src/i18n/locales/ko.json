@@ -62,7 +62,11 @@
     "noKey": "먼저 API 키를 입력하세요 (로그인 후 콘솔에서 생성 또는 /admin/api-keys)",
     "noModels": "사용 가능한 모델이 없습니다 (/admin/models 와 /admin/channels 에서 설정하세요)",
     "loadingModels": "모델 불러오는 중…",
-    "error": "요청 실패"
+    "error": "요청 실패",
+    "ttsModel": "음성 합성(선택)",
+    "ttsNone": "읽어주지 않음",
+    "ttsPlay": "읽어주기",
+    "ttsError": "음성 합성 실패"
   },
   "workbench": {
     "title": "생성 워크벤치",

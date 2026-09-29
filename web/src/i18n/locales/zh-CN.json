@@ -62,7 +62,11 @@
     "noKey": "请先填入 API Key（登录后可在控制台创建，或由管理员通过 /admin/api-keys 创建）",
     "noModels": "暂无可用模型（请先配置 /admin/models 与 /admin/channels）",
     "loadingModels": "加载模型中…",
-    "error": "请求失败"
+    "error": "请求失败",
+    "ttsModel": "语音合成（可选）",
+    "ttsNone": "不朗读",
+    "ttsPlay": "朗读",
+    "ttsError": "语音合成失败"
   },
   "workbench": {
     "title": "生成工作台",

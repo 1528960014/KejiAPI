@@ -62,7 +62,11 @@
     "noKey": "Introduce primero una clave API (créala en la consola tras iniciar sesión o vía /admin/api-keys)",
     "noModels": "No hay modelos disponibles (configúralos vía /admin/models y /admin/channels)",
     "loadingModels": "Cargando modelos…",
-    "error": "La solicitud falló"
+    "error": "La solicitud falló",
+    "ttsModel": "Voz (opcional)",
+    "ttsNone": "Sin voz",
+    "ttsPlay": "Leer en voz alta",
+    "ttsError": "Fallo de síntesis de voz"
   },
   "workbench": {
     "title": "Mesa de trabajo de generación",

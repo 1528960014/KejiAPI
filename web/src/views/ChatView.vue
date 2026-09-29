@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { authHeaders, getApiKey, listChatAgents, listModels, setApiKey, type ChatAgent } from '../api/client'
+import { ElMessage } from 'element-plus'
+import { authHeaders, getApiKey, listChatAgents, listModels, listPublicModels, setApiKey, type ChatAgent } from '../api/client'
 
 const { t } = useI18n()
+
+const TTS_MODEL_STORAGE = 'modelhub.ttsModel'
 
 interface Column {
   model: string
@@ -28,6 +31,11 @@ const input = ref('')
 const busy = ref(false)
 const error = ref('')
 const rounds = ref<Round[]>([])
+
+// P3-4: real-time speech — optional TTS model for reading replies aloud.
+const ttsModels = ref<string[]>([])
+const ttsModel = ref(localStorage.getItem(TTS_MODEL_STORAGE) || '')
+const playingId = ref('')
 
 async function loadModels() {
   error.value = ''
@@ -65,9 +73,33 @@ async function loadAgents() {
   }
 }
 
+async function loadTtsModels() {
+  try {
+    const list = await listPublicModels()
+    ttsModels.value = list
+      .filter((m) => (m.capabilities || []).includes('tts'))
+      .map((m) => m.id)
+    if (ttsModel.value && !ttsModels.value.includes(ttsModel.value)) {
+      ttsModel.value = ''
+    }
+  } catch {
+    ttsModels.value = []
+  }
+}
+
+function onTtsChange(value: string) {
+  ttsModel.value = value
+  if (value) {
+    localStorage.setItem(TTS_MODEL_STORAGE, value)
+  } else {
+    localStorage.removeItem(TTS_MODEL_STORAGE)
+  }
+}
+
 onMounted(() => {
   void loadModels()
   void loadAgents()
+  void loadTtsModels()
 })
 
 function onKeyChange() {
@@ -210,6 +242,37 @@ function clearRounds() {
   error.value = ''
 }
 
+// P3-4: synthesize a reply with the selected TTS model and play it.
+async function speak(roundIndex: number, colIndex: number, content: string) {
+  if (!ttsModel.value || !apiKey.value) {
+    ElMessage.warning(t('chat.noKey'))
+    return
+  }
+  const id = `${roundIndex}:${colIndex}`
+  if (playingId.value) return
+  playingId.value = id
+  try {
+    const res = await fetch('/v1/audio/speech', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ model: ttsModel.value, input: content.slice(0, 4096) }),
+    })
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '')
+      throw new Error(`HTTP ${res.status} ${detail.slice(0, 200)}`)
+    }
+    const buf = await res.arrayBuffer()
+    const url = URL.createObjectURL(new Blob([buf], { type: 'audio/mpeg' }))
+    const audio = new Audio(url)
+    audio.onended = () => URL.revokeObjectURL(url)
+    await audio.play()
+  } catch (e) {
+    ElMessage.error(`${t('chat.ttsError')}: ${String(e)}`)
+  } finally {
+    playingId.value = ''
+  }
+}
+
 const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` })
 </script>
 
@@ -258,6 +321,17 @@ const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0,
             <el-option v-for="m in models" :key="m" :label="m" :value="m" />
           </el-select>
         </label>
+        <label v-if="ttsModels.length">
+          {{ t('chat.ttsModel') }}
+          <el-select
+            v-model="ttsModel"
+            style="min-width: 200px"
+            @change="onTtsChange"
+          >
+            <el-option :label="t('chat.ttsNone')" value="" />
+            <el-option v-for="m in ttsModels" :key="m" :label="m" :value="m" />
+          </el-select>
+        </label>
         <el-button v-if="rounds.length" @click="clearRounds">{{ t('chat.clear') }}</el-button>
       </div>
       <p class="muted hint">{{ selectedAgent ? t('chat.agentHint') : t('chat.compareHint') }}</p>
@@ -271,11 +345,23 @@ const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0,
           <p class="content">{{ round.user }}</p>
         </div>
         <div class="cols" :style="gridStyle(round.columns.length)">
-          <div v-for="col in round.columns" :key="col.model" class="card col">
+          <div v-for="(col, ci) in round.columns" :key="col.model" class="card col">
             <div class="col-head">
               <span class="col-model">{{ modelLabel(col.model) }}</span>
-              <span v-if="col.done && !col.error && col.promptTokens + col.completionTokens > 0" class="muted">
-                {{ col.promptTokens }}+{{ col.completionTokens }} {{ t('chat.tokens') }}
+              <span class="col-actions">
+                <el-button
+                  v-if="ttsModel && col.done && !col.error && col.content"
+                  size="small"
+                  text
+                  :loading="playingId === `${ri}:${ci}`"
+                  :title="t('chat.ttsPlay')"
+                  @click="speak(ri, ci, col.content)"
+                >
+                  {{ t('chat.ttsPlay') }}
+                </el-button>
+                <span v-if="col.done && !col.error && col.promptTokens + col.completionTokens > 0" class="muted">
+                  {{ col.promptTokens }}+{{ col.completionTokens }} {{ t('chat.tokens') }}
+                </span>
               </span>
             </div>
             <p v-if="col.error" class="col-error">{{ t('chat.error') }}: {{ col.error }}</p>
@@ -365,6 +451,11 @@ h2 {
   align-items: baseline;
   gap: 8px;
   margin-bottom: 8px;
+}
+.col-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 .col-model {
   font-weight: 600;

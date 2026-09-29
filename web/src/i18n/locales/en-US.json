@@ -62,7 +62,11 @@
     "noKey": "Enter an API key first (create one in the console after sign-in, or via /admin/api-keys)",
     "noModels": "No models available yet (configure via /admin/models and /admin/channels)",
     "loadingModels": "Loading models…",
-    "error": "Request failed"
+    "error": "Request failed",
+    "ttsModel": "Speech (optional)",
+    "ttsNone": "No speech",
+    "ttsPlay": "Read aloud",
+    "ttsError": "Speech synthesis failed"
   },
   "workbench": {
     "title": "Generation Workbench",

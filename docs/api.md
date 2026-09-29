@@ -138,6 +138,31 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
   - 成片在**结算之后**渲染：渲染失败不影响扣费，素材包仍然有效。
   - 服务器主机需安装 `ffmpeg`/`ffprobe`（`apk add ffmpeg` / `apt install ffmpeg`）；中文字幕建议安装 CJK 字体（如 `font-noto-cjk`）。视频存于 `MODELHUB_MEDIA_DIR`（默认 `./media`）。
 
+### POST /v1/audio/speech（P3-4 实时语音）
+
+OpenAI 兼容的**同步**文本转语音：音频直接随 HTTP 响应返回（不走任务队列、无需轮询），客户端拿到即可播放。
+
+```bash
+curl $B/v1/audio/speech \
+  -H "Authorization: Bearer sk-xxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"cosyvoice-v1","input":"你好，世界","voice":"longxiaochun","response_format":"mp3"}' \
+  -o out.mp3
+```
+
+```python
+from openai import OpenAI
+client = OpenAI(base_url="https://<host>/v1", api_key="sk-xxxx")
+audio = client.audio.speech.create(
+    model="cosyvoice-v1", voice="longxiaochun", input="你好，世界")
+audio.write_to_file("out.mp3")
+```
+
+- `model` 必须是带 `tts` capability 的模型；`input` 必填、≤ 4096 字符；`voice` / `speed` 原样转发上游（OpenAI 兼容渠道）；`response_format` ∈ mp3/opus/aac/flac/wav/pcm（缺省 mp3），决定响应 `Content-Type`。
+- **上游协议**：`provider=dashscope` 走 CosyVoice（返回音频 URL，网关下载后转发为字节流）；其余 provider 按 OpenAI 兼容 `POST /audio/speech` 处理（二进制响应）。
+- **计费**：按模型 `unit_price` 计 1 个单位（与 `/v1/media/generate` 的 TTS 一致），调用前冻结、成功结算、失败全额解冻；组织 key 扣组织钱包（列表价）。
+- 失败（上游错误/无通道/余额不足等）返回对应 4xx/502，冻结全额解冻，不落任务、不扣费。
+
 ## 账号接口（M3）
 
 认证模型：邮箱 + 密码（argon2id）。登录/注册返回 token 对：

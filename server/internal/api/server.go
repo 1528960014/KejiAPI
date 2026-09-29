@@ -58,6 +58,9 @@ func (s *Server) Engine() *gin.Engine {
 		v1.GET("/media/status/:task_id", s.handleMediaStatus)
 		v1.POST("/drama/generate", s.handleDramaGenerate)
 		v1.GET("/drama/status/:drama_id", s.handleDramaStatus)
+
+		// P3-4: real-time speech (OpenAI-compatible synchronous TTS).
+		v1.POST("/audio/speech", s.handleAudioSpeech)
 	}
 
 	admin := r.Group("/admin")

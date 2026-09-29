@@ -79,7 +79,8 @@ modelhub/
 - [x] P3-1 智能体工具调用（模板 tools 注入，OpenAI function calling，客户端执行工具）
 - [x] P3-2 支付渠道后台配置（/admin/pay-config 热更新，env 仅首次启动默认）
 - [x] P3-3 多租户（组织：独立钱包 + 成员 owner/admin/member + 组织 Key 按列表价计费）
-- [ ] 三期（规划）：实时语音
+- [x] P3-4 实时语音（OpenAI 兼容 POST /v1/audio/speech 同步 TTS，聊天页朗读按钮）
+- [ ] 后续：双向实时语音（麦克风↔麦克风，OpenAI Realtime 类协议）
 
 ## 合规说明
 

@@ -90,6 +90,13 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 权限：成员端 `/api/me/orgs/*`（JWT）按角色分级——任何成员可读组织/成员/key 列表，admin+ 管成员与 key，owner 唯一；非成员一律 404。管理端 `/admin/organizations`（master key）审计全平台组织并**手动**给组织钱包充值（本里程碑不做组织在线支付）。
 - 边界：无组织删除接口（钱包/流水不可误删）；org key 与个人 key 的配额、allowed_models、有效期语义一致。
 
+### 实时语音（P3-4，OpenAI 兼容同步 TTS）
+- `POST /v1/audio/speech`：音频随 HTTP 响应直接返回（无任务队列），OpenAI SDK `client.audio.speech` 直连。`model` 需 `tts` capability，`input` ≤ 4096 字符，`voice`/`speed` 转发上游，`response_format` 决定 `Content-Type`。
+- 上游两条协议：OpenAI 兼容 `/audio/speech`（二进制响应，默认路径）与 DashScope CosyVoice（返回签名 URL，网关下载后转发字节流，`provider=dashscope` 自动选择）。
+- 计费复用 M2 钱包：按模型 `unit_price` 冻结 1 单位 → 成功结算 / 失败解冻（含 P2-3 代理批发、P3-3 组织钱包分支），用量日志记 `speech:<model>`。
+- Web 聊天页：可选"语音"模型（`/api/models` 按 `tts` capability 过滤，localStorage 记忆），每条助手回复带"朗读"按钮，`fetch` 取音频流播放。
+- 边界：这是**文本→语音**的实时合成；双向实时语音（麦克风↔麦克风，如 OpenAI Realtime WS 协议）不在本里程碑，列为后续。
+
 ## 核心数据表
 
 users、ledger_entries、models、channels、api_keys（含 P2-3 agent_id/markup、P3-3 org_id）、tasks、dramas、usage_logs、agents、assistants、recharges、pay_settings、pay_channels、organizations、org_members、org_ledger_entries
