@@ -1,0 +1,7 @@
+# Override to disable the MinIO service (e.g. when the minio/minio image
+# cannot be pulled from the local network). The app stores media on the
+# local `mediadata` volume, so nothing else changes.
+# Use:
+#   docker compose -f docker-compose.yml -f docker-compose.nominio.yml up -d
+services:
+  minio: null

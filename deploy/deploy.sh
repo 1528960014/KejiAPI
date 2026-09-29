@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
 # One-shot deployment for a fresh Linux VPS with Docker + compose v2.
 # Run from anywhere: ./deploy/deploy.sh   (optionally: ./deploy/deploy.sh host80)
+#
+# Optional env:
+#   COMPOSE_OVERRIDES="docker-compose.host-80.yml docker-compose.nominio.yml"
+#     extra -f overrides appended after the base (and host-80) file
+#   BUILD_ARGS="GOPROXY=https://goproxy.cn,direct NPM_CONFIG_REGISTRY=https://registry.npmmirror.com"
+#     --build-arg KEY=VALUE pairs for the image builds (e.g. CN mirrors)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 COMPOSE=(docker compose -f deploy/docker-compose.yml)
 [ "${1:-}" = "host80" ] && COMPOSE+=( -f deploy/docker-compose.host-80.yml )
+for f in ${COMPOSE_OVERRIDES:-}; do COMPOSE+=( -f "deploy/$f" ); done
+
+BUILD_ARGS=()
+for kv in ${BUILD_ARGS:-}; do BUILD_ARGS+=( --build-arg "$kv" ); done
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Docker not found. Install it first, e.g.:"
@@ -27,7 +37,7 @@ if grep -q "change-me-to-32-random-chars" deploy/.env; then
   exit 1
 fi
 
-"${COMPOSE[@]}" up -d --build
+"${COMPOSE[@]}" up -d --build ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"}
 "${COMPOSE[@]}" ps
 echo
 echo "Health check (API):"

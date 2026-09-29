@@ -3,6 +3,10 @@
 # drama composition (subtitles render "Noto Sans CJK SC" via libass).
 
 FROM golang:1.25-alpine AS build
+# Build arg so networks where proxy.golang.org is blocked can pass
+# --build-arg GOPROXY=https://goproxy.cn,direct (see deploy.sh BUILD_ARGS).
+ARG GOPROXY=https://proxy.golang.org,direct
+ENV GOPROXY=${GOPROXY}
 WORKDIR /build
 COPY server/go.mod server/go.sum ./
 RUN go mod download
