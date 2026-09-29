@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"modelhub/internal/auth"
 	"modelhub/internal/config"
 	"modelhub/internal/gateway"
 	"modelhub/internal/store"
@@ -22,11 +23,12 @@ type Server struct {
 	cfg      *config.Config
 	store    *store.Store
 	provider *gateway.Provider
+	tokens   *auth.TokenService
 }
 
 // New builds the API server.
 func New(cfg *config.Config, st *store.Store) *Server {
-	return &Server{cfg: cfg, store: st, provider: gateway.NewProvider()}
+	return &Server{cfg: cfg, store: st, provider: gateway.NewProvider(), tokens: auth.NewTokenService(cfg.MasterKey)}
 }
 
 // Engine wires all gin routes.
@@ -64,6 +66,29 @@ func (s *Server) Engine() *gin.Engine {
 
 		admin.GET("/usage", s.handleListUsage)
 		admin.GET("/usage/summary", s.handleUsageSummary)
+	}
+
+	api := r.Group("/api")
+	{
+		api.GET("/models", s.handlePublicModels)
+	}
+
+	authAPI := r.Group("/api/auth")
+	{
+		authAPI.POST("/register", s.handleRegister)
+		authAPI.POST("/login", s.handleLogin)
+		authAPI.POST("/refresh", s.handleRefresh)
+		authAPI.POST("/logout", s.handleLogout)
+	}
+
+	me := r.Group("/api")
+	me.Use(s.authJWT())
+	{
+		me.GET("/me", s.handleMe)
+		me.GET("/me/ledger", s.handleMyLedger)
+		me.GET("/me/keys", s.handleMyKeys)
+		me.POST("/me/keys", s.handleCreateMyKey)
+		me.DELETE("/me/keys/:id", s.handleDeleteMyKey)
 	}
 	return r
 }

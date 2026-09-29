@@ -4,6 +4,7 @@
 
 - 开放接口（`/v1/*`）：`Authorization: Bearer sk-xxxx`（API key）
 - 管理接口（`/admin/*`）：`Authorization: Bearer $MASTER_KEY`
+- 账号接口（`/api/me*`）：`Authorization: Bearer <access_token>`（JWT，由登录/注册接口签发）
 
 ## 计费模型（M2）
 
@@ -45,6 +46,66 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 ### POST /v1/media/generate（M4）
 
 异步生成任务（image/video/music/tts），返回 `task_id`；用 `GET /v1/media/status/{task_id}` 轮询。
+
+## 账号接口（M3）
+
+认证模型：邮箱 + 密码（argon2id）。登录/注册返回 token 对：
+
+- `access_token`：JWT（HS256，签名密钥派生自 `MASTER_KEY`），15 分钟有效，用于 `Authorization: Bearer`。
+- `refresh_token`：30 天有效，**单次使用**，存库可吊销；刷新后旧 token 立即失效。
+
+错误码：`invalid_credentials`、`invalid_email`、`weak_password`（< 8 位）、`email_exists`（409）、`invalid_refresh_token`、`invalid_token`（401）。
+
+### POST /api/auth/register / /api/auth/login
+
+```json
+{"email": "alice@example.com", "password": "secret123"}
+```
+
+注册成功返回 201 + token 对；登录返回 200 + token 对：
+
+```json
+{
+  "access_token": "eyJ...",
+  "refresh_token": "4f1c...",
+  "token_type": "Bearer",
+  "access_token_expires_in": 900
+}
+```
+
+注册即创建账户（余额为 0）；充值由管理员通过 `/admin/users/:id/credit` 完成。
+
+### POST /api/auth/refresh
+
+`{"refresh_token": "..."}` → 200 + 新 token 对（旧 refresh token 作废）。
+
+### POST /api/auth/logout
+
+`{"refresh_token": "..."}` → 吊销该 refresh token（幂等）。
+
+### GET /api/models（公开，无需鉴权）
+
+启用中的模型 + 实时价格（供定价页）：
+
+```json
+{"data": [{"id": "gpt-4o-mini", "provider": "openai", "capabilities": ["chat"], "input_price_per_1k": 0.15, "output_price_per_1k": 0.6}]}
+```
+
+### GET /api/me
+
+当前用户：`id`、`email`、`balance_micro`、`balance_usd`、`enabled`、`created_at`。
+
+### GET /api/me/ledger
+
+当前用户的余额流水（新→旧，`limit` 默认 50、上限 200，`offset` 可选）。
+
+### GET /api/me/keys / POST /api/me/keys / DELETE /api/me/keys/:id
+
+当前用户自己的 API key：
+
+- `POST {"name": "dev"}` → 201 `{"key": "sk-...", "id": 1, "name": "dev"}`，**明文只返回一次**。
+- 列表返回 `id`、`name`、`allowed_models`、`spend_micro`/`spend_usd`、`created_at`（无明文）。
+- `DELETE` 仅能删自己的 key；删除后使用该 key 的请求立即 401。
 
 ## 管理接口
 

@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -32,7 +33,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	if _, err := conn.Exec(ctx, `
-		DROP TABLE IF EXISTS usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
+		DROP TABLE IF EXISTS refresh_tokens, usage_logs, tasks, api_keys, channels, models, ledger_entries, users CASCADE
 	`); err != nil {
 		fmt.Println("drop schema:", err)
 		os.Exit(1)
@@ -268,5 +269,27 @@ func TestUsageSummary(t *testing.T) {
 	}
 	if all.Requests != 3 {
 		t.Errorf("all requests = %d, want 3", all.Requests)
+	}
+}
+
+func TestRefreshTokenRotation(t *testing.T) {
+	st := newTestStore(t)
+	ctx := context.Background()
+	u, err := st.CreateAccount(ctx, "refresh@test.local", "hash")
+	if err != nil {
+		t.Fatalf("create account: %v", err)
+	}
+	if err := st.CreateRefreshToken(ctx, u.ID, "rft_test_token", time.Hour); err != nil {
+		t.Fatalf("create refresh token: %v", err)
+	}
+	id, err := st.RedeemRefreshToken(ctx, "rft_test_token")
+	if err != nil {
+		t.Fatalf("redeem: %v", err)
+	}
+	if id != u.ID {
+		t.Fatalf("redeem user = %d, want %d", id, u.ID)
+	}
+	if _, err := st.RedeemRefreshToken(ctx, "rft_test_token"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("second redeem = %v, want ErrNotFound (single use)", err)
 	}
 }

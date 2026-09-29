@@ -137,6 +137,17 @@ ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS spend BIGINT NOT NULL DEFAULT 0;
 -- M2: users may exist without a login password (billing-only accounts);
 -- console login lands in M3.
 ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+
+-- M3: refresh tokens for console login (single-use, revocable).
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT UNIQUE NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

@@ -1,5 +1,6 @@
 {
   "nav": { "home": "Home", "chat": "Multi-model Chat", "pricing": "Pricing", "console": "API Console" },
+  "theme": { "toggle": "Toggle theme" },
   "home": {
     "heroTitle": "A Unified Multi-Model AI Gateway",
     "heroSub": "One API key for many models: chat, image, video, music and voice. Self-hosted, auditable, OpenAI-compatible.",
@@ -15,10 +16,14 @@
     "title": "Multi-model Chat",
     "apiKey": "API Key",
     "apiKeyPlaceholder": "sk-...",
-    "model": "Model",
+    "models": "Models (multi-select to compare)",
     "placeholder": "Type a message and press Enter…",
     "send": "Send",
-    "noKey": "Enter an API key first (create one via /admin/api-keys)",
+    "clear": "Clear",
+    "you": "You",
+    "tokens": "tokens",
+    "compareHint": "Select several models to send the same prompt side by side and compare responses.",
+    "noKey": "Enter an API key first (create one in the console after sign-in, or via /admin/api-keys)",
     "noModels": "No models available yet (configure via /admin/models and /admin/channels)",
     "loadingModels": "Loading models…",
     "error": "Request failed"
@@ -27,22 +32,61 @@
     "title": "Pricing",
     "model": "Model",
     "provider": "Provider",
+    "capabilities": "Capabilities",
     "input": "Input / 1K tokens",
     "output": "Output / 1K tokens",
     "dash": "—",
-    "coming": "Live prices and balances arrive with the M2 billing module."
+    "empty": "No enabled models yet.",
+    "note": "Prices are USD per 1K tokens; actual charges follow your ledger entries."
   },
   "console": {
     "title": "API Console",
     "quickstart": "Quickstart",
-    "docs": "See docs/api.md for the full reference. API key management lives at /admin/api-keys for now (moves into this console in M3).",
-    "usageComing": "Usage charts and cost breakdowns arrive in M2."
+    "docs": "See docs/api.md for the full reference.",
+    "loginCta": "Sign In / Register",
+    "loginHint": "Sign in to manage your API keys, balance and ledger here.",
+    "balance": "Balance",
+    "keys": "My API Keys",
+    "keysEmpty": "No API keys yet — create one to get started.",
+    "keyName": "Name",
+    "keyNamePlaceholder": "e.g. dev-server",
+    "keyCreate": "Create",
+    "keyDelete": "Delete",
+    "keyDeleteConfirm": "Delete this API key? Requests using it stop working immediately and this cannot be undone.",
+    "keyCreated": "Key created",
+    "keyCreatedHint": "Copy and store it now — the full key is shown only once.",
+    "copied": "Copied to clipboard",
+    "copy": "Copy",
+    "keyUseInChat": "Use in Chat",
+    "keySpend": "Spend",
+    "keyCreatedAt": "Created",
+    "ledger": "Ledger",
+    "ledgerEmpty": "No ledger entries yet.",
+    "ledgerKind": { "credit": "Credit", "hold": "Hold", "release": "Release", "debit": "Debit" },
+    "amount": "Amount",
+    "reason": "Reason",
+    "time": "Time"
   },
   "login": {
     "title": "Sign In",
+    "registerTitle": "Register",
     "email": "Email",
     "password": "Password",
+    "passwordHint": "At least 8 characters",
     "submit": "Sign In",
-    "coming": "Accounts land in M3. In the meantime, use an API key against the open API."
+    "registerSubmit": "Register & Sign In",
+    "switchToRegister": "No account yet? Register",
+    "switchToLogin": "Already have an account? Sign in",
+    "backHome": "Back to home",
+    "errRequired": "Please fill in email and password",
+    "errInvalidCredentials": "Incorrect email or password",
+    "errEmailExists": "This email is already registered",
+    "errWeakPassword": "Password must be at least 8 characters",
+    "errInvalidEmail": "Invalid email format",
+    "errNetwork": "Network error, please try again later",
+    "loggedOut": "Signed out"
+  },
+  "account": {
+    "logout": "Sign Out"
   }
 }

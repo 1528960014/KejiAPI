@@ -172,3 +172,53 @@ func (s *Store) DeleteAPIKey(ctx context.Context, id int64) error {
 	}
 	return nil
 }
+
+// CreateAPIKeyForUser is CreateAPIKey with the user binding set.
+func (s *Store) CreateAPIKeyForUser(ctx context.Context, userID int64, name string) (string, *APIKey, error) {
+	plain, err := generateKey()
+	if err != nil {
+		return "", nil, err
+	}
+	key := &APIKey{}
+	err = s.pool.QueryRow(ctx, `
+		INSERT INTO api_keys (key_hash, name, user_id) VALUES ($1, $2, $3)
+		RETURNING `+keyColumns,
+		HashKey(plain), name, userID,
+	).Scan(&key.ID, &key.Name, &key.UserID, &key.AllowedModels, &key.Quota, &key.Spend, &key.ExpiresAt, &key.CreatedAt)
+	if err != nil {
+		return "", nil, err
+	}
+	return plain, key, nil
+}
+
+// ListAPIKeysByUser returns the user's keys, newest first.
+func (s *Store) ListAPIKeysByUser(ctx context.Context, userID int64) ([]APIKey, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT `+keyColumns+`
+		FROM api_keys WHERE user_id = $1 ORDER BY id DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []APIKey{}
+	for rows.Next() {
+		var k APIKey
+		if err := rows.Scan(&k.ID, &k.Name, &k.UserID, &k.AllowedModels, &k.Quota, &k.Spend, &k.ExpiresAt, &k.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, k)
+	}
+	return out, rows.Err()
+}
+
+// DeleteAPIKeyByUser removes a key only if it belongs to the user.
+func (s *Store) DeleteAPIKeyByUser(ctx context.Context, userID, id int64) error {
+	tag, err := s.pool.Exec(ctx, `DELETE FROM api_keys WHERE id = $1 AND user_id = $2`, id, userID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}

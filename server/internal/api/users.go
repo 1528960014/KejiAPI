@@ -127,20 +127,5 @@ func (s *Server) handleUserLedger(c *gin.Context) {
 		httpErr(c, err)
 		return
 	}
-	data := make([]gin.H, 0, len(entries))
-	for _, e := range entries {
-		entry := gin.H{
-			"id":         e.ID,
-			"kind":       e.Kind,
-			"amount":     e.Amount,
-			"amount_usd": billing.USD(e.Amount),
-			"reason":     e.Reason,
-			"created_at": e.CreatedAt,
-		}
-		if e.RequestID != nil {
-			entry["request_id"] = *e.RequestID
-		}
-		data = append(data, entry)
-	}
-	c.JSON(http.StatusOK, gin.H{"data": data})
+	c.JSON(http.StatusOK, gin.H{"data": ledgerJSON(entries)})
 }

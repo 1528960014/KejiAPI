@@ -1,17 +1,31 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { authHeaders, getApiKey, listModels, setApiKey } from '../api/client'
 
 const { t } = useI18n()
 
+interface Column {
+  model: string
+  content: string
+  done: boolean
+  error: string
+  promptTokens: number
+  completionTokens: number
+}
+
+interface Round {
+  user: string
+  columns: Column[]
+}
+
 const apiKey = ref(getApiKey())
 const models = ref<string[]>([])
-const model = ref('')
+const selectedModels = ref<string[]>([])
 const input = ref('')
 const busy = ref(false)
 const error = ref('')
-const messages = reactive<{ role: string; content: string }[]>([])
+const rounds = ref<Round[]>([])
 
 async function loadModels() {
   error.value = ''
@@ -22,8 +36,10 @@ async function loadModels() {
   try {
     const list = await listModels()
     models.value = list.map((m) => m.id)
-    if (models.value.length && !models.value.includes(model.value)) {
-      model.value = models.value[0]
+    // keep previously selected models that still exist, default to first
+    selectedModels.value = selectedModels.value.filter((m) => models.value.includes(m))
+    if (!selectedModels.value.length && models.value.length) {
+      selectedModels.value = [models.value[0]]
     }
   } catch {
     models.value = []
@@ -37,36 +53,31 @@ function onKeyChange() {
   void loadModels()
 }
 
-async function send() {
-  const text = input.value.trim()
-  if (!text || busy.value) return
-  if (!apiKey.value) {
-    error.value = t('chat.noKey')
-    return
+// history for one model: all previous user turns plus that model's own
+// successful assistant replies, then the new user message.
+function historyFor(roundsSoFar: Round[], colIndex: number, newMessage: string): { role: string; content: string }[] {
+  const out: { role: string; content: string }[] = []
+  for (const round of roundsSoFar) {
+    out.push({ role: 'user', content: round.user })
+    const col = round.columns[colIndex]
+    if (col && col.done && !col.error && col.content) {
+      out.push({ role: 'assistant', content: col.content })
+    }
   }
-  if (!model.value) {
-    error.value = t('chat.noModels')
-    return
-  }
-  error.value = ''
-  messages.push({ role: 'user', content: text })
-  const reply: { role: string; content: string } = { role: 'assistant', content: '' }
-  messages.push(reply)
-  input.value = ''
-  busy.value = true
+  out.push({ role: 'user', content: newMessage })
+  return out
+}
+
+async function streamToColumn(column: Column, history: { role: string; content: string }[]) {
   try {
     const res = await fetch('/v1/chat/completions', {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({
-        model: model.value,
-        messages: messages.slice(0, -1),
-        stream: true,
-      }),
+      body: JSON.stringify({ model: column.model, messages: history, stream: true }),
     })
     if (!res.ok || !res.body) {
       const detail = await res.text().catch(() => '')
-      throw new Error(`HTTP ${res.status} ${detail}`)
+      throw new Error(`HTTP ${res.status} ${detail.slice(0, 300)}`)
     }
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
@@ -85,21 +96,66 @@ async function send() {
         try {
           const json = JSON.parse(payload)
           const delta: string = json.choices?.[0]?.delta?.content ?? ''
-          if (delta) reply.content += delta
+          if (delta) column.content += delta
+          const usage = json.usage
+          if (usage) {
+            column.promptTokens = usage.prompt_tokens ?? 0
+            column.completionTokens = usage.completion_tokens ?? 0
+          }
         } catch {
           // ignore partial lines
         }
       }
     }
-    if (!reply.content) {
-      reply.content = '(empty response)'
+    if (!column.content) {
+      column.content = '…'
     }
   } catch (e) {
-    error.value = `${t('chat.error')}: ${String(e)}`
+    column.error = String(e)
   } finally {
-    busy.value = false
+    column.done = true
   }
 }
+
+async function send() {
+  const text = input.value.trim()
+  if (!text || busy.value) return
+  if (!apiKey.value) {
+    error.value = t('chat.noKey')
+    return
+  }
+  if (!selectedModels.value.length) {
+    error.value = t('chat.noModels')
+    return
+  }
+  error.value = ''
+  const previous = [...rounds.value]
+  const round: Round = {
+    user: text,
+    columns: selectedModels.value.map((m) => ({
+      model: m,
+      content: '',
+      done: false,
+      error: '',
+      promptTokens: 0,
+      completionTokens: 0,
+    })),
+  }
+  rounds.value.push(round)
+  input.value = ''
+  busy.value = true
+  await Promise.all(
+    round.columns.map((col, i) => streamToColumn(col, historyFor(previous, i, text))),
+  )
+  busy.value = false
+}
+
+function clearRounds() {
+  rounds.value = []
+  error.value = ''
+}
+
+const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` })
 </script>
 
 <template>
@@ -112,8 +168,15 @@ async function send() {
           <el-input v-model="apiKey" :placeholder="t('chat.apiKeyPlaceholder')" @change="onKeyChange" />
         </label>
         <label>
-          {{ t('chat.model') }}
-          <el-select v-model="model" :disabled="!models.length" style="width: 280px">
+          {{ t('chat.models') }}
+          <el-select
+            v-model="selectedModels"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            :disabled="!models.length"
+            style="min-width: 320px"
+          >
             <el-option
               v-if="!models.length"
               :label="apiKey ? t('chat.loadingModels') : t('chat.noModels')"
@@ -123,22 +186,34 @@ async function send() {
             <el-option v-for="m in models" :key="m" :label="m" :value="m" />
           </el-select>
         </label>
+        <el-button v-if="rounds.length" @click="clearRounds">{{ t('chat.clear') }}</el-button>
+      </div>
+      <p class="muted hint">{{ t('chat.compareHint') }}</p>
+    </div>
+
+    <div class="chat">
+      <p v-if="!rounds.length && !busy" class="muted empty">{{ t('chat.placeholder') }}</p>
+      <div v-for="(round, ri) in rounds" :key="ri" class="round">
+        <div class="msg user">
+          <div class="role">{{ t('chat.you') }}</div>
+          <p class="content">{{ round.user }}</p>
+        </div>
+        <div class="cols" :style="gridStyle(round.columns.length)">
+          <div v-for="col in round.columns" :key="col.model" class="card col">
+            <div class="col-head">
+              <span class="col-model">{{ col.model }}</span>
+              <span v-if="col.done && !col.error && col.promptTokens + col.completionTokens > 0" class="muted">
+                {{ col.promptTokens }}+{{ col.completionTokens }} {{ t('chat.tokens') }}
+              </span>
+            </div>
+            <p v-if="col.error" class="col-error">{{ t('chat.error') }}: {{ col.error }}</p>
+            <p v-else class="content" :class="{ pending: !col.done }">{{ col.content }}</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="card chat">
-      <div class="messages">
-        <div v-if="!messages.length" class="muted empty">…</div>
-        <div
-          v-for="(m, i) in messages"
-          :key="i"
-          class="msg"
-          :class="m.role"
-        >
-          <div class="role">{{ m.role }}</div>
-          <pre class="content">{{ m.content }}</pre>
-        </div>
-      </div>
+    <div class="card input-card">
       <div v-if="error" class="error">{{ error }}</div>
       <div class="input-row">
         <el-input
@@ -146,6 +221,7 @@ async function send() {
           type="textarea"
           :rows="2"
           :placeholder="t('chat.placeholder')"
+          :disabled="busy"
           @keydown.enter.exact.prevent="send"
         />
         <el-button type="primary" :loading="busy" @click="send">
@@ -164,6 +240,7 @@ h2 {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 .config label {
   display: flex;
@@ -172,20 +249,19 @@ h2 {
   font-size: 13px;
   color: var(--text-dim);
 }
+.hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
 .chat {
   margin-top: 16px;
-}
-.messages {
-  max-height: 420px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 8px 0;
 }
 .empty {
   text-align: center;
   padding: 40px 0;
+}
+.round {
+  margin-bottom: 20px;
 }
 .msg .role {
   font-size: 12px;
@@ -201,16 +277,57 @@ h2 {
 .msg.user {
   border-left: 3px solid var(--accent);
   padding-left: 10px;
+  margin-bottom: 12px;
+}
+.cols {
+  display: grid;
+  gap: 12px;
+}
+.col {
+  padding: 12px 14px;
+  min-height: 64px;
+}
+.col-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.col-model {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent);
+}
+.col .content {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.col .content.pending {
+  color: var(--text-dim);
+}
+.col-error {
+  margin: 0;
+  color: #f87171;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .error {
   color: #f87171;
-  margin-top: 8px;
+  margin-bottom: 8px;
   font-size: 13px;
 }
 .input-row {
   display: flex;
   gap: 12px;
   align-items: flex-end;
-  margin-top: 12px;
+}
+.input-card {
+  margin-top: 4px;
 }
 </style>
