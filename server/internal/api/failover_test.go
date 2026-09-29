@@ -12,61 +12,6 @@ import (
 	"modelhub/internal/store"
 )
 
-func TestUpstreamRetryable(t *testing.T) {
-	cases := []struct {
-		status int
-		trans  bool
-		want   bool
-	}{
-		{0, true, true},      // transport failure
-		{401, false, true},   // channel key rejected upstream
-		{403, false, true},
-		{408, false, true},
-		{429, false, true},
-		{500, false, true},
-		{502, false, true},
-		{503, false, true},
-		{504, false, true},
-		{200, false, false},
-		{400, false, false}, // request problem: identical on every channel
-		{404, false, false},
-		{422, false, false},
-	}
-	for _, tc := range cases {
-		if got := upstreamRetryable(tc.status, tc.trans); got != tc.want {
-			t.Errorf("upstreamRetryable(%d, %v) = %v, want %v", tc.status, tc.trans, got, tc.want)
-		}
-	}
-}
-
-func TestChannelHealthCooldown(t *testing.T) {
-	h := newChannelHealth()
-	t0 := time.Now()
-	if h.isDown(1, t0) {
-		t.Fatal("fresh channel must not be down")
-	}
-	h.markFailed(1, t0)
-	if !h.isDown(1, t0.Add(time.Minute)) {
-		t.Fatal("channel should be down right after a failure")
-	}
-	if h.isDown(1, t0.Add(channelCooldownDuration+time.Second)) {
-		t.Fatal("channel should be back after the cooldown window")
-	}
-	h.markFailed(2, t0)
-	h.markOK(2)
-	if h.isDown(2, t0.Add(time.Minute)) {
-		t.Fatal("markOK must clear the failure")
-	}
-	// cooldownUntil
-	if _, down := h.cooldownUntil(1, t0.Add(time.Minute)); !down {
-		t.Fatal("cooldownUntil should report a down channel")
-	}
-	if until, down := h.cooldownUntil(1, t0.Add(time.Minute)); !down ||
-		until != t0.Add(channelCooldownDuration) {
-		t.Fatalf("unexpected cooldown until: %v %v", until, down)
-	}
-}
-
 // fakeSource returns a fixed channel list (no database needed).
 type fakeSource struct{ chs []*store.Channel }
 
@@ -77,7 +22,7 @@ func (f fakeSource) ChannelsForModel(ctx context.Context, modelID string) ([]*st
 func newFailoverTestServer(chs []*store.Channel) *Server {
 	return &Server{
 		provider:      gateway.NewProvider(),
-		health:        newChannelHealth(),
+		health:        gateway.NewChannelHealth(),
 		channelSource: fakeSource{chs: chs},
 	}
 }
@@ -109,10 +54,10 @@ func TestDialChatFailover(t *testing.T) {
 	if att.res.StatusCode != 200 {
 		t.Fatalf("status = %d", att.res.StatusCode)
 	}
-	if !s.health.isDown(1, time.Now()) {
+	if !s.health.IsDown(1, time.Now()) {
 		t.Error("failed channel 1 should be in cooldown")
 	}
-	if s.health.isDown(2, time.Now()) {
+	if s.health.IsDown(2, time.Now()) {
 		t.Error("healthy channel 2 must not be in cooldown")
 	}
 }
@@ -146,7 +91,7 @@ func TestDialChatNonRetryableNoFailover(t *testing.T) {
 	if hits != 0 {
 		t.Fatalf("channel 2 must not be tried for a non-retryable 400 (hits=%d)", hits)
 	}
-	if !s.health.isDown(1, time.Now()) {
+	if !s.health.IsDown(1, time.Now()) {
 		// A non-retryable 400 is a request problem, not a channel failure:
 		// the channel stays available.
 		t.Log("note: non-retryable 400 does not cool the channel down")
@@ -174,7 +119,7 @@ func TestDialChatAllCoolingDown(t *testing.T) {
 	s := newFailoverTestServer([]*store.Channel{
 		{ID: 1, Name: "c1", BaseURL: "http://127.0.0.1:9", APIKey: "k1"},
 	})
-	s.health.markFailed(1, time.Now())
+	s.health.MarkFailed(1, time.Now())
 	_, err := s.dialChat(context.Background(), "m", []byte(`{}`))
 	if !errors.Is(err, errNoUsableChannel) {
 		t.Fatalf("want errNoUsableChannel, got %v", err)
@@ -205,7 +150,7 @@ func TestDialJSONFailover(t *testing.T) {
 	if status != 200 || string(body) != "AUDIOBYTES" {
 		t.Fatalf("status=%d body=%q", status, body)
 	}
-	if !s.health.isDown(1, time.Now()) {
+	if !s.health.IsDown(1, time.Now()) {
 		t.Error("channel 1 (401) should be in cooldown")
 	}
 }

@@ -25,11 +25,12 @@ const TaskTimeout = 10 * time.Minute
 type Worker struct {
 	store    *store.Store
 	provider *gateway.Provider
+	health   *gateway.ChannelHealth // P6-1: shared channel failure cooldown
 }
 
 // NewWorker builds a media task worker.
-func NewWorker(st *store.Store, p *gateway.Provider) *Worker {
-	return &Worker{store: st, provider: p}
+func NewWorker(st *store.Store, p *gateway.Provider, health *gateway.ChannelHealth) *Worker {
+	return &Worker{store: st, provider: p, health: health}
 }
 
 // Run blocks until ctx is cancelled. It first recovers tasks left running
@@ -85,25 +86,51 @@ func (w *Worker) runTask(ctx context.Context, t *store.Task) {
 		w.failAndRelease(ctx, t, "model no longer available: "+t.ModelID)
 		return
 	}
-	ch, err := w.store.PickChannel(ctx, t.ModelID)
+	// P6-1: try the model's channels in priority order. One total timeout
+	// budget across all attempts; availability failures fail over, request/
+	// content failures end the task immediately.
+	channels, err := w.store.ChannelsForModel(ctx, t.ModelID)
 	if err != nil {
 		w.failAndRelease(ctx, t, "no enabled channel for model "+t.ModelID)
 		return
 	}
-	ad := adapterFor(ch.Provider, t.Type)
-	if ad == nil {
-		w.failAndRelease(ctx, t, fmt.Sprintf("provider %q does not support %q generation yet", ch.Provider, t.Type))
-		return
-	}
 
 	runCtx, cancel := context.WithTimeout(ctx, TaskTimeout)
-	urls, err := ad.Run(runCtx, w.provider, ch, model, t.Payload)
-	cancel()
-	if err != nil {
-		w.failAndRelease(ctx, t, err.Error())
-		return
-	}
+	defer cancel()
 
+	now := time.Now()
+	var lastErr error
+	for _, ch := range channels {
+		if w.health.IsDown(ch.ID, now) {
+			continue
+		}
+		ad := adapterFor(ch.Provider, t.Type)
+		if ad == nil {
+			lastErr = fmt.Errorf("provider %q does not support %q generation yet", ch.Provider, t.Type)
+			continue
+		}
+		urls, rErr := ad.Run(runCtx, w.provider, ch, model, t.Payload)
+		if rErr == nil {
+			w.health.MarkOK(ch.ID)
+			w.completeTask(ctx, t, reason, urls)
+			return
+		}
+		if !taskFailureRetryable(rErr) {
+			w.failAndRelease(ctx, t, rErr.Error())
+			return
+		}
+		w.health.MarkFailed(ch.ID, now)
+		lastErr = fmt.Errorf("channel %s: %w", ch.Name, rErr)
+		slog.Warn("task channel failed, failing over",
+			"task", t.TaskUUID, "channel", ch.Name, "error", rErr)
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no enabled (non-cooled-down) channel for model %s", t.ModelID)
+	}
+	w.failAndRelease(ctx, t, lastErr.Error())
+}
+
+func (w *Worker) completeTask(ctx context.Context, t *store.Task, reason string, urls []string) {
 	sc, cancel2 := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel2()
 	if err := w.store.CompleteTask(sc, t.TaskUUID, urls, billing.USD(t.HoldMicro)); err != nil {

@@ -46,7 +46,10 @@ func main() {
 	}
 
 	provider := gateway.NewProvider()
-	srv := api.New(cfg, st, provider)
+	// P5-1/P6-1: one shared channel-health tracker so a channel that fails a
+	// chat request also cools down before the task workers retry it.
+	health := gateway.NewChannelHealth()
+	srv := api.New(cfg, st, provider, health)
 
 	// P3-2: seed the payment config from env (first start only), then make the
 	// database the runtime source of truth (hot-reloadable via /admin/pay-config).
@@ -60,11 +63,11 @@ func main() {
 	}
 
 	// M4: media task worker (DB-poll loop; recovers stale tasks on start).
-	worker := task.NewWorker(st, provider)
+	worker := task.NewWorker(st, provider, health)
 	go worker.Run(ctx)
 
 	// P2-1: comic-drama worker (storyboard + per-shot media fan-out).
-	dramaWorker := task.NewDramaWorker(st, provider, task.NewComposer(cfg.MediaDir))
+	dramaWorker := task.NewDramaWorker(st, provider, task.NewComposer(cfg.MediaDir), health)
 	go dramaWorker.Run(ctx)
 
 	httpServer := &http.Server{

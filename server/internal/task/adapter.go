@@ -77,10 +77,6 @@ func parsePayload(raw []byte) (*mediaPayload, error) {
 	return &p, nil
 }
 
-func upstreamError(status int, body []byte) error {
-	return fmt.Errorf("upstream returned HTTP %d: %s", status, trimBody(body))
-}
-
 func trimBody(b []byte) string {
 	const max = 300
 	if len(b) > max {
@@ -105,7 +101,7 @@ type openaiImageAdapter struct{}
 func (openaiImageAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store.Channel, m *store.Model, payload []byte) ([]string, error) {
 	parsed, err := parsePayload(payload)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	n := parsed.N
 	if n <= 0 {
@@ -123,10 +119,10 @@ func (openaiImageAdapter) Run(ctx context.Context, p *gateway.Provider, ch *stor
 	})
 	status, respBody, err := p.DoJSON(ctx, ch, http.MethodPost, "/images/generations", body, nil)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	if status >= 400 {
-		return nil, upstreamError(status, respBody)
+		return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 	}
 	var out struct {
 		Data []struct {
@@ -160,7 +156,7 @@ type dashscopeVideoAdapter struct{}
 func (dashscopeVideoAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store.Channel, m *store.Model, payload []byte) ([]string, error) {
 	parsed, err := parsePayload(payload)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	body := map[string]any{
 		"model": m.UpstreamModel,
@@ -174,10 +170,10 @@ func (dashscopeVideoAdapter) Run(ctx context.Context, p *gateway.Provider, ch *s
 		"/api/v1/services/aigc/video-generation/video-synthesis", raw,
 		map[string]string{"X-DashScope-Async": "enable"})
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	if status >= 400 {
-		return nil, upstreamError(status, respBody)
+		return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 	}
 	var sub struct {
 		Output struct {
@@ -199,10 +195,10 @@ func pollDashscopeTask(ctx context.Context, p *gateway.Provider, ch *store.Chann
 	for {
 		status, respBody, err := p.DoJSON(ctx, ch, http.MethodGet, "/api/v1/tasks/"+taskID, nil, nil)
 		if err != nil {
-			return nil, err
+			return nil, &TransportError{Err: err}
 		}
 		if status >= 400 {
-			return nil, upstreamError(status, respBody)
+			return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 		}
 		var out struct {
 			Output struct {
@@ -248,7 +244,7 @@ type klingVideoAdapter struct{}
 func (klingVideoAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store.Channel, m *store.Model, payload []byte) ([]string, error) {
 	parsed, err := parsePayload(payload)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	body := map[string]any{"model": m.UpstreamModel, "prompt": parsed.Prompt}
 	if parsed.Duration != "" {
@@ -257,10 +253,10 @@ func (klingVideoAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store
 	raw, _ := json.Marshal(body)
 	status, respBody, err := p.DoJSON(ctx, ch, http.MethodPost, "/v1/videos/text2video", raw, nil)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	if status >= 400 {
-		return nil, upstreamError(status, respBody)
+		return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 	}
 	var sub struct {
 		Code    int    `json:"code"`
@@ -287,7 +283,7 @@ func pollKlingTask(ctx context.Context, p *gateway.Provider, ch *store.Channel, 
 			return nil, err
 		}
 		if status >= 400 {
-			return nil, upstreamError(status, respBody)
+			return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 		}
 		var out struct {
 			Data struct {
@@ -334,7 +330,7 @@ type sunoMusicAdapter struct{}
 func (sunoMusicAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store.Channel, m *store.Model, payload []byte) ([]string, error) {
 	parsed, err := parsePayload(payload)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	text := parsed.Prompt
 	if text == "" {
@@ -347,10 +343,10 @@ func (sunoMusicAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store.
 	raw, _ := json.Marshal(body)
 	status, respBody, err := p.DoJSON(ctx, ch, http.MethodPost, "/api/v1/generate", raw, nil)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	if status >= 400 {
-		return nil, upstreamError(status, respBody)
+		return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 	}
 	var sub struct {
 		ID string `json:"id"`
@@ -371,7 +367,7 @@ func pollSunoTask(ctx context.Context, p *gateway.Provider, ch *store.Channel, t
 			return nil, err
 		}
 		if status >= 400 {
-			return nil, upstreamError(status, respBody)
+			return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 		}
 		var out struct {
 			Status     string `json:"status"`
@@ -403,7 +399,7 @@ type dashscopeTTSAdapter struct{}
 func (dashscopeTTSAdapter) Run(ctx context.Context, p *gateway.Provider, ch *store.Channel, m *store.Model, payload []byte) ([]string, error) {
 	parsed, err := parsePayload(payload)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	text := parsed.Text
 	if text == "" {
@@ -416,10 +412,10 @@ func (dashscopeTTSAdapter) Run(ctx context.Context, p *gateway.Provider, ch *sto
 	status, respBody, err := p.DoJSON(ctx, ch, http.MethodPost,
 		"/api/v1/services/aigc/multimodal-generation/generation", body, nil)
 	if err != nil {
-		return nil, err
+		return nil, &TransportError{Err: err}
 	}
 	if status >= 400 {
-		return nil, upstreamError(status, respBody)
+		return nil, &UpstreamHTTPError{Status: status, Body: respBody}
 	}
 	var out struct {
 		Output struct {

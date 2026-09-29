@@ -26,24 +26,26 @@ type Server struct {
 	provider *gateway.Provider
 	tokens   *auth.TokenService
 	payMu    sync.RWMutex
-	payState payConfigState // P3-2: hot-swappable payment config
-	limiter  *rateLimiter   // P4-3: per-key RPM/TPM (nil when disabled)
-	health   *channelHealth // P5-1: channel failure cooldown
+	payState payConfigState         // P3-2: hot-swappable payment config
+	limiter  *rateLimiter           // P4-3: per-key RPM/TPM (nil when disabled)
+	health   *gateway.ChannelHealth // P5-1/P6-1: channel failure cooldown,
+	// shared with the task workers so one failure cools down everywhere
 	// P5-1: *store.Store in production; swappable in unit tests.
 	channelSource channelSource
 }
 
 // New builds the API server. The payment state starts from the environment;
 // call ReloadPayConfig to seed the database and switch to it (hot-reloadable
-// via /admin/pay-config afterwards).
-func New(cfg *config.Config, st *store.Store, p *gateway.Provider) *Server {
+// via /admin/pay-config afterwards). health is the shared channel-health
+// tracker (also used by the task workers).
+func New(cfg *config.Config, st *store.Store, p *gateway.Provider, health *gateway.ChannelHealth) *Server {
 	s := &Server{
 		cfg:           cfg,
 		store:         st,
 		provider:      p,
 		tokens:        auth.NewTokenService(cfg.MasterKey),
 		payState:      envPayState(cfg),
-		health:        newChannelHealth(),
+		health:        health,
 		channelSource: st,
 	}
 	if cfg.RPM > 0 || cfg.TPM > 0 {

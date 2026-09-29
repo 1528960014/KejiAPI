@@ -96,7 +96,7 @@ func (s *Server) handleListChannels(c *gin.Context) {
 	out := make([]channelWithHealth, 0, len(channels))
 	for _, ch := range channels {
 		item := channelWithHealth{Channel: ch, Health: "ok"}
-		if until, down := s.health.cooldownUntil(ch.ID, now); down {
+		if until, down := s.health.CooldownUntil(ch.ID, now); down {
 			item.Health = "cooldown"
 			item.CooldownUntil = until.UTC().Format(time.RFC3339)
 		}

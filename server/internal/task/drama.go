@@ -40,11 +40,40 @@ type DramaWorker struct {
 	store    *store.Store
 	provider *gateway.Provider
 	composer *Composer
+	health   *gateway.ChannelHealth // P6-1: shared channel failure cooldown
 }
 
 // NewDramaWorker builds a drama worker.
-func NewDramaWorker(st *store.Store, p *gateway.Provider, composer *Composer) *DramaWorker {
-	return &DramaWorker{store: st, provider: p, composer: composer}
+func NewDramaWorker(st *store.Store, p *gateway.Provider, composer *Composer, health *gateway.ChannelHealth) *DramaWorker {
+	return &DramaWorker{store: st, provider: p, composer: composer, health: health}
+}
+
+// mediaCandidate is one channel that can serve a media type for a model.
+type mediaCandidate struct {
+	ch *store.Channel
+	ad Adapter
+}
+
+// mediaCandidates returns the model's enabled, non-cooled-down channels that
+// have an adapter for the media type, in failover order (P6-1).
+func (w *DramaWorker) mediaCandidates(ctx context.Context, modelID, taskType string) ([]mediaCandidate, error) {
+	channels, err := w.store.ChannelsForModel(ctx, modelID)
+	if err != nil {
+		return nil, err
+	}
+	now := time.Now()
+	out := []mediaCandidate{}
+	for _, ch := range channels {
+		if w.health.IsDown(ch.ID, now) {
+			continue
+		}
+		ad := adapterFor(ch.Provider, taskType)
+		if ad == nil {
+			continue
+		}
+		out = append(out, mediaCandidate{ch: ch, ad: ad})
+	}
+	return out, nil
 }
 
 // Run blocks until ctx is cancelled; it first recovers dramas a dead worker
@@ -100,34 +129,25 @@ func (w *DramaWorker) runDrama(ctx context.Context, d *store.Drama) {
 		w.failAndRelease(ctx, d, "image model no longer available: "+d.ImageModel)
 		return
 	}
-	ch, err := w.store.PickChannel(runCtx, d.ImageModel)
-	if err != nil {
-		w.failAndRelease(ctx, d, "no enabled channel for image model "+d.ImageModel)
-		return
-	}
-	ad := adapterFor(ch.Provider, "image")
-	if ad == nil {
-		w.failAndRelease(ctx, d, fmt.Sprintf("provider %q does not support image generation", ch.Provider))
+	// P6-1: image/TTS channels are picked as failover candidate lists; the
+	// shot loop advances through them on availability failures.
+	imgCandidates, err := w.mediaCandidates(runCtx, d.ImageModel, "image")
+	if err != nil || len(imgCandidates) == 0 {
+		w.failAndRelease(ctx, d, "no usable channel for image model "+d.ImageModel+" (cooled down or provider unsupported)")
 		return
 	}
 
 	var ttsModel *store.Model
-	var chTTS *store.Channel
-	var adTTS Adapter
+	var ttsCandidates []mediaCandidate
 	if d.TTSModel != nil && *d.TTSModel != "" {
 		ttsModel, err = w.store.GetModel(runCtx, *d.TTSModel)
 		if err != nil || !ttsModel.Enabled {
 			w.failAndRelease(ctx, d, "tts model no longer available: "+*d.TTSModel)
 			return
 		}
-		chTTS, err = w.store.PickChannel(runCtx, *d.TTSModel)
-		if err != nil {
-			w.failAndRelease(ctx, d, "no enabled channel for tts model "+*d.TTSModel)
-			return
-		}
-		adTTS = adapterFor(chTTS.Provider, "tts")
-		if adTTS == nil {
-			w.failAndRelease(ctx, d, fmt.Sprintf("provider %q does not support tts", chTTS.Provider))
+		ttsCandidates, err = w.mediaCandidates(runCtx, *d.TTSModel, "tts")
+		if err != nil || len(ttsCandidates) == 0 {
+			w.failAndRelease(ctx, d, "no usable channel for tts model "+*d.TTSModel+" (cooled down or provider unsupported)")
 			return
 		}
 	}
@@ -139,6 +159,7 @@ func (w *DramaWorker) runDrama(ctx context.Context, d *store.Drama) {
 	}
 	w.saveProgress(ctx, d, shots)
 
+	imgIdx, ttsIdx := 0, 0
 	for i := range shots {
 		if runCtx.Err() != nil {
 			w.failAndRelease(ctx, d, "drama timed out")
@@ -149,16 +170,30 @@ func (w *DramaWorker) runDrama(ctx context.Context, d *store.Drama) {
 		w.saveProgress(ctx, d, shots)
 
 		imgPayload, _ := json.Marshal(map[string]string{"prompt": shot.ImagePrompt, "size": "1024x1024"})
-		imgCtx, imgCancel := context.WithTimeout(runCtx, TaskTimeout)
-		urls, err := ad.Run(imgCtx, w.provider, ch, model, imgPayload)
-		imgCancel()
-		if err != nil {
-			shot.Status = "failed"
-			shot.Error = err.Error()
-			w.saveProgress(ctx, d, shots)
-			w.failAndRelease(ctx, d, fmt.Sprintf("shot %d image failed: %s", shot.ShotNo, err.Error()))
-			return
+		// P6-1: an availability failure moves to the next image channel and
+		// retries this same shot; a request/content failure ends the drama.
+		var urls []string
+		for {
+			imgCtx, imgCancel := context.WithTimeout(runCtx, TaskTimeout)
+			var err error
+			urls, err = imgCandidates[imgIdx].ad.Run(imgCtx, w.provider, imgCandidates[imgIdx].ch, model, imgPayload)
+			imgCancel()
+			if err == nil {
+				break
+			}
+			if !taskFailureRetryable(err) || imgIdx+1 >= len(imgCandidates) {
+				shot.Status = "failed"
+				shot.Error = err.Error()
+				w.saveProgress(ctx, d, shots)
+				w.failAndRelease(ctx, d, fmt.Sprintf("shot %d image failed: %s", shot.ShotNo, err.Error()))
+				return
+			}
+			w.health.MarkFailed(imgCandidates[imgIdx].ch.ID, time.Now())
+			slog.Warn("drama image channel failed, failing over",
+				"drama", d.DramaUUID, "shot", shot.ShotNo, "channel", imgCandidates[imgIdx].ch.Name, "error", err)
+			imgIdx++
 		}
+		w.health.MarkOK(imgCandidates[imgIdx].ch.ID)
 		if len(urls) == 0 {
 			shot.Status = "failed"
 			shot.Error = "upstream returned no image url"
@@ -168,18 +203,30 @@ func (w *DramaWorker) runDrama(ctx context.Context, d *store.Drama) {
 		}
 		shot.ImageURL = urls[0]
 
-		if adTTS != nil && strings.TrimSpace(shot.Dialogue) != "" {
+		if len(ttsCandidates) > 0 && strings.TrimSpace(shot.Dialogue) != "" {
 			ttsPayload, _ := json.Marshal(map[string]string{"text": shot.Dialogue})
-			ttsCtx, ttsCancel := context.WithTimeout(runCtx, TaskTimeout)
-			audioURLs, err := adTTS.Run(ttsCtx, w.provider, chTTS, ttsModel, ttsPayload)
-			ttsCancel()
-			if err != nil {
-				shot.Status = "failed"
-				shot.Error = err.Error()
-				w.saveProgress(ctx, d, shots)
-				w.failAndRelease(ctx, d, fmt.Sprintf("shot %d tts failed: %s", shot.ShotNo, err.Error()))
-				return
+			var audioURLs []string
+			for {
+				ttsCtx, ttsCancel := context.WithTimeout(runCtx, TaskTimeout)
+				var err error
+				audioURLs, err = ttsCandidates[ttsIdx].ad.Run(ttsCtx, w.provider, ttsCandidates[ttsIdx].ch, ttsModel, ttsPayload)
+				ttsCancel()
+				if err == nil {
+					break
+				}
+				if !taskFailureRetryable(err) || ttsIdx+1 >= len(ttsCandidates) {
+					shot.Status = "failed"
+					shot.Error = err.Error()
+					w.saveProgress(ctx, d, shots)
+					w.failAndRelease(ctx, d, fmt.Sprintf("shot %d tts failed: %s", shot.ShotNo, err.Error()))
+					return
+				}
+				w.health.MarkFailed(ttsCandidates[ttsIdx].ch.ID, time.Now())
+				slog.Warn("drama tts channel failed, failing over",
+					"drama", d.DramaUUID, "shot", shot.ShotNo, "channel", ttsCandidates[ttsIdx].ch.Name, "error", err)
+				ttsIdx++
 			}
+			w.health.MarkOK(ttsCandidates[ttsIdx].ch.ID)
 			if len(audioURLs) > 0 {
 				shot.AudioURL = audioURLs[0]
 			}
@@ -299,8 +346,8 @@ func (w *DramaWorker) storyboard(ctx context.Context, d *store.Drama) ([]Shot, e
 		if err != nil || !m.Enabled {
 			return nil, fmt.Errorf("storyboard model unavailable: %s", d.StoryboardModel)
 		}
-		ch, err := w.store.PickChannel(ctx, d.StoryboardModel)
-		if err != nil {
+		channels, err := w.store.ChannelsForModel(ctx, d.StoryboardModel)
+		if err != nil || len(channels) == 0 {
 			return nil, fmt.Errorf("no channel for storyboard model %s", d.StoryboardModel)
 		}
 		body, _ := json.Marshal(map[string]any{
@@ -312,12 +359,41 @@ func (w *DramaWorker) storyboard(ctx context.Context, d *store.Drama) ([]Shot, e
 				{"role": "user", "content": fmt.Sprintf("风格：%s\n镜头数：%d\n剧本：\n%s", d.Style, d.ShotsPlanned, d.Script)},
 			},
 		})
-		status, resp, err := w.provider.DoJSON(ctx, ch, http.MethodPost, "/chat/completions", body, nil)
-		if err != nil {
-			return nil, fmt.Errorf("storyboard upstream call: %w", err)
+		// P6-1: try storyboard channels in failover order on availability errors.
+		now := time.Now()
+		var resp []byte
+		var lastErr error
+		for _, ch := range channels {
+			if w.health.IsDown(ch.ID, now) {
+				continue
+			}
+			status, callResp, dErr := w.provider.DoJSON(ctx, ch, http.MethodPost, "/chat/completions", body, nil)
+			if dErr != nil {
+				w.health.MarkFailed(ch.ID, now)
+				lastErr = &TransportError{Err: dErr}
+				slog.Warn("storyboard channel transport failure, failing over",
+					"drama", d.DramaUUID, "channel", ch.Name, "error", dErr)
+				continue
+			}
+			if status < 400 {
+				w.health.MarkOK(ch.ID)
+				resp = callResp
+				lastErr = nil
+				break
+			}
+			if !gateway.UpstreamRetryable(status, false) {
+				return nil, fmt.Errorf("storyboard upstream: %w", &UpstreamHTTPError{Status: status, Body: callResp})
+			}
+			w.health.MarkFailed(ch.ID, now)
+			lastErr = &UpstreamHTTPError{Status: status, Body: callResp}
+			slog.Warn("storyboard channel returned retryable error, failing over",
+				"drama", d.DramaUUID, "channel", ch.Name, "status", status)
 		}
-		if status >= 400 {
-			return nil, fmt.Errorf("storyboard upstream HTTP %d: %s", status, truncate(resp, 300))
+		if resp == nil {
+			if lastErr == nil {
+				lastErr = fmt.Errorf("all storyboard channels cooling down")
+			}
+			return nil, fmt.Errorf("storyboard upstream call: %w", lastErr)
 		}
 		var parsed struct {
 			Choices []struct {
@@ -422,11 +498,4 @@ func naiveSplit(script, style string, n int) []storyboardShot {
 		out = append(out, storyboardShot{Scene: p, Dialogue: p, ImagePrompt: prefix + p})
 	}
 	return out
-}
-
-func truncate(b []byte, n int) string {
-	if len(b) <= n {
-		return string(b)
-	}
-	return string(b[:n]) + "…"
 }
