@@ -61,7 +61,7 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 多模型对比聊天（同一 prompt 并排 N 个模型，SSE 流式渲染）
 - 生成工作台（图/视频/音乐/TTS 表单 + 任务列表 + 结果预览）
 - API 控制台（key 管理、用量与消费）
-- i18n zh-CN/en-US；深浅主题
+- i18n 六语言（P2-5：zh-CN/en-US/ja/ko/ru/es，顶栏下拉切换、localStorage 记忆）；深浅主题
 
 ## 核心数据表
 

@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { setLocale } from './i18n'
+import { LOCALES, setLocale, type Locale } from './i18n'
 import { getTheme, toggleTheme, type Theme } from './theme'
 import { formatUsd } from './api/client'
 import { isLoggedIn, loadMe, signOut, useSession } from './session'
@@ -34,8 +34,8 @@ watch(
   },
 )
 
-function switchLocale() {
-  const next = locale.value === 'zh-CN' ? 'en-US' : 'zh-CN'
+function onLocaleChange(e: Event) {
+  const next = (e.target as HTMLSelectElement).value as Locale
   setLocale(next)
   locale.value = next
 }
@@ -80,9 +80,9 @@ async function handleSignOut() {
         <router-link v-else to="/login" class="icon-btn login-link">
           {{ t('login.title') }}
         </router-link>
-        <button class="icon-btn" type="button" @click="switchLocale">
-          {{ locale === 'zh-CN' ? 'EN' : '中' }}
-        </button>
+        <select class="icon-btn locale-select" :value="locale" @change="onLocaleChange">
+          <option v-for="l in LOCALES" :key="l.code" :value="l.code">{{ l.label }}</option>
+        </select>
         <button class="icon-btn" type="button" :title="t('theme.toggle')" @click="switchTheme">
           {{ theme === 'dark' ? '☀' : '🌙' }}
         </button>
@@ -143,6 +143,9 @@ nav {
 }
 .icon-btn:hover {
   background: var(--bg-hover);
+}
+.locale-select {
+  padding: 2px 4px;
 }
 .login-link {
   text-decoration: none;
