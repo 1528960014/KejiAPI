@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import {
   authHeaders,
+  formatUsd,
   getApiKey,
   listChatAgents,
-  listModels,
   listPublicModels,
   mediaStatus,
   setApiKey,
@@ -15,14 +16,22 @@ import {
   type MediaRequest,
   type PublicModel,
 } from '../api/client'
+import { getTheme, toggleTheme, type Theme } from '../theme'
+import { useSession } from '../session'
 
 const { t } = useI18n()
+const router = useRouter()
+const session = useSession()
 
 const TTS_MODEL_STORAGE = 'modelhub.ttsModel'
+const USED_STORAGE = 'modelhub.usedModels'
+const SESSIONS_STORAGE = 'modelhub.sessions'
 
-type Modality = 'text' | 'image' | 'video' | 'music' | 'tts'
+type Cap = 'text' | 'image' | 'video' | 'music' | 'tts'
+type MediaCap = Exclude<Cap, 'text'>
+type Filter = 'all' | 'text' | 'image' | 'video' | 'audio' | 'mine'
 
-interface Column {
+interface ChatCol {
   model: string
   content: string
   done: boolean
@@ -31,184 +40,217 @@ interface Column {
   completionTokens: number
 }
 
-interface Round {
-  user: string
-  columns: Column[]
-}
-
-interface MediaRound {
-  id: number
-  kind: Exclude<Modality, 'text'>
+interface MediaItem {
+  kind: MediaCap
   model: string
-  prompt: string
   status: string
   error: string
-  resultUrls: string[]
+  urls: string[]
   costUsd: number
 }
 
+interface Round {
+  user: string
+  media: MediaItem | null
+  columns: ChatCol[]
+}
+
+interface SessionItem {
+  title: string
+  at: number
+  rounds: Round[]
+}
+
+const CAP_ORDER: Cap[] = ['text', 'image', 'video', 'music', 'tts']
+const CAP_GLYPH: Record<Cap, string> = { text: '✦', image: '❖', video: '▶', music: '♪', tts: '◉' }
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: 'all', label: 'shell.tabAll' },
+  { key: 'text', label: 'shell.tabText' },
+  { key: 'image', label: 'shell.tabImage' },
+  { key: 'video', label: 'shell.tabVideo' },
+  { key: 'audio', label: 'shell.tabAudio' },
+  { key: 'mine', label: 'shell.tabMine' },
+]
+
+// ---------- state ----------
+const theme = ref<Theme>(getTheme())
 const apiKey = ref(getApiKey())
-const models = ref<string[]>([])
-const selectedModels = ref<string[]>([])
+const publicModels = ref<PublicModel[]>([])
 const agents = ref<ChatAgent[]>([])
 const selectedAgent = ref('')
+const selected = ref('')
+const compare = ref(false)
+const compareList = ref<string[]>([])
+const filter = ref<Filter>('all')
+const provider = ref('')
+const query = ref('')
 const input = ref('')
 const busy = ref(false)
 const error = ref('')
 const rounds = ref<Round[]>([])
-
-const modality = ref<Modality>('text')
-
-// P3-4: real-time speech — optional TTS model for reading replies aloud.
-const ttsModels = ref<string[]>([])
+const usedModels = ref<string[]>(loadJson(USED_STORAGE, []))
+const sessions = ref<SessionItem[]>(loadJson(SESSIONS_STORAGE, []))
 const ttsModel = ref(localStorage.getItem(TTS_MODEL_STORAGE) || '')
 const playingId = ref('')
+const modelPop = ref(false)
+const keyPop = ref(false)
+const stageRef = ref<HTMLElement | null>(null)
 
-// --- multimodal generation (image / video / music / tts) ---
-const publicModels = ref<PublicModel[]>([])
-const mediaModel = ref('')
-const mediaPrompt = ref('')
-const mediaSize = ref('')
-const mediaDuration = ref('')
-const mediaBusy = ref(false)
-const mediaRounds = ref<MediaRound[]>([])
-const mediaError = ref('')
-const timers = new Map<number, number>()
-let nextMediaId = 1
+const pollTimers = new Set<number>()
 
-const MODALITIES: { key: Modality; icon: string }[] = [
-  { key: 'text', icon: '💬' },
-  { key: 'image', icon: '🎨' },
-  { key: 'video', icon: '🎬' },
-  { key: 'music', icon: '🎵' },
-  { key: 'tts', icon: '🎙' },
-]
+function loadJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as T) : fallback
+  } catch {
+    return fallback
+  }
+}
+function persistJson(key: string, value: unknown) {
+  localStorage.setItem(key, JSON.stringify(value))
+}
 
-const mediaModels = computed<PublicModel[]>(() => {
-  const kind = modality.value
-  if (kind === 'text') return []
-  return publicModels.value.filter((m) => (m.capabilities || []).includes(kind))
+// ---------- derived ----------
+function primaryCap(m: PublicModel): Cap {
+  const caps = m.capabilities || []
+  for (const c of CAP_ORDER) if (caps.includes(c)) return c
+  return 'text'
+}
+
+const providers = computed(() =>
+  [...new Set(publicModels.value.map((m) => m.provider).filter(Boolean))].sort(),
+)
+
+const filteredModels = computed(() => {
+  let list = publicModels.value
+  const f = filter.value
+  if (f === 'mine') list = list.filter((m) => usedModels.value.includes(m.id))
+  else if (f === 'text') list = list.filter((m) => (m.capabilities || []).includes('text'))
+  else if (f === 'image') list = list.filter((m) => (m.capabilities || []).includes('image'))
+  else if (f === 'video') list = list.filter((m) => (m.capabilities || []).includes('video'))
+  else if (f === 'audio')
+    list = list.filter((m) => {
+      const caps = m.capabilities || []
+      return caps.includes('music') || caps.includes('tts')
+    })
+  if (provider.value) list = list.filter((m) => m.provider === provider.value)
+  const q = query.value.trim().toLowerCase()
+  if (q) list = list.filter((m) => m.id.toLowerCase().includes(q))
+  return list
 })
 
-async function loadModels() {
-  error.value = ''
-  if (!apiKey.value) {
-    models.value = []
-    return
-  }
-  try {
-    const list = await listModels()
-    models.value = list.map((m) => m.id)
-    if (selectedAgent.value) {
-      // an agent owns the model choice
-      selectedModels.value = [selectedAgent.value]
-    } else {
-      // keep previously selected models that still exist, default to first
-      selectedModels.value = selectedModels.value.filter((m) => models.value.includes(m))
-      if (!selectedModels.value.length && models.value.length) {
-        selectedModels.value = [models.value[0]]
-      }
-    }
-  } catch {
-    models.value = []
-  }
-}
+const chatModels = computed(() =>
+  publicModels.value.filter((m) => (m.capabilities || []).includes('text')),
+)
 
-async function loadAgents() {
-  if (!apiKey.value) {
-    agents.value = []
-    return
-  }
-  try {
-    agents.value = await listChatAgents()
-  } catch {
-    agents.value = []
-  }
-}
-
-async function loadTtsModels() {
-  try {
-    const list = await listPublicModels()
-    publicModels.value = list
-    ttsModels.value = list
-      .filter((m) => (m.capabilities || []).includes('tts'))
-      .map((m) => m.id)
-    if (ttsModel.value && !ttsModels.value.includes(ttsModel.value)) {
-      ttsModel.value = ''
-    }
-    // default media model per modality: first match
-    if (!mediaModel.value || !mediaModels.value.some((m) => m.id === mediaModel.value)) {
-      mediaModel.value = mediaModels.value[0]?.id ?? ''
-    }
-  } catch {
-    publicModels.value = []
-    ttsModels.value = []
-  }
-}
-
-function onModalityChange() {
-  error.value = ''
-  mediaError.value = ''
-  mediaModel.value = mediaModels.value[0]?.id ?? ''
-}
-
-function onTtsChange(value: string) {
-  ttsModel.value = value
-  if (value) {
-    localStorage.setItem(TTS_MODEL_STORAGE, value)
-  } else {
-    localStorage.removeItem(TTS_MODEL_STORAGE)
-  }
-}
-
-onMounted(() => {
-  void loadModels()
-  void loadAgents()
-  void loadTtsModels()
+const selectedModel = computed(
+  () => publicModels.value.find((m) => m.id === selected.value) || null,
+)
+const agent = computed(() => agents.value.find((a) => a.agent_id === selectedAgent.value) || null)
+const pillLabel = computed(() =>
+  agent.value ? `${agent.value.name} · ${agent.value.model}` : selected.value,
+)
+const ttsModels = computed(() =>
+  publicModels.value.filter((m) => (m.capabilities || []).includes('tts')).map((m) => m.id),
+)
+const canSend = computed(
+  () =>
+    !!input.value.trim() &&
+    !busy.value &&
+    !!apiKey.value &&
+    (!!selectedAgent.value || !!selected.value),
+)
+const heroDesc = computed(() => {
+  if (agent.value) return agent.value.description
+  const m = selectedModel.value
+  if (!m) return t('shell.heroHint')
+  const caps = (m.capabilities || [])
+    .map((c) => t(`shell.cap.${c}`))
+    .filter(Boolean)
+    .join(' / ')
+  return `${m.provider} · ${caps} · ${priceLine(m)}`
 })
 
-onUnmounted(() => {
-  for (const timer of timers.values()) window.clearInterval(timer)
-  timers.clear()
-})
-
-function onKeyChange() {
-  setApiKey(apiKey.value.trim())
-  void loadModels()
-  void loadAgents()
-}
-
-function onAgentChange(value: string) {
-  selectedAgent.value = value
-  const agent = agents.value.find((a) => a.agent_id === value)
-  if (agent) {
-    selectedModels.value = [agent.agent_id]
-  } else if (!selectedModels.value.length && models.value.length) {
-    selectedModels.value = [models.value[0]]
+function priceLine(m: PublicModel): string {
+  if (m.price_unit && m.price_unit !== 'token' && m.unit_price != null && m.unit_price > 0) {
+    return t('shell.priceUnit', { p: m.unit_price.toFixed(2) })
   }
+  if (m.input_price_per_1k > 0 || m.output_price_per_1k > 0) {
+    return t('shell.priceTok', { i: m.input_price_per_1k, o: m.output_price_per_1k })
+  }
+  return m.provider
 }
 
 function modelLabel(id: string): string {
-  const agent = agents.value.find((a) => a.agent_id === id)
-  return agent ? `${agent.name} · ${agent.model}` : id
+  const a = agents.value.find((x) => x.agent_id === id)
+  return a ? `${a.name} · ${a.model}` : id
 }
 
-// history for one model: all previous user turns plus that model's own
-// successful assistant replies, then the new user message.
-function historyFor(roundsSoFar: Round[], colIndex: number, newMessage: string): { role: string; content: string }[] {
+// ---------- data loading ----------
+async function loadModels() {
+  try {
+    publicModels.value = await listPublicModels()
+    if (!selected.value || !publicModels.value.some((m) => m.id === selected.value)) {
+      selected.value = chatModels.value[0]?.id ?? publicModels.value[0]?.id ?? ''
+    }
+    if (ttsModel.value && !ttsModels.value.includes(ttsModel.value)) ttsModel.value = ''
+  } catch {
+    publicModels.value = []
+  }
+  if (apiKey.value) {
+    try {
+      agents.value = await listChatAgents()
+    } catch {
+      agents.value = []
+    }
+  } else {
+    agents.value = []
+  }
+}
+
+// ---------- selection ----------
+function selectModel(m: PublicModel) {
+  selected.value = m.id
+  if (selectedAgent.value) selectedAgent.value = ''
+  if (compare.value && !compareList.value.includes(m.id)) compareList.value.push(m.id)
+}
+
+function onAgentChange(v: string) {
+  selectedAgent.value = v
+}
+
+function toggleCompare() {
+  compare.value = !compare.value
+  if (compare.value) {
+    if (!compareList.value.length && selected.value) compareList.value = [selected.value]
+  } else if (selected.value) {
+    compareList.value = [selected.value]
+  }
+}
+
+function markUsed(id: string) {
+  if (!id) return
+  if (!usedModels.value.includes(id)) {
+    usedModels.value = [id, ...usedModels.value].slice(0, 50)
+    persistJson(USED_STORAGE, usedModels.value)
+  }
+}
+
+// ---------- chat streaming ----------
+function historyFor(prev: Round[], colIndex: number, msg: string): { role: string; content: string }[] {
   const out: { role: string; content: string }[] = []
-  for (const round of roundsSoFar) {
-    out.push({ role: 'user', content: round.user })
-    const col = round.columns[colIndex]
+  for (const r of prev) {
+    out.push({ role: 'user', content: r.user })
+    const col = r.columns[colIndex]
     if (col && col.done && !col.error && col.content) {
       out.push({ role: 'assistant', content: col.content })
     }
   }
-  out.push({ role: 'user', content: newMessage })
+  out.push({ role: 'user', content: msg })
   return out
 }
 
-async function streamToColumn(column: Column, history: { role: string; content: string }[]) {
+async function streamToColumn(column: ChatCol, history: { role: string; content: string }[]) {
   try {
     const res = await fetch('/v1/chat/completions', {
       method: 'POST',
@@ -222,7 +264,6 @@ async function streamToColumn(column: Column, history: { role: string; content: 
     const reader = res.body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
-    // streamed tool_call fragments keyed by call index (agent templates, P3-1)
     const toolParts = new Map<number, { name: string; args: string }>()
     for (;;) {
       const { done, value } = await reader.read()
@@ -257,16 +298,12 @@ async function streamToColumn(column: Column, history: { role: string; content: 
         }
       }
     }
-    // The web chat page does not execute tools; render the calls so the user
-    // sees what the model asked for (SDK clients do the real execution).
     const calls = [...toolParts.values()].filter((s) => s.name || s.args)
     if (calls.length) {
       const rendered = calls.map((s) => `${s.name || 'tool'}(${s.args})`).join(', ')
       column.content = (column.content ? column.content + '\n\n' : '') + t('chat.toolCall') + ' ' + rendered
     }
-    if (!column.content) {
-      column.content = '…'
-    }
+    if (!column.content) column.content = '…'
   } catch (e) {
     column.error = String(e)
   } finally {
@@ -274,36 +311,105 @@ async function streamToColumn(column: Column, history: { role: string; content: 
   }
 }
 
+// ---------- media generation (image/video/music/tts via chat composer) ----------
+function pollMedia(round: Round, taskId: string) {
+  const timer = window.setTimeout(async () => {
+    pollTimers.delete(timer)
+    const item = round.media
+    if (!item) return
+    try {
+      const task = await mediaStatus(taskId)
+      item.status = task.status
+      item.error = task.error
+      item.urls = task.result_urls
+      item.costUsd = task.cost_usd
+      if (task.status !== 'succeeded' && task.status !== 'failed') pollMedia(round, taskId)
+    } catch {
+      pollMedia(round, taskId)
+    }
+  }, 3000)
+  pollTimers.add(timer)
+}
+
+async function runMedia(round: Round, text: string) {
+  const item = round.media
+  if (!item) return
+  try {
+    const body: MediaRequest = { model: item.model, type: item.kind }
+    if (item.kind === 'tts') body.text = text
+    else body.prompt = text
+    const { task_id } = await submitMedia(body)
+    pollMedia(round, task_id)
+  } catch (e) {
+    item.status = 'failed'
+    item.error = String(e)
+  }
+}
+
+function mediaStatusLabel(status: string): string {
+  const known: Record<string, string> = {
+    queued: t('workbench.status.queued'),
+    running: t('workbench.status.running'),
+    succeeded: t('workbench.status.succeeded'),
+    failed: t('workbench.status.failed'),
+  }
+  return known[status] ?? t('workbench.status.unknown')
+}
+
+// ---------- send ----------
 async function send() {
   const text = input.value.trim()
   if (!text || busy.value) return
   if (!apiKey.value) {
-    error.value = t('chat.noKey')
+    error.value = t('shell.noKey')
     return
   }
-  if (!selectedModels.value.length) {
+  let chatModelsToUse: string[] = []
+  let mediaKind: MediaCap | null = null
+  if (selectedAgent.value) {
+    chatModelsToUse = [selectedAgent.value]
+  } else if (selected.value) {
+    const m = publicModels.value.find((x) => x.id === selected.value)
+    const caps = m?.capabilities ?? []
+    const mediaCap = (['image', 'video', 'music', 'tts'] as MediaCap[]).find((c) => caps.includes(c))
+    if (m && !caps.includes('text') && mediaCap) {
+      mediaKind = mediaCap
+    } else {
+      chatModelsToUse = compare.value && compareList.value.length ? compareList.value : [selected.value]
+    }
+  } else {
     error.value = t('chat.noModels')
     return
   }
   error.value = ''
+  markUsed(selectedAgent.value ? agent.value?.model || '' : selected.value)
+  const round: Round = mediaKind
+    ? {
+        user: text,
+        media: { kind: mediaKind, model: selected.value, status: 'queued', error: '', urls: [], costUsd: 0 },
+        columns: [],
+      }
+    : {
+        user: text,
+        media: null,
+        columns: chatModelsToUse.map((model) => ({
+          model,
+          content: '',
+          done: false,
+          error: '',
+          promptTokens: 0,
+          completionTokens: 0,
+        })),
+      }
   const previous = [...rounds.value]
-  const round: Round = {
-    user: text,
-    columns: selectedModels.value.map((m) => ({
-      model: m,
-      content: '',
-      done: false,
-      error: '',
-      promptTokens: 0,
-      completionTokens: 0,
-    })),
-  }
   rounds.value.push(round)
   input.value = ''
   busy.value = true
-  await Promise.all(
-    round.columns.map((col, i) => streamToColumn(col, historyFor(previous, i, text))),
-  )
+  if (round.media) {
+    await runMedia(round, text)
+  } else {
+    await Promise.all(round.columns.map((col, i) => streamToColumn(col, historyFor(previous, i, text))))
+  }
   busy.value = false
 }
 
@@ -312,10 +418,16 @@ function clearRounds() {
   error.value = ''
 }
 
-// P3-4: synthesize a reply with the selected TTS model and play it.
+// ---------- TTS read-aloud ----------
+function onTtsChange(v: string) {
+  ttsModel.value = v
+  if (v) localStorage.setItem(TTS_MODEL_STORAGE, v)
+  else localStorage.removeItem(TTS_MODEL_STORAGE)
+}
+
 async function speak(roundIndex: number, colIndex: number, content: string) {
   if (!ttsModel.value || !apiKey.value) {
-    ElMessage.warning(t('chat.noKey'))
+    ElMessage.warning(t('shell.noKey'))
     return
   }
   const id = `${roundIndex}:${colIndex}`
@@ -343,513 +455,1179 @@ async function speak(roundIndex: number, colIndex: number, content: string) {
   }
 }
 
-// --- multimodal submit + polling ---
-
-async function generateMedia() {
-  const kind = modality.value
-  if (kind === 'text' || mediaBusy.value) return
-  if (!apiKey.value) {
-    mediaError.value = t('chat.noKey')
-    return
+// ---------- conversation sessions (local history) ----------
+function saveCurrent() {
+  if (!rounds.value.length) return
+  const item: SessionItem = {
+    title: (rounds.value[0].user || '…').slice(0, 30),
+    at: Date.now(),
+    rounds: rounds.value.slice(-40).map((r) => ({
+      user: r.user.slice(0, 2000),
+      media: r.media ? { ...r.media } : null,
+      columns: r.columns.map((c) => ({ ...c, content: c.content.slice(0, 8000) })),
+    })),
   }
-  if (!mediaModel.value) {
-    mediaError.value = t('chat.mediaNoModel')
-    return
-  }
-  const prompt = mediaPrompt.value.trim()
-  if (!prompt) {
-    mediaError.value = t('chat.mediaNeedPrompt')
-    return
-  }
-  mediaError.value = ''
-  mediaBusy.value = true
-  try {
-    const body: MediaRequest = {
-      model: mediaModel.value,
-      type: kind,
-    }
-    if (kind === 'tts') {
-      body.text = prompt
-    } else {
-      body.prompt = prompt
-    }
-    if (kind === 'image' && mediaSize.value.trim()) body.size = mediaSize.value.trim()
-    if ((kind === 'video' || kind === 'music') && mediaDuration.value.trim()) {
-      body.duration = mediaDuration.value.trim()
-    }
-    const { task_id } = await submitMedia(body)
-    const id = nextMediaId++
-    const round: MediaRound = {
-      id,
-      kind,
-      model: mediaModel.value,
-      prompt,
-      status: 'queued',
-      error: '',
-      resultUrls: [],
-      costUsd: 0,
-    }
-    mediaRounds.value.unshift(round)
-    startPolling(id, task_id)
-  } catch (e) {
-    mediaError.value = String(e)
-  } finally {
-    mediaBusy.value = false
-  }
+  sessions.value = [item, ...sessions.value].slice(0, 12)
+  persistJson(SESSIONS_STORAGE, sessions.value)
 }
 
-function stopPolling(id: number) {
-  const timer = timers.get(id)
-  if (timer !== undefined) {
-    window.clearInterval(timer)
-    timers.delete(id)
-  }
+function newChat() {
+  saveCurrent()
+  rounds.value = []
+  input.value = ''
+  error.value = ''
 }
 
-async function pollOnce(id: number, taskId: string) {
-  const round = mediaRounds.value.find((r) => r.id === id)
-  if (!round) {
-    stopPolling(id)
-    return
-  }
-  try {
-    const task = await mediaStatus(taskId)
-    round.status = task.status
-    round.error = task.error
-    round.resultUrls = task.result_urls
-    round.costUsd = task.cost_usd
-    if (task.status === 'succeeded' || task.status === 'failed') {
-      stopPolling(id)
-    }
-  } catch {
-    // transient network error — keep polling
-  }
+function restoreSession(item: SessionItem, idx: number) {
+  saveCurrent()
+  rounds.value = item.rounds.map((r) => ({
+    ...r,
+    media: r.media ? { ...r.media } : null,
+    columns: r.columns.map((c) => ({ ...c })),
+  }))
+  sessions.value.splice(idx, 1)
+  persistJson(SESSIONS_STORAGE, sessions.value)
+  modelPop.value = false
 }
 
-function startPolling(id: number, taskId: string) {
-  void pollOnce(id, taskId)
-  const timer = window.setInterval(() => void pollOnce(id, taskId), 3000)
-  timers.set(id, timer)
+// ---------- misc ----------
+function saveKey() {
+  setApiKey(apiKey.value.trim())
+  if (apiKey.value.trim()) ElMessage.success(t('shell.keySaved'))
+  void loadModels()
 }
 
-function mediaStatusLabel(status: string): string {
-  const known: Record<string, string> = {
-    queued: t('workbench.status.queued'),
-    running: t('workbench.status.running'),
-    succeeded: t('workbench.status.succeeded'),
-    failed: t('workbench.status.failed'),
-  }
-  return known[status] ?? t('workbench.status.unknown')
+function switchTheme() {
+  theme.value = toggleTheme()
 }
 
 const gridStyle = (n: number) => ({ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` })
+
+onMounted(() => {
+  void loadModels()
+})
+
+onUnmounted(() => {
+  for (const timer of pollTimers) window.clearTimeout(timer)
+  pollTimers.clear()
+})
+
+watch(
+  () => rounds.value,
+  () => {
+    void nextTick(() => {
+      const el = stageRef.value
+      if (el) el.scrollTop = el.scrollHeight
+    })
+  },
+  { deep: true },
+)
 </script>
 
 <template>
-  <div class="page">
-    <h2>{{ t('chat.title') }}</h2>
-
-    <div class="modality">
-      <button
-        v-for="m in MODALITIES"
-        :key="m.key"
-        type="button"
-        class="modality-btn"
-        :class="{ active: modality === m.key }"
-        @click="modality = m.key; onModalityChange()"
-      >
-        <span class="mod-icon">{{ m.icon }}</span>
-        {{ t(`chat.tab${m.key[0].toUpperCase()}${m.key.slice(1)}`) }}
-      </button>
-    </div>
-
-    <!-- ============ text chat ============ -->
-    <template v-if="modality === 'text'">
-      <div class="card config">
-        <div class="row">
-          <label>
-            {{ t('chat.apiKey') }}
-            <el-input v-model="apiKey" :placeholder="t('chat.apiKeyPlaceholder')" @change="onKeyChange" />
-          </label>
-          <label>
-            {{ t('chat.agents') }}
-            <el-select
-              v-model="selectedAgent"
-              style="min-width: 220px"
-              @change="onAgentChange"
-            >
-              <el-option :label="t('chat.agentNone')" value="" />
-              <el-option
-                v-for="a in agents"
-                :key="a.agent_id"
-                :label="`${a.name} · ${a.model}`"
-                :value="a.agent_id"
-                :title="a.description"
-              />
-            </el-select>
-          </label>
-          <label>
-            {{ t('chat.models') }}
-            <el-select
-              v-model="selectedModels"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              :disabled="!models.length || !!selectedAgent"
-              style="min-width: 320px"
-            >
-              <el-option
-                v-if="!models.length"
-                :label="apiKey ? t('chat.loadingModels') : t('chat.noModels')"
-                value=""
-                disabled
-              />
-              <el-option v-for="m in models" :key="m" :label="m" :value="m" />
-            </el-select>
-          </label>
-          <label v-if="ttsModels.length">
-            {{ t('chat.ttsModel') }}
-            <el-select
-              v-model="ttsModel"
-              style="min-width: 200px"
-              @change="onTtsChange"
-            >
-              <el-option :label="t('chat.ttsNone')" value="" />
-              <el-option v-for="m in ttsModels" :key="m" :label="m" :value="m" />
-            </el-select>
-          </label>
-          <el-button v-if="rounds.length" @click="clearRounds">{{ t('chat.clear') }}</el-button>
+  <div class="lh">
+    <!-- ================= left sidebar ================= -->
+    <aside class="side">
+      <div class="brand">
+        <span class="brand-mark">✦</span>
+        <div class="brand-txt">
+          <span class="brand-name">ModelHub</span>
+          <span class="brand-sub">{{ t('shell.brandSub') }}</span>
         </div>
-        <p class="muted hint">{{ selectedAgent ? t('chat.agentHint') : t('chat.compareHint') }}</p>
       </div>
 
-      <div class="chat">
-        <p v-if="!rounds.length && !busy" class="muted empty">{{ t('chat.placeholder') }}</p>
-        <div v-for="(round, ri) in rounds" :key="ri" class="round">
-          <div class="msg user">
-            <div class="role">{{ t('chat.you') }}</div>
-            <p class="content">{{ round.user }}</p>
+      <div class="snav">
+        <button type="button" class="snav-item on">
+          <span class="snav-ic">✦</span><span>{{ t('shell.navModels') }}</span>
+        </button>
+        <button type="button" class="snav-item" @click="modelPop = true">
+          <span class="snav-ic">⬢</span><span>{{ t('shell.navAgents') }}</span>
+        </button>
+        <button type="button" class="snav-item" @click="router.push('/workbench')">
+          <span class="snav-ic">▣</span><span>{{ t('shell.navCreate') }}</span>
+        </button>
+        <button type="button" class="snav-item" @click="router.push('/console')">
+          <span class="snav-ic">⌘</span><span>{{ t('shell.navApi') }}</span>
+        </button>
+      </div>
+
+      <div class="stabs">
+        <button
+          v-for="f in FILTERS"
+          :key="f.key"
+          type="button"
+          class="stab"
+          :class="{ on: filter === f.key }"
+          @click="filter = f.key"
+        >
+          {{ t(f.label) }}
+        </button>
+      </div>
+
+      <div class="stools">
+        <select v-model="provider" class="prov">
+          <option value="">{{ t('shell.allVendors') }}</option>
+          <option v-for="p in providers" :key="p" :value="p">{{ p }}</option>
+        </select>
+        <input v-model="query" class="search" :placeholder="t('shell.searchPh')" />
+      </div>
+
+      <div class="slist">
+        <p v-if="!filteredModels.length" class="slist-empty">{{ t('shell.modelEmpty') }}</p>
+        <button
+          v-for="m in filteredModels"
+          :key="m.id"
+          type="button"
+          class="mcard"
+          :class="{ on: selected === m.id || (agent && agent.model === m.id) }"
+          @click="selectModel(m)"
+        >
+          <span class="mc-ic" :class="'cap-' + primaryCap(m)">{{ CAP_GLYPH[primaryCap(m)] }}</span>
+          <span class="mc-body">
+            <span class="mc-top">
+              <span class="mc-name">{{ m.id }}</span>
+              <span class="mc-tag" :class="'tag-' + primaryCap(m)">{{ t(`shell.cap.${primaryCap(m)}`) }}</span>
+            </span>
+            <span class="mc-sub">{{ priceLine(m) }}</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="sfoot">
+        <div v-if="session.user" class="user-card">
+          <span class="avatar">{{ (session.user.email || '?').slice(0, 1).toUpperCase() }}</span>
+          <div class="u-txt">
+            <span class="u-title">{{ session.user.email }}</span>
+            <span class="u-sub">{{ formatUsd(session.user.balance_micro, session.user.balance_usd) }}</span>
           </div>
-          <div class="cols" :style="gridStyle(round.columns.length)">
-            <div v-for="(col, ci) in round.columns" :key="col.model" class="card col">
+          <button type="button" class="u-btn" @click="router.push('/console')">{{ t('shell.openConsole') }}</button>
+        </div>
+        <div v-else class="user-card">
+          <span class="avatar ghost">◉</span>
+          <div class="u-txt">
+            <span class="u-title">{{ t('shell.loginCta') }}</span>
+            <span class="u-sub">{{ t('shell.skipHint') }}</span>
+          </div>
+          <div class="u-actions">
+            <router-link to="/login" class="u-btn">{{ t('shell.login') }}</router-link>
+            <el-popover v-model:visible="keyPop" :width="250" trigger="click" placement="top-end">
+              <template #reference>
+                <button type="button" class="u-btn plain">{{ t('shell.useKey') }}</button>
+              </template>
+              <p class="key-tip">{{ t('shell.keyPh') }}</p>
+              <el-input v-model="apiKey" placeholder="sk-..." @change="saveKey" />
+            </el-popover>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= main ================= -->
+    <div class="main-col">
+      <header class="top">
+        <div class="top-left">
+          <button type="button" class="cta" @click="newChat">＋ {{ t('shell.newChat') }}</button>
+          <button type="button" class="t-icon" :title="t('theme.toggle')" @click="switchTheme">
+            {{ theme === 'dark' ? '☀' : '☾' }}
+          </button>
+        </div>
+        <div class="top-right">
+          <el-popover v-model:visible="modelPop" :width="320" trigger="click" placement="bottom-end">
+            <template #reference>
+              <button type="button" class="pill" :disabled="!pillLabel">
+                {{ pillLabel || t('shell.model') }} <span class="pill-caret">▾</span>
+              </button>
+            </template>
+            <div class="pop">
+              <p class="pop-title">{{ t('shell.model') }}</p>
+              <div class="pop-list">
+                <button
+                  v-for="m in chatModels"
+                  :key="m.id"
+                  type="button"
+                  class="pop-item"
+                  :class="{ on: selected === m.id && !selectedAgent }"
+                  @click="selectModel(m); modelPop = false"
+                >
+                  <span class="pop-name">{{ m.id }}</span>
+                  <span class="pop-sub">{{ m.provider }}</span>
+                </button>
+                <p v-if="!chatModels.length" class="pop-empty">{{ t('shell.modelEmpty') }}</p>
+              </div>
+              <p class="pop-title">{{ t('shell.agent') }}</p>
+              <el-select v-model="selectedAgent" size="small" @change="onAgentChange">
+                <el-option :label="t('shell.agentNone')" value="" />
+                <el-option
+                  v-for="a in agents"
+                  :key="a.agent_id"
+                  :label="`${a.name} · ${a.model}`"
+                  :value="a.agent_id"
+                />
+              </el-select>
+            </div>
+          </el-popover>
+          <router-link v-if="!session.user" to="/login" class="cta small">{{ t('shell.loginCta') }}</router-link>
+          <span v-else class="avatar">{{ (session.user.email || '?').slice(0, 1).toUpperCase() }}</span>
+        </div>
+      </header>
+
+      <div ref="stageRef" class="stage">
+        <div class="stage-inner">
+          <div v-if="!rounds.length" class="hero">
+            <svg class="spark" viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
+              <path
+                d="M32 2 L38 26 L62 32 L38 38 L32 62 L26 38 L2 32 L26 26 Z"
+                fill="url(#sparkGrad)"
+              />
+              <defs>
+                <linearGradient id="sparkGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#38bdf8" />
+                  <stop offset="100%" stop-color="#2563eb" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="hero-card">
+              <p class="hero-name">{{ pillLabel || t('shell.model') }}</p>
+              <p class="hero-desc">{{ heroDesc }}</p>
+            </div>
+            <p v-if="error" class="hero-error">{{ error }}</p>
+          </div>
+
+          <div v-for="(r, ri) in rounds" :key="ri" class="round">
+            <div class="u-b">{{ r.user }}</div>
+            <div v-if="r.media" class="a-card">
               <div class="col-head">
-                <span class="col-model">{{ modelLabel(col.model) }}</span>
-                <span class="col-actions">
-                  <el-button
-                    v-if="ttsModel && col.done && !col.error && col.content"
-                    size="small"
-                    text
-                    :loading="playingId === `${ri}:${ci}`"
-                    :title="t('chat.ttsPlay')"
-                    @click="speak(ri, ci, col.content)"
-                  >
-                    {{ t('chat.ttsPlay') }}
-                  </el-button>
-                  <span v-if="col.done && !col.error && col.promptTokens + col.completionTokens > 0" class="muted">
-                    {{ col.promptTokens }}+{{ col.completionTokens }} {{ t('chat.tokens') }}
-                  </span>
+                <span class="col-model">{{ r.media.model }}</span>
+                <span class="col-meta">
+                  {{ mediaStatusLabel(r.media.status) }}
+                  <template v-if="r.media.costUsd > 0"> · ${{ r.media.costUsd.toFixed(4) }}</template>
                 </span>
               </div>
-              <p v-if="col.error" class="col-error">{{ t('chat.error') }}: {{ col.error }}</p>
-              <p v-else class="content" :class="{ pending: !col.done }">{{ col.content }}</p>
+              <p v-if="r.media.error" class="col-error">{{ t('chat.error') }}: {{ r.media.error }}</p>
+              <div v-else class="m-res">
+                <template v-if="r.media.kind === 'image'">
+                  <img v-for="u in r.media.urls" :key="u" :src="u" alt="" />
+                </template>
+                <template v-else-if="r.media.kind === 'video'">
+                  <video v-for="u in r.media.urls" :key="u" :src="u" controls />
+                </template>
+                <template v-else-if="r.media.kind === 'music' || r.media.kind === 'tts'">
+                  <audio v-for="u in r.media.urls" :key="u" :src="u" controls />
+                </template>
+                <template v-else>
+                  <a v-for="u in r.media.urls" :key="u" :href="u" target="_blank" rel="noopener">{{ u }}</a>
+                </template>
+              </div>
+            </div>
+            <div v-else class="cols" :style="gridStyle(r.columns.length)">
+              <div v-for="(col, ci) in r.columns" :key="ci" class="a-card">
+                <div class="col-head">
+                  <span class="col-model">{{ modelLabel(col.model) }}</span>
+                  <span class="col-actions">
+                    <button
+                      v-if="ttsModels.length && col.done && !col.error && col.content"
+                      type="button"
+                      class="link-btn"
+                      :disabled="!!playingId"
+                      @click="speak(ri, ci, col.content)"
+                    >
+                      {{ t('chat.ttsPlay') }}
+                    </button>
+                    <span v-if="col.done && !col.error && col.promptTokens + col.completionTokens > 0" class="tok">
+                      {{ col.promptTokens }}+{{ col.completionTokens }} {{ t('chat.tokens') }}
+                    </span>
+                  </span>
+                </div>
+                <p v-if="col.error" class="col-error">{{ t('chat.error') }}: {{ col.error }}</p>
+                <p v-else class="content" :class="{ pending: !col.done }">{{ col.content }}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card input-card">
-        <div v-if="error" class="error">{{ error }}</div>
-        <div class="input-row">
-          <el-input
+      <div class="composer">
+        <div class="c-panel">
+          <span class="c-badge" :title="t('shell.billingNote')">{{ t('shell.billing') }} ⓘ</span>
+          <textarea
             v-model="input"
-            type="textarea"
-            :rows="2"
-            :placeholder="t('chat.placeholder')"
-            :disabled="busy"
+            rows="3"
+            class="c-input"
+            :placeholder="t('shell.inputPh')"
             @keydown.enter.exact.prevent="send"
-          />
-          <el-button type="primary" :loading="busy" @click="send">
-            {{ t('chat.send') }}
-          </el-button>
-        </div>
-      </div>
-    </template>
-
-    <!-- ============ media generation ============ -->
-    <template v-else>
-      <div class="card config">
-        <div class="row">
-          <label>
-            {{ t('chat.apiKey') }}
-            <el-input v-model="apiKey" :placeholder="t('chat.apiKeyPlaceholder')" @change="onKeyChange" />
-          </label>
-          <label style="min-width: 260px">
-            {{ t('chat.mediaModel') }}
-            <el-select v-model="mediaModel">
-              <el-option
-                v-if="!mediaModels.length"
-                :label="t('chat.mediaNoModel')"
-                value=""
-                disabled
-              />
-              <el-option v-for="m in mediaModels" :key="m.id" :label="m.id" :value="m.id" />
-            </el-select>
-          </label>
-          <template v-if="modality === 'image'">
-            <label>
-              {{ t('chat.mediaSize') }}
-              <el-input v-model="mediaSize" placeholder="1024x1024" style="width: 140px" />
-            </label>
-          </template>
-          <template v-else-if="modality === 'video' || modality === 'music'">
-            <label>
-              {{ t('chat.mediaDuration') }}
-              <el-input v-model="mediaDuration" placeholder="10" style="width: 110px" />
-            </label>
-          </template>
-        </div>
-        <div v-if="error || mediaError" class="error media-error">
-          {{ mediaError || error }}
-        </div>
-      </div>
-
-      <div class="card input-card media-input">
-        <div class="input-row">
-          <el-input
-            v-model="mediaPrompt"
-            type="textarea"
-            :rows="3"
-            :placeholder="modality === 'tts' ? t('workbench.textPlaceholder') : t('workbench.promptPlaceholder')"
-            :disabled="mediaBusy"
-            @keydown.ctrl.enter="generateMedia"
-          />
-          <el-button type="primary" :loading="mediaBusy" @click="generateMedia">
-            {{ mediaBusy ? t('chat.mediaGenerating') : t('chat.mediaGenerate') }}
-          </el-button>
-        </div>
-      </div>
-
-      <div class="media-list">
-        <div v-for="r in mediaRounds" :key="r.id" class="card media-card">
-          <div class="media-head">
-            <span class="col-model">{{ r.model }}</span>
-            <el-tag :type="r.status === 'succeeded' ? 'success' : r.status === 'failed' ? 'danger' : 'info'" size="small">
-              {{ mediaStatusLabel(r.status) }}
-            </el-tag>
-            <span v-if="r.status === 'succeeded' && r.costUsd > 0" class="muted">
-              ${{ r.costUsd.toFixed(6) }}
+          ></textarea>
+          <span class="c-attach" :title="t('shell.attachSoon')">
+            <span class="c-attach-tile">＋</span>{{ t('shell.attach') }} 0/10
+          </span>
+          <div class="c-row">
+            <span class="c-chips">
+              <el-popover :width="260" trigger="click">
+                <template #reference>
+                  <button type="button" class="chip">
+                    ⬢ {{ agent ? agent.name : t('shell.agentNoneShort') }}
+                  </button>
+                </template>
+                <el-select v-model="selectedAgent" @change="onAgentChange">
+                  <el-option :label="t('shell.agentNone')" value="" />
+                  <el-option
+                    v-for="a in agents"
+                    :key="a.agent_id"
+                    :label="`${a.name} · ${a.model}`"
+                    :value="a.agent_id"
+                  />
+                </el-select>
+              </el-popover>
+              <button type="button" class="chip" :class="{ on: compare }" @click="toggleCompare">
+                ⇄ {{ t('shell.compare') }}
+              </button>
+              <el-popover v-if="ttsModels.length" :width="260" trigger="click">
+                <template #reference>
+                  <button type="button" class="chip">
+                    ◉ {{ ttsModel || t('shell.speakNone') }}
+                  </button>
+                </template>
+                <el-select v-model="ttsModel" @change="onTtsChange">
+                  <el-option :label="t('shell.speakNone')" value="" />
+                  <el-option v-for="m in ttsModels" :key="m" :label="m" :value="m" />
+                </el-select>
+              </el-popover>
+            </span>
+            <span class="c-actions">
+              <button
+                v-if="rounds.length"
+                type="button"
+                class="link-btn"
+                :disabled="busy"
+                @click="clearRounds"
+              >
+                {{ t('shell.clear') }}
+              </button>
+              <button type="button" class="send" :disabled="!canSend" :title="t('shell.send')" @click="send">
+                ↑
+              </button>
             </span>
           </div>
-          <p class="media-prompt">{{ r.prompt }}</p>
-          <p v-if="r.status === 'failed'" class="col-error">{{ r.error || t('chat.error') }}</p>
-          <div v-else-if="r.status === 'succeeded' && r.resultUrls.length" class="media-results" :class="`kind-${r.kind}`">
-            <template v-for="(url, i) in r.resultUrls" :key="i">
-              <a :href="url" target="_blank" rel="noreferrer" class="media-item" :title="url">
-                <img v-if="r.kind === 'image'" :src="url" :alt="r.prompt" loading="lazy" />
-                <video v-else-if="r.kind === 'video'" :src="url" controls preload="metadata"></video>
-                <div v-else class="media-audio">
-                  <span class="audio-icon">{{ r.kind === 'music' ? '🎵' : '🎙' }}</span>
-                  <audio :src="url" controls preload="metadata"></audio>
-                </div>
-              </a>
-            </template>
-          </div>
         </div>
-        <p v-if="!mediaRounds.length" class="muted empty">{{ t('chat.mediaEmpty') }}</p>
       </div>
-    </template>
+
+      <div class="rail">
+        <el-popover :width="320" trigger="click" placement="left">
+          <template #reference>
+            <button type="button" class="r-btn" :title="t('shell.history')">⧗</button>
+          </template>
+          <p v-if="!sessions.length" class="pop-empty">{{ t('shell.historyEmpty') }}</p>
+          <div
+            v-for="(s, i) in sessions"
+            :key="i"
+            class="hist-item"
+            role="button"
+            tabindex="0"
+            @click="restoreSession(s, i)"
+            @keydown.enter="restoreSession(s, i)"
+          >
+            <span class="hist-title">{{ s.title }}</span>
+            <span class="hist-sub">{{ new Date(s.at).toLocaleString() }} · {{ s.rounds.length }}</span>
+          </div>
+        </el-popover>
+        <button type="button" class="r-btn" :title="t('shell.openConsole')" @click="router.push('/console')">⌘</button>
+        <a class="r-btn" :title="t('shell.help')" href="https://github.com/1528960014/modelhub" target="_blank" rel="noopener">?</a>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-h2 {
-  margin: 0 0 16px;
-}
-.modality {
+.lh {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  height: 100vh;
+  background:
+    radial-gradient(1100px 460px at 85% -10%, rgba(129, 140, 248, 0.10), transparent 60%),
+    radial-gradient(900px 420px at 0% 0%, rgba(34, 211, 238, 0.07), transparent 55%),
+    var(--bg);
+  color: var(--text);
 }
-.modality-btn {
-  display: inline-flex;
+
+/* ---------- sidebar ---------- */
+.side {
+  width: 292px;
+  flex: 0 0 292px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--bg-panel) 55%, transparent);
+  min-height: 0;
+}
+.brand {
+  display: flex;
   align-items: center;
-  gap: 7px;
-  border: 1px solid var(--border);
-  background: var(--bg-panel);
+  gap: 10px;
+  padding: 16px 16px 12px;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  color: #0b0b12;
+  font-size: 17px;
+  font-weight: 800;
+}
+.brand-txt {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.brand-name {
+  font-size: 15px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #22d3ee, #818cf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-sub {
+  font-size: 11px;
   color: var(--text-dim);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 999px;
+}
+.snav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px 12px 10px;
+}
+.snav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 8px 2px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.modality-btn:hover {
+.snav-item:hover {
+  background: var(--bg-hover);
   color: var(--text);
-  border-color: var(--accent);
 }
-.modality-btn.active {
-  color: var(--accent-contrast);
-  background: var(--accent);
-  border-color: var(--accent);
+.snav-item.on {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
-.mod-icon {
+.snav-ic {
   font-size: 15px;
 }
-.config .row {
+.stabs {
   display: flex;
-  gap: 16px;
+  gap: 2px;
+  padding: 0 12px 10px;
   flex-wrap: wrap;
-  align-items: flex-end;
 }
-.config label {
+.stab {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.stab:hover {
+  color: var(--text);
+}
+.stab.on {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  font-weight: 600;
+}
+.stools {
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 10px;
+}
+.prov,
+.search {
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text);
+  border-radius: 9px;
+  font-size: 12px;
+  padding: 5px 8px;
+  outline: none;
+}
+.prov {
+  width: 86px;
+  flex: 0 0 auto;
+}
+.search {
+  flex: 1;
+  min-width: 0;
+}
+.prov:focus,
+.search:focus {
+  border-color: var(--accent);
+}
+.slist {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 8px;
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+.slist-empty {
+  color: var(--text-dim);
+  font-size: 12px;
+  text-align: center;
+  padding: 24px 0;
+}
+.mcard {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 12px;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: all 0.13s ease;
+}
+.mcard:hover {
+  background: var(--bg-hover);
+}
+.mcard.on {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.mc-ic {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text-dim);
+}
+.mc-ic.cap-text {
+  color: #22d3ee;
+  border-color: color-mix(in srgb, #22d3ee 40%, transparent);
+}
+.mc-ic.cap-image {
+  color: #a78bfa;
+  border-color: color-mix(in srgb, #a78bfa 40%, transparent);
+}
+.mc-ic.cap-video {
+  color: #fb923c;
+  border-color: color-mix(in srgb, #fb923c 40%, transparent);
+}
+.mc-ic.cap-music {
+  color: #f472b6;
+  border-color: color-mix(in srgb, #f472b6 40%, transparent);
+}
+.mc-ic.cap-tts {
+  color: #34d399;
+  border-color: color-mix(in srgb, #34d399 40%, transparent);
+}
+.mc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.mc-top {
+  display: flex;
+  align-items: center;
   gap: 6px;
+}
+.mc-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mc-tag {
+  flex: 0 0 auto;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.mc-tag.tag-text {
+  color: #22d3ee;
+  border-color: color-mix(in srgb, #22d3ee 40%, transparent);
+}
+.mc-tag.tag-image {
+  color: #a78bfa;
+  border-color: color-mix(in srgb, #a78bfa 40%, transparent);
+}
+.mc-tag.tag-video {
+  color: #fb923c;
+  border-color: color-mix(in srgb, #fb923c 40%, transparent);
+}
+.mc-tag.tag-music {
+  color: #f472b6;
+  border-color: color-mix(in srgb, #f472b6 40%, transparent);
+}
+.mc-tag.tag-tts {
+  color: #34d399;
+  border-color: color-mix(in srgb, #34d399 40%, transparent);
+}
+.mc-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sfoot {
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+}
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.avatar {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  color: #0b0b12;
+  font-size: 13px;
+  font-weight: 700;
+}
+.avatar.ghost {
+  background: var(--bg-hover);
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.u-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.u-title {
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.u-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.u-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.u-btn {
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 12px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+.u-btn.plain {
+  background: transparent;
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+.key-tip {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+}
+
+/* ---------- main column ---------- */
+.main-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 0;
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  gap: 12px;
+}
+.top-left,
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cta {
+  border: none;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1205;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cta:hover {
+  filter: brightness(1.06);
+}
+.cta.small {
+  padding: 5px 14px;
+  font-size: 12px;
+}
+.t-icon {
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+}
+.t-icon:hover {
+  background: var(--bg-hover);
+}
+.pill {
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text);
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  max-width: 340px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pill:disabled {
+  cursor: default;
+  color: var(--text-dim);
+}
+.pill-caret {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+.pop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pop-title {
+  margin: 6px 0 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.pop-title:first-child {
+  margin-top: 0;
+}
+.pop-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  padding: 6px 9px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.pop-item:hover {
+  background: var(--bg-hover);
+}
+.pop-item.on {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.pop-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pop-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.pop-empty {
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 8px 0;
+}
+
+/* ---------- stage ---------- */
+.stage {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 8px 20px 12px;
+}
+.stage-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 9vh 0 40px;
+}
+.spark {
+  filter: drop-shadow(0 0 24px rgba(56, 189, 248, 0.45));
+}
+.hero-card {
+  max-width: 640px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--bg-panel) 80%, transparent);
+  border-radius: 14px;
+  padding: 14px 20px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.08);
+}
+.hero-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--accent);
+}
+.hero-desc {
   font-size: 13px;
   color: var(--text-dim);
+  margin: 0;
 }
-.hint {
-  margin: 10px 0 0;
-  font-size: 12px;
-}
-.chat {
-  margin-top: 16px;
-}
-.empty {
-  text-align: center;
-  padding: 40px 0;
+.hero-error {
+  color: #f87171;
+  font-size: 13px;
 }
 .round {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.msg .role {
-  font-size: 12px;
-  color: var(--text-dim);
-  margin-bottom: 4px;
-}
-.msg .content {
-  margin: 0;
+.u-b {
+  align-self: flex-end;
+  max-width: 82%;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 14px 14px 4px 14px;
+  padding: 10px 14px;
+  font-size: 14px;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: inherit;
-}
-.msg.user {
-  border-left: 3px solid var(--accent);
-  padding-left: 10px;
-  margin-bottom: 12px;
 }
 .cols {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
-.col {
+.a-card {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-panel) 82%, transparent);
+  border-radius: 4px 14px 14px 14px;
   padding: 12px 14px;
-  min-height: 64px;
 }
 .col-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 8px;
+}
+.col-model {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .col-actions {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
+  flex: 0 0 auto;
 }
-.col-model {
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--accent);
+.col-meta,
+.tok {
+  font-size: 11px;
+  color: var(--text-dim);
 }
-.col .content {
+.content {
   margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.6;
 }
-.col .content.pending {
+.content.pending {
   color: var(--text-dim);
 }
 .col-error {
   margin: 0;
-  color: #f87171;
   font-size: 13px;
+  color: #f87171;
   white-space: pre-wrap;
   word-break: break-word;
 }
-.error {
-  color: #f87171;
-  margin-bottom: 8px;
-  font-size: 13px;
+.link-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
 }
-.media-error {
-  margin: 10px 0 0;
+.link-btn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
-.input-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-}
-.input-card {
-  margin-top: 4px;
-}
-.media-input {
-  margin-top: 16px;
-}
-.media-list {
-  margin-top: 16px;
+.m-res {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
-.media-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+.m-res img,
+.m-res video {
+  max-width: 100%;
+  max-height: 380px;
+  border-radius: 10px;
 }
-.media-prompt {
-  margin: 0 0 10px;
-  font-size: 13px;
-  color: var(--text-dim);
-  white-space: pre-wrap;
-  word-break: break-word;
+.m-res audio {
+  width: 100%;
 }
-.media-results {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+.m-res a {
+  color: var(--accent);
+  font-size: 12px;
+  word-break: break-all;
 }
-.media-item {
-  display: block;
-  border-radius: 12px;
-  overflow: hidden;
+
+/* ---------- composer ---------- */
+.composer {
+  padding: 6px 20px 16px;
+}
+.c-panel {
+  position: relative;
+  max-width: 820px;
+  margin: 0 auto;
   border: 1px solid var(--border);
-  background: var(--code-bg);
+  background: color-mix(in srgb, var(--bg-panel) 92%, transparent);
+  border-radius: 18px;
+  padding: 14px 16px 10px;
+  box-shadow: var(--shadow);
 }
-.media-item img,
-.media-item video {
-  display: block;
+.c-panel:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.c-badge {
+  position: absolute;
+  top: -11px;
+  right: 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 2px 10px;
+  cursor: help;
+}
+.c-input {
   width: 100%;
-  min-height: 120px;
-  object-fit: cover;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  font-family: inherit;
+  min-height: 44px;
 }
-.media-audio {
-  padding: 14px;
+.c-input::placeholder {
+  color: var(--text-dim);
+}
+.c-attach {
   display: flex;
   align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--text-dim);
+  padding-bottom: 8px;
+  cursor: help;
+  user-select: none;
+}
+.c-attach-tile {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 44px;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  font-size: 16px;
+  color: var(--text-dim);
+}
+.c-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
-.media-audio audio {
-  width: 100%;
+.c-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
-.audio-icon {
-  font-size: 20px;
+.chip {
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text);
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent);
+}
+.chip.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.c-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.send {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  color: #0b0b12;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- right rail ---------- */
+.rail {
+  position: absolute;
+  right: 14px;
+  bottom: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+}
+.r-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+}
+.r-btn:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.hist-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.hist-item:hover {
+  background: var(--bg-hover);
+}
+.hist-title {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hist-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+@media (max-width: 900px) {
+  .side {
+    display: none;
+  }
 }
 </style>

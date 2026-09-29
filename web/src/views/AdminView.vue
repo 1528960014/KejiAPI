@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
+  adminCreditOrg,
+  adminListOrgs,
   adminRecharges,
   createAdminModel,
   createAgent,
@@ -29,7 +31,10 @@ import {
   putPayConfig,
   setMasterKey,
   updateAgentRate,
+  updateAssistant,
+  updateKey,
   usageSummary,
+  userLedger,
   PAY_CHANNEL_FIELDS,
   PAY_CHANNEL_IDS,
   type AdminAgent,
@@ -37,7 +42,9 @@ import {
   type AdminChannel,
   type AdminKey,
   type AdminModel,
+  type AdminOrg,
   type AdminUser,
+  type LedgerEntry,
   type PayConfigView,
   type Recharge,
   type UsageRecord,
@@ -53,13 +60,14 @@ type TabName =
   | 'users'
   | 'keys'
   | 'agents'
+  | 'orgs'
   | 'assistants'
   | 'pay'
   | 'usage'
   | 'recharges'
 
 const masterKey = ref(getMasterKey())
-const tab = ref<TabName>('overview')
+const active = ref<TabName>('overview')
 const loaded = reactive<Record<TabName, boolean>>({
   overview: false,
   models: false,
@@ -67,17 +75,87 @@ const loaded = reactive<Record<TabName, boolean>>({
   users: false,
   keys: false,
   agents: false,
+  orgs: false,
   assistants: false,
   pay: false,
   usage: false,
   recharges: false,
 })
+const search = ref('')
+const saving = ref(false)
+
+const NAV: { section: string; items: { key: TabName; icon: string; label: string }[] }[] = [
+  { section: 'admin.sideGeneral', items: [{ key: 'overview', icon: '📊', label: 'admin.tabOverview' }] },
+  {
+    section: 'admin.sideResources',
+    items: [
+      { key: 'models', icon: '🧠', label: 'admin.tabModels' },
+      { key: 'channels', icon: '🔌', label: 'admin.tabChannels' },
+    ],
+  },
+  {
+    section: 'admin.sideAccounts',
+    items: [
+      { key: 'users', icon: '👥', label: 'admin.tabUsers' },
+      { key: 'keys', icon: '🔑', label: 'admin.tabKeys' },
+      { key: 'agents', icon: '🏪', label: 'admin.tabAgents' },
+      { key: 'orgs', icon: '🏢', label: 'admin.tabOrgs' },
+    ],
+  },
+  { section: 'admin.sideContent', items: [{ key: 'assistants', icon: '🤖', label: 'admin.tabAssistants' }] },
+  {
+    section: 'admin.sideFinance',
+    items: [
+      { key: 'pay', icon: '💳', label: 'admin.tabPay' },
+      { key: 'recharges', icon: '🧾', label: 'admin.tabRecharges' },
+    ],
+  },
+  { section: 'admin.sideAnalytics', items: [{ key: 'usage', icon: '📈', label: 'admin.tabUsage' }] },
+]
+
+const PAGE: Record<TabName, { title: string; desc: string }> = {
+  overview: { title: 'admin.pageOverview', desc: 'admin.pageOverviewDesc' },
+  models: { title: 'admin.pageModels', desc: 'admin.pageModelsDesc' },
+  channels: { title: 'admin.pageChannels', desc: 'admin.pageChannelsDesc' },
+  users: { title: 'admin.pageUsers', desc: 'admin.pageUsersDesc' },
+  keys: { title: 'admin.pageKeys', desc: 'admin.pageKeysDesc' },
+  agents: { title: 'admin.pageAgents', desc: 'admin.pageAgentsDesc' },
+  orgs: { title: 'admin.pageOrgs', desc: 'admin.pageOrgsDesc' },
+  assistants: { title: 'admin.pageAssistants', desc: 'admin.pageAssistantsDesc' },
+  pay: { title: 'admin.pagePay', desc: 'admin.pagePayDesc' },
+  usage: { title: 'admin.pageUsage', desc: 'admin.pageUsageDesc' },
+  recharges: { title: 'admin.pageRecharges', desc: 'admin.pageRechargesDesc' },
+}
+
+const ADD_BTN: Record<TabName, string> = {
+  overview: '',
+  models: 'admin.modelAdd',
+  channels: 'admin.channelAdd',
+  users: 'admin.userAdd',
+  keys: 'admin.keyAdd',
+  agents: 'admin.agentAdd',
+  orgs: '',
+  assistants: 'admin.assistantAdd',
+  pay: '',
+  usage: '',
+  recharges: '',
+}
 
 function onKeyChange() {
-  setMasterKey(masterKey.value.trim())
-  // master key changed: force reload of every tab
-  for (const k of Object.keys(loaded) as TabName[]) loaded[k] = false
-  void loadTab(tab.value)
+  const k = masterKey.value.trim()
+  setMasterKey(k)
+  if (!k) {
+    for (const key of Object.keys(loaded) as TabName[]) loaded[key] = false
+    return
+  }
+  loaded.overview = false
+  void loadTab('overview')
+}
+
+function clearKey() {
+  masterKey.value = ''
+  setMasterKey('')
+  for (const key of Object.keys(loaded) as TabName[]) loaded[key] = false
 }
 
 function errMsg(err: unknown): string {
@@ -90,325 +168,108 @@ function errMsg(err: unknown): string {
   return msg || String(err)
 }
 
+function go(key: TabName) {
+  active.value = key
+  search.value = ''
+  if (!loaded[key]) void loadTab(key)
+}
+
+function reload() {
+  loaded[active.value] = false
+  void loadTab(active.value)
+}
+
+function openAdd() {
+  const map: Partial<Record<TabName, DialogKind>> = {
+    models: 'model',
+    channels: 'channel',
+    users: 'user',
+    keys: 'key',
+    agents: 'agent',
+    assistants: 'assistant',
+  }
+  const kind = map[active.value]
+  if (kind) openNew(kind)
+}
+
 async function loadTab(name: TabName) {
   if (!masterKey.value) return
   try {
     if (name === 'overview') {
-      await Promise.all([loadModels(true), loadChannels(true), loadUsers(true), loadSummary()])
+      await Promise.allSettled([
+        loadModels(true),
+        loadChannels(true),
+        loadUsers(true),
+        loadKeys(),
+        loadAgents(),
+        loadOrgs(),
+        loadSummary(),
+        loadUsage(200),
+      ])
     } else if (name === 'models') await loadModels()
     else if (name === 'channels') await loadChannels()
     else if (name === 'users') await loadUsers()
     else if (name === 'keys') await loadKeys()
     else if (name === 'agents') await loadAgents()
+    else if (name === 'orgs') await loadOrgs()
     else if (name === 'assistants') await loadAssistants()
     else if (name === 'pay') await loadPay()
-    else if (name === 'usage') await Promise.all([loadSummary(), loadUsage()])
+    else if (name === 'usage') await Promise.allSettled([loadSummary(), loadUsage(200)])
     else if (name === 'recharges') await loadRecharges()
     loaded[name] = true
   } catch (err) {
-    if (name === 'overview') return // partial load failure is fine for overview
     ElMessage.error(errMsg(err))
   }
-}
-
-function onTabChange(name: string | number) {
-  const n = name as TabName
-  if (!loaded[n]) void loadTab(n)
 }
 
 onMounted(() => {
   if (masterKey.value) void loadTab('overview')
 })
 
-// ---------- overview ----------
+// ---------- data ----------
 const summary = ref<UsageSummary | null>(null)
-const modelCount = ref(0)
-const channelCount = ref(0)
-const userCount = ref(0)
+const models = ref<AdminModel[]>([])
+const channels = ref<AdminChannel[]>([])
+const users = ref<AdminUser[]>([])
+const keys = ref<AdminKey[]>([])
+const agents = ref<AdminAgent[]>([])
+const orgs = ref<AdminOrg[]>([])
+const assistants = ref<AdminAssistant[]>([])
+const usage = ref<UsageRecord[]>([])
+const recharges = ref<Recharge[]>([])
+const pay = ref<PayConfigView | null>(null)
 
 async function loadSummary() {
   summary.value = await usageSummary()
 }
-
-// ---------- models ----------
-const models = ref<AdminModel[]>([])
-async function loadModels(silent = false) {
+async function loadModels(_silent = false) {
   models.value = await listAdminModels()
-  modelCount.value = models.value.length
-  if (!silent) loaded.models = true
 }
-
-const CAPS = ['text', 'image', 'video', 'music', 'tts']
-const modelForm = reactive({
-  model_id: '',
-  provider: '',
-  upstream_model: '',
-  capabilities: [] as string[],
-  input_price_per_1k: 0,
-  output_price_per_1k: 0,
-  price_unit: 'token',
-  unit_price: 0,
-  enabled: true,
-})
-async function addModel() {
-  if (!modelForm.model_id || !modelForm.provider || !modelForm.upstream_model) {
-    ElMessage.warning(t('admin.modelRequired'))
-    return
-  }
-  try {
-    await createAdminModel({
-      model_id: modelForm.model_id.trim(),
-      provider: modelForm.provider.trim(),
-      upstream_model: modelForm.upstream_model.trim(),
-      capabilities: modelForm.capabilities,
-      input_price_per_1k: modelForm.input_price_per_1k,
-      output_price_per_1k: modelForm.output_price_per_1k,
-      price_unit: modelForm.price_unit,
-      unit_price: modelForm.price_unit === 'token' ? undefined : modelForm.unit_price,
-      enabled: modelForm.enabled,
-    })
-    ElMessage.success(t('admin.saved'))
-    modelForm.model_id = ''
-    modelForm.upstream_model = ''
-    await loadModels()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-async function removeModel(m: AdminModel) {
-  try {
-    await ElMessageBox.confirm(t('admin.confirmDelete', { name: m.model_id }), t('admin.delete'), { type: 'warning' })
-  } catch {
-    return
-  }
-  try {
-    await deleteAdminModel(m.model_id)
-    await loadModels()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-
-// ---------- channels ----------
-const channels = ref<AdminChannel[]>([])
-async function loadChannels(silent = false) {
+async function loadChannels(_silent = false) {
   channels.value = await listChannels()
-  channelCount.value = channels.value.length
-  if (!silent) loaded.channels = true
 }
-const channelForm = reactive({
-  name: '',
-  provider: '',
-  base_url: '',
-  api_key: '',
-  model_id: '',
-  priority: 0,
-})
-async function addChannel() {
-  if (!channelForm.name || !channelForm.provider || !channelForm.base_url || !channelForm.api_key || !channelForm.model_id) {
-    ElMessage.warning(t('admin.channelRequired'))
-    return
-  }
-  try {
-    await createChannel({ ...channelForm, name: channelForm.name.trim() })
-    ElMessage.success(t('admin.saved'))
-    channelForm.name = ''
-    channelForm.api_key = ''
-    await loadChannels()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-async function removeChannel(ch: AdminChannel) {
-  try {
-    await ElMessageBox.confirm(t('admin.confirmDelete', { name: ch.name }), t('admin.delete'), { type: 'warning' })
-  } catch {
-    return
-  }
-  try {
-    await deleteChannel(ch.id)
-    await loadChannels()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-
-// ---------- users ----------
-const users = ref<AdminUser[]>([])
-async function loadUsers(silent = false) {
+async function loadUsers(_silent = false) {
   users.value = await listUsers()
-  userCount.value = users.value.length
-  if (!silent) loaded.users = true
 }
-const userForm = reactive({ email: '', balance: 0 })
-async function addUser() {
-  if (!userForm.email.trim()) {
-    ElMessage.warning(t('admin.userRequired'))
-    return
-  }
-  try {
-    await createUser(userForm.email.trim(), userForm.balance)
-    ElMessage.success(t('admin.saved'))
-    userForm.email = ''
-    userForm.balance = 0
-    await loadUsers()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-async function credit(u: AdminUser) {
-  const { value } = await ElMessageBox.prompt(t('admin.creditPrompt'), t('admin.credit'), {
-    inputPattern: /^\d+(\.\d+)?$/,
-    inputErrorMessage: t('admin.creditInvalid'),
-  }).catch(() => ({ value: '' }))
-  const amount = Number(value)
-  if (!value || Number.isNaN(amount)) return
-  try {
-    await creditUser(u.id, amount, 'manual admin credit')
-    ElMessage.success(t('admin.saved'))
-    await loadUsers()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-
-// ---------- keys ----------
-const keys = ref<AdminKey[]>([])
 async function loadKeys() {
   keys.value = await listKeys()
 }
-const keyName = ref('')
-async function addKey() {
-  if (!keyName.value.trim()) {
-    ElMessage.warning(t('admin.keyRequired'))
-    return
-  }
-  try {
-    const res = await createKey(keyName.value.trim())
-    ElMessageBox.alert(res.key, t('admin.keyCreated'), { confirmButtonText: 'OK' })
-    keyName.value = ''
-    await loadKeys()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-async function removeKey(k: AdminKey) {
-  try {
-    await ElMessageBox.confirm(t('admin.confirmDelete', { name: k.name }), t('admin.delete'), { type: 'warning' })
-  } catch {
-    return
-  }
-  try {
-    await deleteKey(k.id)
-    await loadKeys()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-
-// ---------- agents ----------
-const agents = ref<AdminAgent[]>([])
 async function loadAgents() {
   agents.value = await listAgents()
 }
-const agentForm = reactive({ user_id: '', rate: 1 })
-async function addAgent() {
-  if (!agentForm.user_id || agentForm.rate < 1) {
-    ElMessage.warning(t('admin.agentRequired'))
-    return
-  }
-  try {
-    await createAgent(Number(agentForm.user_id), agentForm.rate)
-    ElMessage.success(t('admin.saved'))
-    agentForm.user_id = ''
-    agentForm.rate = 1
-    await loadAgents()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
+async function loadOrgs() {
+  orgs.value = await adminListOrgs(100)
 }
-async function updateRate(a: AdminAgent) {
-  const { value } = await ElMessageBox.prompt(t('admin.ratePrompt'), t('admin.setRate'), {
-    inputPattern: /^\d+(\.\d+)?$/,
-    inputErrorMessage: t('admin.creditInvalid'),
-  }).catch(() => ({ value: '' }))
-  const rate = Number(value)
-  if (!value || Number.isNaN(rate) || rate < 1) return
-  try {
-    await updateAgentRate(a.id, rate)
-    await loadAgents()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-async function removeAgent(a: AdminAgent) {
-  try {
-    await ElMessageBox.confirm(t('admin.confirmDelete', { name: a.email }), t('admin.delete'), { type: 'warning' })
-  } catch {
-    return
-  }
-  try {
-    await deleteAgent(a.id)
-    await loadAgents()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
-}
-
-// ---------- assistants ----------
-const assistants = ref<AdminAssistant[]>([])
 async function loadAssistants() {
   assistants.value = await listAssistants()
 }
-const assistantForm = reactive({
-  agent_id: '',
-  name: '',
-  description: '',
-  system_prompt: '',
-  model: '',
-  tools: '',
-  enabled: true,
-})
-async function addAssistant() {
-  if (!assistantForm.agent_id || !assistantForm.name || !assistantForm.system_prompt || !assistantForm.model) {
-    ElMessage.warning(t('admin.assistantRequired'))
-    return
-  }
-  try {
-    await createAssistant({
-      agent_id: assistantForm.agent_id.trim(),
-      name: assistantForm.name.trim(),
-      description: assistantForm.description.trim(),
-      system_prompt: assistantForm.system_prompt,
-      model: assistantForm.model.trim(),
-      tools: assistantForm.tools || undefined,
-      enabled: assistantForm.enabled,
-    })
-    ElMessage.success(t('admin.saved'))
-    assistantForm.agent_id = ''
-    assistantForm.name = ''
-    assistantForm.system_prompt = ''
-    await loadAssistants()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
+async function loadUsage(limit = 200) {
+  usage.value = await listUsage(undefined, limit)
 }
-async function removeAssistant(a: AdminAssistant) {
-  try {
-    await ElMessageBox.confirm(t('admin.confirmDelete', { name: a.agent_id }), t('admin.delete'), { type: 'warning' })
-  } catch {
-    return
-  }
-  try {
-    await deleteAssistant(a.id)
-    await loadAssistants()
-  } catch (err) {
-    ElMessage.error(errMsg(err))
-  }
+async function loadRecharges() {
+  recharges.value = await adminRecharges(100)
 }
 
-// ---------- pay ----------
-const pay = ref<PayConfigView | null>(null)
 const payForms = reactive<Record<string, { enabled: boolean; config: Record<string, string> }>>({})
 async function loadPay() {
   const cfg = await getPayConfig()
@@ -442,514 +303,1200 @@ async function savePay() {
     body.channels[id] = { enabled: f.enabled, config: cfg }
   }
   try {
-    const fresh = await putPayConfig(body)
-    pay.value = fresh
+    await putPayConfig(body)
     ElMessage.success(t('admin.saved'))
-    // refresh the masked view
     await loadPay()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+// ---------- dashboard ----------
+const chart7d = computed(() => {
+  const dayKeys: string[] = []
+  for (let i = 6; i >= 0; i--) {
+    dayKeys.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10))
+  }
+  const totals = dayKeys.map((k) =>
+    usage.value.filter((u) => u.created_at.slice(0, 10) === k).reduce((a, u) => a + u.cost_usd, 0),
+  )
+  const max = Math.max(...totals, 1e-9)
+  return dayKeys.map((k, i) => ({
+    label: k.slice(5),
+    total: totals[i],
+    h: totals[i] <= 0 ? 2 : Math.max(4, (totals[i] / max) * 90),
+  }))
+})
+
+// ---------- client-side search ----------
+function filterRows<T extends object>(rows: T[], fields: (keyof T)[]): T[] {
+  const s = search.value.trim().toLowerCase()
+  if (!s) return rows
+  return rows.filter((r) => fields.some((f) => String(r[f] ?? '').toLowerCase().includes(s)))
+}
+const modelsF = computed(() => filterRows(models.value, ['model_id', 'provider', 'upstream_model']))
+const channelsF = computed(() => filterRows(channels.value, ['name', 'provider', 'base_url', 'model_id']))
+const usersF = computed(() => filterRows(users.value, ['email']))
+const keysF = computed(() => filterRows(keys.value, ['name']))
+const agentsF = computed(() => filterRows(agents.value, ['email']))
+const orgsF = computed(() => filterRows(orgs.value, ['name', 'owner_email']))
+const assistantsF = computed(() => filterRows(assistants.value, ['agent_id', 'name', 'model']))
+const rechargesF = computed(() => filterRows(recharges.value, ['order_no', 'method', 'status']))
+const usageF = computed(() => filterRows(usage.value, ['model', 'provider', 'status']))
+
+// ---------- dialogs ----------
+type DialogKind = '' | 'model' | 'channel' | 'user' | 'key' | 'keyEdit' | 'agent' | 'assistant' | 'ledger'
+const dialog = ref<DialogKind>('')
+const dialogVisible = ref(false)
+const editingKey = ref<AdminKey | null>(null)
+const editingAssistant = ref<AdminAssistant | null>(null)
+const ledgerUser = ref<AdminUser | null>(null)
+const ledger = ref<LedgerEntry[]>([])
+
+const modelForm = reactive({
+  model_id: '',
+  provider: '',
+  upstream_model: '',
+  capabilities: [] as string[],
+  price_unit: 'token',
+  input_price_per_1k: 0,
+  output_price_per_1k: 0,
+  unit_price: 0,
+  enabled: true,
+})
+const channelForm = reactive({ name: '', provider: '', base_url: '', api_key: '', model_id: '', priority: 0 })
+const userForm = reactive({ email: '', balance: 0 })
+const keyForm = reactive({ name: '' })
+const keyEditForm = reactive({ name: '', quota: '', allowed: '', expires: '' })
+const agentForm = reactive({ user_id: '', rate: 1 })
+const assistantForm = reactive({ agent_id: '', name: '', description: '', model: '', system_prompt: '', tools: '', enabled: true })
+const CAPS = ['text', 'image', 'video', 'music', 'tts']
+
+function openNew(kind: DialogKind) {
+  if (kind === 'model') {
+    Object.assign(modelForm, {
+      model_id: '',
+      provider: '',
+      upstream_model: '',
+      capabilities: [],
+      price_unit: 'token',
+      input_price_per_1k: 0,
+      output_price_per_1k: 0,
+      unit_price: 0,
+      enabled: true,
+    })
+  } else if (kind === 'channel') {
+    Object.assign(channelForm, { name: '', provider: '', base_url: '', api_key: '', model_id: '', priority: 0 })
+  } else if (kind === 'user') {
+    Object.assign(userForm, { email: '', balance: 0 })
+  } else if (kind === 'key') {
+    keyForm.name = ''
+  } else if (kind === 'agent') {
+    Object.assign(agentForm, { user_id: '', rate: 1 })
+  } else if (kind === 'assistant') {
+    Object.assign(assistantForm, { agent_id: '', name: '', description: '', model: '', system_prompt: '', tools: '', enabled: true })
+    editingAssistant.value = null
+  }
+  dialog.value = kind
+  dialogVisible.value = true
+}
+
+function openKeyEdit(k: AdminKey) {
+  editingKey.value = k
+  keyEditForm.name = k.name
+  keyEditForm.quota = k.quota_usd != null ? String(k.quota_usd) : ''
+  keyEditForm.allowed = (k.allowed_models || []).join(', ')
+  keyEditForm.expires = k.expires_at ?? ''
+  dialog.value = 'keyEdit'
+  dialogVisible.value = true
+}
+
+function openAssistantEdit(a: AdminAssistant) {
+  editingAssistant.value = a
+  Object.assign(assistantForm, {
+    agent_id: a.agent_id,
+    name: a.name,
+    description: a.description,
+    model: a.model,
+    system_prompt: a.system_prompt,
+    tools: Array.isArray(a.tools) ? JSON.stringify(a.tools) : '',
+    enabled: a.enabled,
+  })
+  dialog.value = 'assistant'
+  dialogVisible.value = true
+}
+
+function openLedger(u: AdminUser) {
+  ledgerUser.value = u
+  ledger.value = []
+  dialog.value = 'ledger'
+  dialogVisible.value = true
+  userLedger(u.id, 100)
+    .then((r) => {
+      ledger.value = r
+    })
+    .catch((err) => {
+      ElMessage.error(errMsg(err))
+    })
+}
+
+const dialogTitle = computed(() => {
+  switch (dialog.value) {
+    case 'model':
+      return t('admin.modelAdd')
+    case 'channel':
+      return t('admin.channelAdd')
+    case 'user':
+      return t('admin.userAdd')
+    case 'key':
+      return t('admin.keyAdd')
+    case 'keyEdit':
+      return t('admin.keyEdit')
+    case 'agent':
+      return t('admin.agentAdd')
+    case 'assistant':
+      return editingAssistant.value ? t('admin.assistantEdit') : t('admin.assistantAdd')
+    default:
+      return ''
+  }
+})
+
+async function saveDialog() {
+  saving.value = true
+  try {
+    let ok = false
+    if (dialog.value === 'model') ok = await saveModel()
+    else if (dialog.value === 'channel') ok = await saveChannel()
+    else if (dialog.value === 'user') ok = await saveUser()
+    else if (dialog.value === 'key') ok = await saveKey()
+    else if (dialog.value === 'keyEdit') ok = await saveKeyEdit()
+    else if (dialog.value === 'agent') ok = await saveAgent()
+    else if (dialog.value === 'assistant') ok = await saveAssistant()
+    if (ok) dialogVisible.value = false
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  } finally {
+    saving.value = false
+  }
+}
+
+async function saveModel(): Promise<boolean> {
+  if (!modelForm.model_id || !modelForm.provider || !modelForm.upstream_model) {
+    ElMessage.warning(t('admin.modelRequired'))
+    return false
+  }
+  await createAdminModel({
+    model_id: modelForm.model_id.trim(),
+    provider: modelForm.provider.trim(),
+    upstream_model: modelForm.upstream_model.trim(),
+    capabilities: modelForm.capabilities,
+    input_price_per_1k: modelForm.input_price_per_1k,
+    output_price_per_1k: modelForm.output_price_per_1k,
+    price_unit: modelForm.price_unit,
+    unit_price: modelForm.price_unit === 'token' ? undefined : modelForm.unit_price,
+    enabled: modelForm.enabled,
+  })
+  ElMessage.success(t('admin.saved'))
+  await loadModels()
+  return true
+}
+async function saveChannel(): Promise<boolean> {
+  if (!channelForm.name || !channelForm.provider || !channelForm.base_url || !channelForm.api_key || !channelForm.model_id) {
+    ElMessage.warning(t('admin.channelRequired'))
+    return false
+  }
+  await createChannel({ ...channelForm, name: channelForm.name.trim() })
+  ElMessage.success(t('admin.saved'))
+  await loadChannels()
+  return true
+}
+async function saveUser(): Promise<boolean> {
+  if (!userForm.email.trim()) {
+    ElMessage.warning(t('admin.userRequired'))
+    return false
+  }
+  await createUser(userForm.email.trim(), userForm.balance)
+  ElMessage.success(t('admin.saved'))
+  await loadUsers()
+  return true
+}
+async function saveKey(): Promise<boolean> {
+  if (!keyForm.name.trim()) {
+    ElMessage.warning(t('admin.keyRequired'))
+    return false
+  }
+  const res = await createKey(keyForm.name.trim())
+  ElMessageBox.alert(res.key, t('admin.keyCreated'), { confirmButtonText: 'OK' })
+  await loadKeys()
+  return true
+}
+async function saveKeyEdit(): Promise<boolean> {
+  const k = editingKey.value
+  if (!k) return false
+  if (!keyEditForm.name.trim()) {
+    ElMessage.warning(t('admin.keyRequired'))
+    return false
+  }
+  const patch: { name?: string; quota_usd?: number; allowed_models?: string[]; expires_at?: string } = {
+    name: keyEditForm.name.trim(),
+  }
+  if (keyEditForm.quota.trim()) patch.quota_usd = Number(keyEditForm.quota)
+  if (keyEditForm.allowed.trim()) {
+    patch.allowed_models = keyEditForm.allowed
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+  if (keyEditForm.expires.trim()) patch.expires_at = keyEditForm.expires.trim()
+  await updateKey(k.id, patch)
+  ElMessage.success(t('admin.saved'))
+  await loadKeys()
+  return true
+}
+async function saveAgent(): Promise<boolean> {
+  if (!agentForm.user_id || agentForm.rate < 1) {
+    ElMessage.warning(t('admin.agentRequired'))
+    return false
+  }
+  await createAgent(Number(agentForm.user_id), agentForm.rate)
+  ElMessage.success(t('admin.saved'))
+  await loadAgents()
+  return true
+}
+async function saveAssistant(): Promise<boolean> {
+  const editing = editingAssistant.value
+  if (!assistantForm.name || !assistantForm.system_prompt || !assistantForm.model) {
+    ElMessage.warning(t('admin.assistantRequired'))
+    return false
+  }
+  if (editing) {
+    await updateAssistant(editing.id, {
+      name: assistantForm.name.trim(),
+      description: assistantForm.description.trim(),
+      system_prompt: assistantForm.system_prompt,
+      model: assistantForm.model.trim(),
+      tools: assistantForm.tools || undefined,
+      enabled: assistantForm.enabled,
+    })
+  } else {
+    if (!assistantForm.agent_id.trim()) {
+      ElMessage.warning(t('admin.assistantRequired'))
+      return false
+    }
+    await createAssistant({
+      agent_id: assistantForm.agent_id.trim(),
+      name: assistantForm.name.trim(),
+      description: assistantForm.description.trim(),
+      system_prompt: assistantForm.system_prompt,
+      model: assistantForm.model.trim(),
+      tools: assistantForm.tools || undefined,
+      enabled: assistantForm.enabled,
+    })
+  }
+  ElMessage.success(t('admin.saved'))
+  await loadAssistants()
+  return true
+}
+
+// ---------- row actions ----------
+async function confirmDelete(message: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(message, t('admin.delete'), { type: 'warning' })
+    return true
+  } catch {
+    return false
+  }
+}
+async function removeModel(m: AdminModel) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: m.model_id })))) return
+  try {
+    await deleteAdminModel(m.model_id)
+    await loadModels()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function removeChannel(ch: AdminChannel) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: ch.name })))) return
+  try {
+    await deleteChannel(ch.id)
+    await loadChannels()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function removeKey(k: AdminKey) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: k.name })))) return
+  try {
+    await deleteKey(k.id)
+    await loadKeys()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function removeAgent(a: AdminAgent) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: a.email })))) return
+  try {
+    await deleteAgent(a.id)
+    await loadAgents()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function removeAssistant(a: AdminAssistant) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: a.agent_id })))) return
+  try {
+    await deleteAssistant(a.id)
+    await loadAssistants()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function creditUserRow(u: AdminUser) {
+  const { value } = await ElMessageBox.prompt(t('admin.creditPrompt'), t('admin.credit'), {
+    inputPattern: /^\d+(\.\d+)?$/,
+    inputErrorMessage: t('admin.creditInvalid'),
+  }).catch(() => ({ value: '' }))
+  const amount = Number(value)
+  if (!value || Number.isNaN(amount)) return
+  try {
+    await creditUser(u.id, amount, 'manual admin credit')
+    ElMessage.success(t('admin.saved'))
+    await loadUsers()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function creditOrgRow(o: AdminOrg) {
+  const { value } = await ElMessageBox.prompt(t('admin.creditPrompt'), t('admin.credit'), {
+    inputPattern: /^\d+(\.\d+)?$/,
+    inputErrorMessage: t('admin.creditInvalid'),
+  }).catch(() => ({ value: '' }))
+  const amount = Number(value)
+  if (!value || Number.isNaN(amount)) return
+  try {
+    await adminCreditOrg(o.id, amount, 'manual admin credit')
+    ElMessage.success(t('admin.saved'))
+    await loadOrgs()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function updateRate(a: AdminAgent) {
+  const { value } = await ElMessageBox.prompt(t('admin.ratePrompt'), t('admin.setRate'), {
+    inputPattern: /^\d+(\.\d+)?$/,
+    inputErrorMessage: t('admin.creditInvalid'),
+  }).catch(() => ({ value: '' }))
+  const rate = Number(value)
+  if (!value || Number.isNaN(rate) || rate < 1) return
+  try {
+    await updateAgentRate(a.id, rate)
+    await loadAgents()
   } catch (err) {
     ElMessage.error(errMsg(err))
   }
 }
 const payStatusText = (ch: { ok: boolean; error?: string }) =>
   ch.ok ? t('admin.payOk') : ch.error || t('admin.payBroken')
-
-// ---------- usage ----------
-const usage = ref<UsageRecord[]>([])
-async function loadUsage() {
-  usage.value = await listUsage(undefined, 50)
-}
-
-// ---------- recharges ----------
-const recharges = ref<Recharge[]>([])
-async function loadRecharges() {
-  recharges.value = await adminRecharges(50)
-}
 </script>
 
 <template>
   <div class="page admin">
-    <h2>{{ t('admin.title') }}</h2>
-
-    <div class="card key-card">
-      <label class="key-label">
-        {{ t('admin.masterKey') }}
+    <!-- ============ master key gate ============ -->
+    <div v-if="!masterKey" class="gate">
+      <div class="card gate-card">
+        <span class="brand-mark">▲</span>
+        <h1>{{ t('admin.gateTitle') }}</h1>
+        <p class="muted">{{ t('admin.gateSub') }}</p>
         <el-input
           v-model="masterKey"
           type="password"
           show-password
+          size="large"
           :placeholder="t('admin.masterKeyPlaceholder')"
           @change="onKeyChange"
+          @keyup.enter="onKeyChange"
         />
-      </label>
-      <p class="muted hint">{{ t('admin.masterKeyHint') }}</p>
+        <p class="muted hint">{{ t('admin.masterKeyHint') }}</p>
+      </div>
     </div>
 
-    <el-tabs v-if="masterKey" v-model="tab" class="admin-tabs" @tab-change="onTabChange">
-      <!-- overview -->
-      <el-tab-pane :label="t('admin.tabOverview')" name="overview">
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-num">{{ userCount }}</div>
-            <div class="stat-label">{{ t('admin.statUsers') }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">{{ modelCount }}</div>
-            <div class="stat-label">{{ t('admin.statModels') }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">{{ channelCount }}</div>
-            <div class="stat-label">{{ t('admin.statChannels') }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">{{ summary?.requests ?? '—' }}</div>
-            <div class="stat-label">{{ t('admin.statRequests') }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">{{ summary ? formatUsd(summary.cost_micro, summary.cost_usd) : '—' }}</div>
-            <div class="stat-label">{{ t('admin.statCost') }}</div>
+    <!-- ============ console layout ============ -->
+    <div v-else class="layout">
+      <aside class="sidebar">
+        <div class="side-brand">
+          <span class="brand-mark">▲</span>
+          <div>
+            <div class="brand-name">ModelHub</div>
+            <div class="brand-sub">Admin</div>
           </div>
         </div>
-      </el-tab-pane>
-
-      <!-- models -->
-      <el-tab-pane :label="t('admin.tabModels')" name="models">
-        <div class="form-card">
-          <h3>{{ t('admin.modelAdd') }}</h3>
-          <div class="grid">
-            <label>{{ t('admin.modelId') }}
-              <el-input v-model="modelForm.model_id" placeholder="grok-4.7" />
-            </label>
-            <label>{{ t('admin.provider') }}
-              <el-input v-model="modelForm.provider" placeholder="openai" />
-            </label>
-            <label>{{ t('admin.upstreamModel') }}
-              <el-input v-model="modelForm.upstream_model" placeholder="grok-4.7" />
-            </label>
-            <label>{{ t('admin.capabilities') }}
-              <el-select v-model="modelForm.capabilities" multiple style="width: 100%">
-                <el-option v-for="c in CAPS" :key="c" :label="t(`admin.cap.${c}`)" :value="c" />
-              </el-select>
-            </label>
-            <label>{{ t('admin.priceUnit') }}
-              <el-select v-model="modelForm.price_unit" style="width: 100%">
-                <el-option label="token" value="token" />
-                <el-option label="image" value="image" />
-                <el-option label="video" value="video" />
-                <el-option label="music" value="music" />
-                <el-option label="tts" value="tts" />
-              </el-select>
-            </label>
-            <template v-if="modelForm.priceUnit === 'token'">
-              <label>{{ t('admin.inputPrice') }}
-                <el-input-number v-model="modelForm.input_price_per_1k" :min="0" :precision="6" :step="0.001" style="width: 100%" />
-              </label>
-              <label>{{ t('admin.outputPrice') }}
-                <el-input-number v-model="modelForm.output_price_per_1k" :min="0" :precision="6" :step="0.001" style="width: 100%" />
-              </label>
-            </template>
-            <label v-else>{{ t('admin.unitPrice') }}
-              <el-input-number v-model="modelForm.unit_price" :min="0" :precision="4" :step="0.01" style="width: 100%" />
-            </label>
-            <label class="switch-label">{{ t('admin.enabled') }}
-              <el-switch v-model="modelForm.enabled" />
-            </label>
+        <nav class="side-nav">
+          <div v-for="group in NAV" :key="group.section" class="side-group">
+            <div class="side-section">{{ t(group.section) }}</div>
+            <button
+              v-for="item in group.items"
+              :key="item.key"
+              type="button"
+              class="side-item"
+              :class="{ active: active === item.key }"
+              @click="go(item.key)"
+            >
+              <span class="side-icon">{{ item.icon }}</span>
+              <span>{{ t(item.label) }}</span>
+            </button>
           </div>
-          <el-button type="primary" @click="addModel">{{ t('admin.add') }}</el-button>
+        </nav>
+        <div class="side-foot">
+          <button type="button" class="side-clear" @click="clearKey">{{ t('admin.clearKey') }}</button>
         </div>
+      </aside>
 
-        <el-table v-if="models.length" :data="models">
-          <el-table-column prop="model_id" :label="t('admin.modelId')" min-width="160" />
-          <el-table-column prop="provider" :label="t('admin.provider')" width="110" />
-          <el-table-column prop="upstream_model" :label="t('admin.upstreamModel')" min-width="140" />
-          <el-table-column :label="t('admin.capabilities')" min-width="140">
-            <template #default="{ row }">
-              <el-tag v-for="c in row.capabilities" :key="c" size="small" class="cap-tag">
-                {{ t(`admin.cap.${c}`) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('admin.price')" width="190">
-            <template #default="{ row }">
-              <span v-if="row.price_unit && row.price_unit !== 'token'">
-                ${{ row.unit_price }} / {{ row.price_unit }}
-              </span>
-              <span v-else>
-                {{ row.input_price_per_1k }} → {{ row.output_price_per_1k }} /1k
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('admin.enabled')" width="90">
-            <template #default="{ row }">
-              <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
-                {{ row.enabled ? t('admin.on') : t('admin.off') }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column width="90">
-            <template #default="{ row }">
-              <el-button size="small" type="danger" plain @click="removeModel(row)">{{ t('admin.delete') }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
-
-      <!-- channels -->
-      <el-tab-pane :label="t('admin.tabChannels')" name="channels">
-        <div class="form-card">
-          <h3>{{ t('admin.channelAdd') }}</h3>
-          <div class="grid">
-            <label>{{ t('admin.channelName') }}
-              <el-input v-model="channelForm.name" placeholder="kejike" />
-            </label>
-            <label>{{ t('admin.provider') }}
-              <el-input v-model="channelForm.provider" placeholder="openai" />
-            </label>
-            <label>{{ t('admin.baseUrl') }}
-              <el-input v-model="channelForm.base_url" placeholder="https://sub.kejike.top/v1" />
-            </label>
-            <label>{{ t('admin.apiKey') }}
-              <el-input v-model="channelForm.api_key" type="password" show-password placeholder="sk-..." />
-            </label>
-            <label>{{ t('admin.modelId') }}
-              <el-input v-model="channelForm.model_id" placeholder="grok-4.7" />
-            </label>
-            <label>{{ t('admin.priority') }}
-              <el-input-number v-model="channelForm.priority" :min="0" style="width: 100%" />
-            </label>
+      <main class="content">
+        <div class="page-head">
+          <div>
+            <h1>{{ t(PAGE[active].title) }}</h1>
+            <p class="muted page-desc">{{ t(PAGE[active].desc) }}</p>
           </div>
-          <el-button type="primary" @click="addChannel">{{ t('admin.add') }}</el-button>
-        </div>
-
-        <el-table v-if="channels.length" :data="channels">
-          <el-table-column prop="name" :label="t('admin.channelName')" min-width="120" />
-          <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
-          <el-table-column prop="base_url" :label="t('admin.baseUrl')" min-width="180" />
-          <el-table-column prop="model_id" :label="t('admin.modelId')" min-width="120" />
-          <el-table-column prop="priority" :label="t('admin.priority')" width="90" />
-          <el-table-column :label="t('admin.health')" width="110">
-            <template #default="{ row }">
-              <el-tag :type="row.health === 'ok' ? 'success' : 'warning'" size="small">
-                {{ row.health === 'ok' ? t('admin.healthOk') : t('admin.healthCooldown') }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column width="90">
-            <template #default="{ row }">
-              <el-button size="small" type="danger" plain @click="removeChannel(row)">{{ t('admin.delete') }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
-
-      <!-- users -->
-      <el-tab-pane :label="t('admin.tabUsers')" name="users">
-        <div class="form-card">
-          <h3>{{ t('admin.userAdd') }}</h3>
-          <div class="grid">
-            <label>{{ t('admin.email') }}
-              <el-input v-model="userForm.email" placeholder="user@example.com" />
-            </label>
-            <label>{{ t('admin.initialBalance') }}
-              <el-input-number v-model="userForm.balance" :min="0" :precision="2" :step="10" style="width: 100%" />
-            </label>
-          </div>
-          <el-button type="primary" @click="addUser">{{ t('admin.add') }}</el-button>
-        </div>
-
-        <el-table v-if="users.length" :data="users">
-          <el-table-column prop="id" :label="t('admin.id')" width="70" />
-          <el-table-column prop="email" :label="t('admin.email')" min-width="180" />
-          <el-table-column :label="t('admin.balance')" width="140">
-            <template #default="{ row }">{{ formatUsd(row.balance_micro, row.balance_usd) }}</template>
-          </el-table-column>
-          <el-table-column :label="t('admin.agentRate')" width="110">
-            <template #default="{ row }">{{ row.agent_rate != null ? `×${row.agent_rate}` : '—' }}</template>
-          </el-table-column>
-          <el-table-column :label="t('admin.enabled')" width="90">
-            <template #default="{ row }">
-              <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
-                {{ row.enabled ? t('admin.on') : t('admin.off') }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="created_at" :label="t('admin.createdAt')" width="180" />
-          <el-table-column width="100">
-            <template #default="{ row }">
-              <el-button size="small" @click="credit(row)">{{ t('admin.credit') }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
-
-      <!-- keys -->
-      <el-tab-pane :label="t('admin.tabKeys')" name="keys">
-        <div class="form-card">
-          <h3>{{ t('admin.keyAdd') }}</h3>
-          <div class="grid">
-            <label>{{ t('admin.keyName') }}
-              <el-input v-model="keyName" placeholder="demo-key" />
-            </label>
-          </div>
-          <el-button type="primary" @click="addKey">{{ t('admin.add') }}</el-button>
-        </div>
-
-        <el-table v-if="keys.length" :data="keys">
-          <el-table-column prop="id" :label="t('admin.id')" width="70" />
-          <el-table-column prop="name" :label="t('admin.keyName')" min-width="140" />
-          <el-table-column :label="t('admin.spent')" width="130">
-            <template #default="{ row }">{{ formatUsd(row.spend_micro, row.spend_usd) }}</template>
-          </el-table-column>
-          <el-table-column :label="t('admin.allowedModels')" min-width="180">
-            <template #default="{ row }">
-              <span v-if="(row.allowed_models || []).length">{{ row.allowed_models.join(', ') }}</span>
-              <span v-else class="muted">{{ t('admin.allModels') }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="created_at" :label="t('admin.createdAt')" width="180" />
-          <el-table-column width="90">
-            <template #default="{ row }">
-              <el-button size="small" type="danger" plain @click="removeKey(row)">{{ t('admin.delete') }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
-
-      <!-- agents -->
-      <el-tab-pane :label="t('admin.tabAgents')" name="agents">
-        <div class="form-card">
-          <h3>{{ t('admin.agentAdd') }}</h3>
-          <div class="grid">
-            <label>{{ t('admin.agentUserId') }}
-              <el-input v-model="agentForm.user_id" placeholder="user id" />
-            </label>
-            <label>{{ t('admin.agentRate') }}
-              <el-input-number v-model="agentForm.rate" :min="1" :precision="2" :step="0.1" style="width: 100%" />
-            </label>
-          </div>
-          <el-button type="primary" @click="addAgent">{{ t('admin.add') }}</el-button>
-        </div>
-
-        <el-table v-if="agents.length" :data="agents">
-          <el-table-column prop="id" :label="t('admin.id')" width="70" />
-          <el-table-column prop="email" :label="t('admin.email')" min-width="180" />
-          <el-table-column prop="rate" :label="t('admin.agentRate')" width="110" />
-          <el-table-column prop="created_at" :label="t('admin.createdAt')" width="180" />
-          <el-table-column width="170">
-            <template #default="{ row }">
-              <el-button size="small" @click="updateRate(row)">{{ t('admin.setRate') }}</el-button>
-              <el-button size="small" type="danger" plain @click="removeAgent(row)">{{ t('admin.delete') }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
-
-      <!-- assistants -->
-      <el-tab-pane :label="t('admin.tabAssistants')" name="assistants">
-        <div class="form-card">
-          <h3>{{ t('admin.assistantAdd') }}</h3>
-          <div class="grid">
-            <label>{{ t('admin.assistantId') }}
-              <el-input v-model="assistantForm.agent_id" placeholder="translator" />
-            </label>
-            <label>{{ t('admin.assistantName') }}
-              <el-input v-model="assistantForm.name" placeholder="Translator" />
-            </label>
-            <label>{{ t('admin.modelId') }}
-              <el-input v-model="assistantForm.model" placeholder="grok-4.7" />
-            </label>
-            <label>{{ t('admin.description') }}
-              <el-input v-model="assistantForm.description" />
-            </label>
-          </div>
-          <label class="full">{{ t('admin.systemPrompt') }}
-            <el-input v-model="assistantForm.system_prompt" type="textarea" :rows="3" />
-          </label>
-          <label class="full">{{ t('admin.toolsJson') }}
-            <el-input v-model="assistantForm.tools" type="textarea" :rows="2" placeholder='[{"type":"function","function":{...}}]' />
-          </label>
-          <div class="form-actions">
-            <el-switch v-model="assistantForm.enabled" :active-text="t('admin.enabled')" />
-            <el-button type="primary" @click="addAssistant">{{ t('admin.add') }}</el-button>
+          <div class="page-actions">
+            <el-button v-if="ADD_BTN[active]" type="primary" @click="openAdd">
+              {{ t(ADD_BTN[active]) }}
+            </el-button>
+            <el-input v-model="search" class="search" :placeholder="t('admin.search')" clearable />
+            <el-button @click="reload">{{ t('admin.refresh') }}</el-button>
           </div>
         </div>
 
-        <el-table v-if="assistants.length" :data="assistants">
-          <el-table-column prop="agent_id" :label="t('admin.assistantId')" min-width="120" />
-          <el-table-column prop="name" :label="t('admin.assistantName')" min-width="120" />
-          <el-table-column prop="model" :label="t('admin.modelId')" min-width="120" />
-          <el-table-column :label="t('admin.enabled')" width="90">
-            <template #default="{ row }">
-              <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
-                {{ row.enabled ? t('admin.on') : t('admin.off') }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column width="90">
-            <template #default="{ row }">
-              <el-button size="small" type="danger" plain @click="removeAssistant(row)">{{ t('admin.delete') }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
-
-      <!-- pay -->
-      <el-tab-pane :label="t('admin.tabPay')" name="pay">
-        <div v-if="pay" class="pay-layout">
-          <div class="form-card pay-general">
-            <h3>{{ t('admin.payGeneral') }}</h3>
-            <div class="grid">
-              <label>{{ t('admin.payRate') }}
-                <el-input-number v-model="pay.cny_per_usd" :min="0" :max="100" :precision="2" :step="0.1" style="width: 100%" />
-              </label>
-              <label>{{ t('admin.payPublicUrl') }}
-                <el-input v-model="pay.public_url" placeholder="https://modelhub.example.com" />
-              </label>
+        <!-- ===== overview ===== -->
+        <section v-show="active === 'overview'">
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-num">{{ users.length }}</div>
+              <div class="stat-label">👥 {{ t('admin.statUsers') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ models.length }}</div>
+              <div class="stat-label">🧠 {{ t('admin.statModels') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ channels.length }}</div>
+              <div class="stat-label">🔌 {{ t('admin.statChannels') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ keys.length }}</div>
+              <div class="stat-label">🔑 {{ t('admin.statKeys') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ agents.length }}</div>
+              <div class="stat-label">🏪 {{ t('admin.statAgents') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ orgs.length }}</div>
+              <div class="stat-label">🏢 {{ t('admin.statOrgs') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ summary?.requests ?? '—' }}</div>
+              <div class="stat-label">📊 {{ t('admin.statRequests') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ summary ? formatUsd(summary.cost_micro, summary.cost_usd) : '—' }}</div>
+              <div class="stat-label">💰 {{ t('admin.statCost') }}</div>
             </div>
           </div>
 
-          <div class="pay-channels">
-            <div v-for="id in PAY_CHANNEL_IDS" :key="id" class="form-card pay-channel">
-              <div class="channel-head">
-                <h3>{{ t(`admin.payChannel.${id}`) }}</h3>
-                <el-switch v-model="payForms[id].enabled" />
+          <div class="dash-row">
+            <div class="card dash-card">
+              <h3>{{ t('admin.chartTitle') }}</h3>
+              <svg viewBox="0 0 320 140" class="chart">
+                <g v-for="(d, i) in chart7d" :key="d.label" :transform="`translate(${i * 44 + 10}, 0)`">
+                  <rect :x="0" :y="112 - d.h" :width="28" :height="d.h" rx="4" class="chart-bar">
+                    <title>{{ d.label }}: ${{ d.total.toFixed(4) }}</title>
+                  </rect>
+                  <text :x="14" y="128" text-anchor="middle" class="chart-label">{{ d.label }}</text>
+                </g>
+              </svg>
+            </div>
+            <div class="card dash-card">
+              <h3>{{ t('admin.channelMini') }}</h3>
+              <div v-for="ch in channels.slice(0, 8)" :key="ch.id" class="health-row">
+                <span class="health-name">
+                  {{ ch.name }} <span class="muted">· {{ ch.model_id }}</span>
+                </span>
+                <el-tag :type="ch.health === 'ok' ? 'success' : 'warning'" size="small">
+                  {{ ch.health === 'ok' ? t('admin.healthOk') : t('admin.healthCooldown') }}
+                </el-tag>
               </div>
-              <p class="status" :class="pay.channels[id]?.status.ok ? 'ok' : 'bad'">
-                {{ payStatusText(pay.channels[id]?.status ?? { ok: false, error: '' }) }}
-              </p>
+              <p v-if="!channels.length" class="muted">{{ t('admin.empty') }}</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>{{ t('admin.recent') }}</h3>
+            <el-table v-if="usage.length" :data="usage.slice(0, 8)" size="small">
+              <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+              <el-table-column prop="model" :label="t('admin.modelId')" min-width="130" />
+              <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
+              <el-table-column :label="t('admin.cost')" width="110">
+                <template #default="{ row }">${{ row.cost_usd.toFixed(6) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.status')" width="90">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 'ok' ? 'success' : 'danger'" size="small">{{ row.status }}</el-tag>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== models ===== -->
+        <section v-show="active === 'models'">
+          <div class="card">
+            <el-table v-if="modelsF.length" :data="modelsF">
+              <el-table-column prop="model_id" :label="t('admin.modelId')" min-width="150" />
+              <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
+              <el-table-column prop="upstream_model" :label="t('admin.upstreamModel')" min-width="130" />
+              <el-table-column :label="t('admin.capabilities')" min-width="140">
+                <template #default="{ row }">
+                  <el-tag v-for="c in row.capabilities" :key="c" size="small" class="cap-tag">
+                    {{ t(`admin.cap.${c}`) }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.price')" width="180">
+                <template #default="{ row }">
+                  <span v-if="row.price_unit && row.price_unit !== 'token'">
+                    ${{ row.unit_price }} / {{ row.price_unit }}
+                  </span>
+                  <span v-else>{{ row.input_price_per_1k }} → {{ row.output_price_per_1k }} /1k</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
+                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.actions')" width="80">
+                <template #default="{ row }">
+                  <el-button size="small" type="danger" plain @click="removeModel(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== channels ===== -->
+        <section v-show="active === 'channels'">
+          <div class="card">
+            <el-table v-if="channelsF.length" :data="channelsF">
+              <el-table-column prop="name" :label="t('admin.channelName')" min-width="120" />
+              <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
+              <el-table-column prop="base_url" :label="t('admin.baseUrl')" min-width="170" show-overflow-tooltip />
+              <el-table-column prop="model_id" :label="t('admin.modelId')" min-width="120" />
+              <el-table-column prop="priority" :label="t('admin.priority')" width="80" />
+              <el-table-column :label="t('admin.health')" width="100">
+                <template #default="{ row }">
+                  <el-tag :type="row.health === 'ok' ? 'success' : 'warning'" size="small">
+                    {{ row.health === 'ok' ? t('admin.healthOk') : t('admin.healthCooldown') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.actions')" width="80">
+                <template #default="{ row }">
+                  <el-button size="small" type="danger" plain @click="removeChannel(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== users ===== -->
+        <section v-show="active === 'users'">
+          <div class="card">
+            <el-table v-if="usersF.length" :data="usersF">
+              <el-table-column prop="id" :label="t('admin.id')" width="60" />
+              <el-table-column prop="email" :label="t('admin.email')" min-width="180" />
+              <el-table-column :label="t('admin.balance')" width="120">
+                <template #default="{ row }">{{ formatUsd(row.balance_micro, row.balance_usd) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.agentRate')" width="100">
+                <template #default="{ row }">{{ row.agent_rate != null ? `×${row.agent_rate}` : '—' }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
+                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="160">
+                <template #default="{ row }">
+                  <el-button size="small" @click="creditUserRow(row)">{{ t('admin.credit') }}</el-button>
+                  <el-button size="small" @click="openLedger(row)">{{ t('admin.ledgerBtn') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== keys ===== -->
+        <section v-show="active === 'keys'">
+          <div class="card">
+            <el-table v-if="keysF.length" :data="keysF">
+              <el-table-column prop="id" :label="t('admin.id')" width="60" />
+              <el-table-column prop="name" :label="t('admin.keyName')" min-width="140" />
+              <el-table-column :label="t('admin.spent')" width="120">
+                <template #default="{ row }">{{ formatUsd(row.spend_micro, row.spend_usd) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.allowedModels')" min-width="160" show-overflow-tooltip>
+                <template #default="{ row }">
+                  <span v-if="(row.allowed_models || []).length">{{ row.allowed_models.join(', ') }}</span>
+                  <span v-else class="muted">{{ t('admin.allModels') }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="150">
+                <template #default="{ row }">
+                  <el-button size="small" @click="openKeyEdit(row)">{{ t('admin.edit') }}</el-button>
+                  <el-button size="small" type="danger" plain @click="removeKey(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== agents ===== -->
+        <section v-show="active === 'agents'">
+          <div class="card">
+            <el-table v-if="agentsF.length" :data="agentsF">
+              <el-table-column prop="id" :label="t('admin.id')" width="60" />
+              <el-table-column prop="email" :label="t('admin.email')" min-width="180" />
+              <el-table-column prop="rate" :label="t('admin.agentRate')" width="110" />
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="170">
+                <template #default="{ row }">
+                  <el-button size="small" @click="updateRate(row)">{{ t('admin.setRate') }}</el-button>
+                  <el-button size="small" type="danger" plain @click="removeAgent(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== orgs ===== -->
+        <section v-show="active === 'orgs'">
+          <div class="card">
+            <el-table v-if="orgsF.length" :data="orgsF">
+              <el-table-column prop="id" :label="t('admin.id')" width="60" />
+              <el-table-column prop="name" :label="t('admin.orgName')" min-width="140" />
+              <el-table-column prop="owner_email" :label="t('admin.orgOwner')" min-width="170" />
+              <el-table-column prop="member_count" :label="t('admin.orgMembers')" width="90" />
+              <el-table-column :label="t('admin.balance')" width="120">
+                <template #default="{ row }">{{ formatUsd(row.balance_micro, row.balance_usd) }}</template>
+              </el-table-column>
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="90">
+                <template #default="{ row }">
+                  <el-button size="small" @click="creditOrgRow(row)">{{ t('admin.credit') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== assistants ===== -->
+        <section v-show="active === 'assistants'">
+          <div class="card">
+            <el-table v-if="assistantsF.length" :data="assistantsF">
+              <el-table-column prop="agent_id" :label="t('admin.assistantId')" min-width="120" />
+              <el-table-column prop="name" :label="t('admin.assistantName')" min-width="120" />
+              <el-table-column prop="model" :label="t('admin.modelId')" min-width="120" />
+              <el-table-column prop="description" :label="t('admin.description')" min-width="140" show-overflow-tooltip />
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
+                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.actions')" width="150">
+                <template #default="{ row }">
+                  <el-button size="small" @click="openAssistantEdit(row)">{{ t('admin.edit') }}</el-button>
+                  <el-button size="small" type="danger" plain @click="removeAssistant(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== pay ===== -->
+        <section v-show="active === 'pay'">
+          <div v-if="pay" class="pay-layout">
+            <div class="card pay-general">
+              <h3>{{ t('admin.payGeneral') }}</h3>
               <div class="grid">
-                <label
-                  v-for="field in PAY_CHANNEL_FIELDS[id]"
-                  :key="field.name"
-                  :class="{ full: field.name === 'private_key' || field.name === 'public_key' || field.name === 'platform_key' }"
-                >
-                  {{ t(`admin.payField.${field.name}`) }}
-                  <el-input
-                    v-model="payForms[id].config[field.name]"
-                    :type="field.secret ? 'password' : 'text'"
-                    :show-password="field.secret"
-                    :placeholder="field.secret && payForms[id].config[field.name] === '********' ? t('admin.payMasked') : ''"
-                    class="wide-field"
-                  />
+                <label>{{ t('admin.payRate') }}
+                  <el-input-number v-model="pay.cny_per_usd" :min="0" :max="100" :precision="2" :step="0.1" style="width: 100%" />
+                </label>
+                <label>{{ t('admin.payPublicUrl') }}
+                  <el-input v-model="pay.public_url" placeholder="https://modelhub.example.com" />
                 </label>
               </div>
             </div>
-          </div>
 
-          <div class="form-actions">
-            <el-button type="primary" @click="savePay">{{ t('admin.savePay') }}</el-button>
-          </div>
-        </div>
-        <p v-else class="muted">{{ t('admin.loading') }}</p>
-      </el-tab-pane>
+            <div class="pay-channels">
+              <div v-for="id in PAY_CHANNEL_IDS" :key="id" class="card pay-channel">
+                <div class="channel-head">
+                  <h3>{{ t(`admin.payChannel.${id}`) }}</h3>
+                  <el-switch v-model="payForms[id].enabled" />
+                </div>
+                <p class="status" :class="pay.channels[id]?.status.ok ? 'ok' : 'bad'">
+                  {{ payStatusText(pay.channels[id]?.status ?? { ok: false, error: '' }) }}
+                </p>
+                <div class="grid">
+                  <label
+                    v-for="field in PAY_CHANNEL_FIELDS[id]"
+                    :key="field.name"
+                    :class="{ full: field.name === 'private_key' || field.name === 'public_key' || field.name === 'platform_key' }"
+                  >
+                    {{ t(`admin.payField.${field.name}`) }}
+                    <el-input
+                      v-model="payForms[id].config[field.name]"
+                      :type="field.secret ? 'password' : 'text'"
+                      :show-password="field.secret"
+                      :placeholder="field.secret && payForms[id].config[field.name] === '********' ? t('admin.payMasked') : ''"
+                      class="wide-field"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
 
-      <!-- usage -->
-      <el-tab-pane :label="t('admin.tabUsage')" name="usage">
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-num">{{ summary?.requests ?? '—' }}</div>
-            <div class="stat-label">{{ t('admin.statRequests') }}</div>
+            <div class="pay-save">
+              <el-button type="primary" @click="savePay">{{ t('admin.savePay') }}</el-button>
+            </div>
           </div>
-          <div class="stat">
-            <div class="stat-num">{{ summary?.prompt_tokens ?? '—' }}</div>
-            <div class="stat-label">{{ t('admin.statPrompt') }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">{{ summary?.completion_tokens ?? '—' }}</div>
-            <div class="stat-label">{{ t('admin.statCompletion') }}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">{{ summary ? formatUsd(summary.cost_micro, summary.cost_usd) : '—' }}</div>
-            <div class="stat-label">{{ t('admin.statCost') }}</div>
-          </div>
-        </div>
-        <el-table v-if="usage.length" :data="usage">
-          <el-table-column prop="created_at" :label="t('admin.createdAt')" width="180" />
-          <el-table-column prop="model" :label="t('admin.modelId')" min-width="140" />
-          <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
-          <el-table-column prop="prompt_tokens" label="in" width="90" />
-          <el-table-column prop="completion_tokens" label="out" width="90" />
-          <el-table-column :label="t('admin.cost')" width="120">
-            <template #default="{ row }">${{ row.cost_usd.toFixed(6) }}</template>
-          </el-table-column>
-          <el-table-column :label="t('admin.status')" width="100">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 'ok' ? 'success' : 'danger'" size="small">{{ row.status }}</el-tag>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
+          <p v-else class="muted">{{ t('admin.loading') }}</p>
+        </section>
 
-      <!-- recharges -->
-      <el-tab-pane :label="t('admin.tabRecharges')" name="recharges">
-        <el-table v-if="recharges.length" :data="recharges">
-          <el-table-column prop="order_no" :label="t('admin.orderNo')" min-width="200" />
-          <el-table-column prop="method" :label="t('admin.payMethod')" width="110" />
-          <el-table-column :label="t('admin.amount')" width="120">
-            <template #default="{ row }">¥{{ row.amount_yuan.toFixed(2) }}</template>
-          </el-table-column>
-          <el-table-column :label="t('admin.creditAmount')" width="130">
-            <template #default="{ row }">{{ formatUsd(row.credit_micro, row.credit_usd) }}</template>
-          </el-table-column>
-          <el-table-column :label="t('admin.status')" width="100">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 'paid' ? 'success' : row.status === 'failed' ? 'danger' : 'warning'" size="small">
-                {{ t(`admin.rechargeStatus.${row.status}`) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="created_at" :label="t('admin.createdAt')" width="180" />
-        </el-table>
-        <p v-else class="muted">{{ t('admin.empty') }}</p>
-      </el-tab-pane>
-    </el-tabs>
+        <!-- ===== usage ===== -->
+        <section v-show="active === 'usage'">
+          <div class="stat-grid stat-grid-sm">
+            <div class="stat">
+              <div class="stat-num">{{ summary?.requests ?? '—' }}</div>
+              <div class="stat-label">{{ t('admin.statRequests') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ summary?.prompt_tokens ?? '—' }}</div>
+              <div class="stat-label">{{ t('admin.statPrompt') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ summary?.completion_tokens ?? '—' }}</div>
+              <div class="stat-label">{{ t('admin.statCompletion') }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">{{ summary ? formatUsd(summary.cost_micro, summary.cost_usd) : '—' }}</div>
+              <div class="stat-label">{{ t('admin.statCost') }}</div>
+            </div>
+          </div>
+          <div class="card">
+            <el-table v-if="usageF.length" :data="usageF" size="small">
+              <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+              <el-table-column prop="model" :label="t('admin.modelId')" min-width="130" />
+              <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
+              <el-table-column prop="prompt_tokens" label="in" width="80" />
+              <el-table-column prop="completion_tokens" label="out" width="80" />
+              <el-table-column :label="t('admin.cost')" width="110">
+                <template #default="{ row }">${{ row.cost_usd.toFixed(6) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.status')" width="90">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 'ok' ? 'success' : 'danger'" size="small">{{ row.status }}</el-tag>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
 
-    <div v-else class="card">
-      <p class="muted">{{ t('admin.needKey') }}</p>
+        <!-- ===== recharges ===== -->
+        <section v-show="active === 'recharges'">
+          <div class="card">
+            <el-table v-if="rechargesF.length" :data="rechargesF" size="small">
+              <el-table-column prop="order_no" :label="t('admin.orderNo')" min-width="190" show-overflow-tooltip />
+              <el-table-column prop="method" :label="t('admin.payMethod')" width="100" />
+              <el-table-column :label="t('admin.amount')" width="110">
+                <template #default="{ row }">¥{{ row.amount_yuan.toFixed(2) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.creditAmount')" width="120">
+                <template #default="{ row }">{{ formatUsd(row.credit_micro, row.credit_usd) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.status')" width="100">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 'paid' ? 'success' : row.status === 'failed' ? 'danger' : 'warning'" size="small">
+                    {{ t(`admin.rechargeStatus.${row.status}`) }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+      </main>
     </div>
+
+    <!-- ============ dialogs ============ -->
+    <el-dialog v-if="dialog !== 'ledger'" v-model="dialogVisible" :title="dialogTitle" width="620px" destroy-on-close>
+      <el-form v-if="dialog === 'model'" label-position="top">
+        <div class="dlg-grid">
+          <label>{{ t('admin.modelId') }}
+            <el-input v-model="modelForm.model_id" placeholder="grok-4.7" />
+          </label>
+          <label>{{ t('admin.provider') }}
+            <el-input v-model="modelForm.provider" placeholder="openai" />
+          </label>
+          <label>{{ t('admin.upstreamModel') }}
+            <el-input v-model="modelForm.upstream_model" placeholder="grok-4.7" />
+          </label>
+          <label>{{ t('admin.capabilities') }}
+            <el-select v-model="modelForm.capabilities" multiple style="width: 100%">
+              <el-option v-for="c in CAPS" :key="c" :label="t(`admin.cap.${c}`)" :value="c" />
+            </el-select>
+          </label>
+          <label>{{ t('admin.priceUnit') }}
+            <el-select v-model="modelForm.price_unit" style="width: 100%">
+              <el-option label="token" value="token" />
+              <el-option label="image" value="image" />
+              <el-option label="video" value="video" />
+              <el-option label="music" value="music" />
+              <el-option label="tts" value="tts" />
+            </el-select>
+          </label>
+          <template v-if="modelForm.priceUnit === 'token'">
+            <label>{{ t('admin.inputPrice') }}
+              <el-input-number v-model="modelForm.input_price_per_1k" :min="0" :precision="6" :step="0.001" style="width: 100%" />
+            </label>
+            <label>{{ t('admin.outputPrice') }}
+              <el-input-number v-model="modelForm.output_price_per_1k" :min="0" :precision="6" :step="0.001" style="width: 100%" />
+            </label>
+          </template>
+          <label v-else>{{ t('admin.unitPrice') }}
+            <el-input-number v-model="modelForm.unit_price" :min="0" :precision="4" :step="0.01" style="width: 100%" />
+          </label>
+          <label class="switch-label">{{ t('admin.enabled') }}
+            <el-switch v-model="modelForm.enabled" />
+          </label>
+        </div>
+      </el-form>
+
+      <el-form v-else-if="dialog === 'channel'" label-position="top">
+        <div class="dlg-grid">
+          <label>{{ t('admin.channelName') }}
+            <el-input v-model="channelForm.name" placeholder="kejike" />
+          </label>
+          <label>{{ t('admin.provider') }}
+            <el-input v-model="channelForm.provider" placeholder="openai" />
+          </label>
+          <label>{{ t('admin.baseUrl') }}
+            <el-input v-model="channelForm.base_url" placeholder="https://sub.kejike.top/v1" />
+          </label>
+          <label>{{ t('admin.apiKey') }}
+            <el-input v-model="channelForm.api_key" type="password" show-password placeholder="sk-..." />
+          </label>
+          <label>{{ t('admin.modelId') }}
+            <el-input v-model="channelForm.model_id" placeholder="grok-4.7" />
+          </label>
+          <label>{{ t('admin.priority') }}
+            <el-input-number v-model="channelForm.priority" :min="0" style="width: 100%" />
+          </label>
+        </div>
+      </el-form>
+
+      <el-form v-else-if="dialog === 'user'" label-position="top">
+        <div class="dlg-grid">
+          <label>{{ t('admin.email') }}
+            <el-input v-model="userForm.email" placeholder="user@example.com" />
+          </label>
+          <label>{{ t('admin.initialBalance') }}
+            <el-input-number v-model="userForm.balance" :min="0" :precision="2" :step="10" style="width: 100%" />
+          </label>
+        </div>
+      </el-form>
+
+      <el-form v-else-if="dialog === 'key'" label-position="top">
+        <label>{{ t('admin.keyName') }}
+          <el-input v-model="keyForm.name" placeholder="demo-key" />
+        </label>
+      </el-form>
+
+      <el-form v-else-if="dialog === 'keyEdit'" label-position="top">
+        <div class="dlg-grid">
+          <label>{{ t('admin.keyName') }}
+            <el-input v-model="keyEditForm.name" />
+          </label>
+          <label>{{ t('admin.quota') }}
+            <el-input v-model="keyEditForm.quota" placeholder="100" />
+          </label>
+          <label class="full">{{ t('admin.allowedModels') }}
+            <el-input v-model="keyEditForm.allowed" :placeholder="t('admin.allowedPh')" />
+          </label>
+          <label class="full">{{ t('admin.expires') }}
+            <el-input v-model="keyEditForm.expires" placeholder="2026-12-31T00:00:00Z" />
+          </label>
+        </div>
+      </el-form>
+
+      <el-form v-else-if="dialog === 'agent'" label-position="top">
+        <div class="dlg-grid">
+          <label>{{ t('admin.agentUserId') }}
+            <el-input v-model="agentForm.user_id" placeholder="user id" />
+          </label>
+          <label>{{ t('admin.agentRate') }}
+            <el-input-number v-model="agentForm.rate" :min="1" :precision="2" :step="0.1" style="width: 100%" />
+          </label>
+        </div>
+      </el-form>
+
+      <el-form v-else-if="dialog === 'assistant'" label-position="top">
+        <div class="dlg-grid">
+          <label v-if="!editingAssistant">{{ t('admin.assistantId') }}
+            <el-input v-model="assistantForm.agent_id" placeholder="translator" />
+          </label>
+          <label>{{ t('admin.assistantName') }}
+            <el-input v-model="assistantForm.name" placeholder="Translator" />
+          </label>
+          <label>{{ t('admin.modelId') }}
+            <el-input v-model="assistantForm.model" placeholder="grok-4.7" />
+          </label>
+          <label class="full">{{ t('admin.description') }}
+            <el-input v-model="assistantForm.description" />
+          </label>
+        </div>
+        <label class="dlg-full">{{ t('admin.systemPrompt') }}
+          <el-input v-model="assistantForm.system_prompt" type="textarea" :rows="3" />
+        </label>
+        <label class="dlg-full">{{ t('admin.toolsJson') }}
+          <el-input v-model="assistantForm.tools" type="textarea" :rows="2" placeholder='[{"type":"function","function":{...}}]' />
+        </label>
+        <el-switch v-model="assistantForm.enabled" :active-text="t('admin.enabled')" />
+      </el-form>
+
+      <template #footer>
+        <el-button @click="dialogVisible = false">{{ t('admin.close') }}</el-button>
+        <el-button type="primary" :loading="saving" @click="saveDialog">{{ t('admin.save') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-if="dialog === 'ledger'" v-model="dialogVisible" :title="`${t('admin.ledgerBtn')} · ${ledgerUser?.email ?? ''}`" width="680px">
+      <el-table v-if="ledger.length" :data="ledger" size="small">
+        <el-table-column :label="t('admin.status')" width="90">
+          <template #default="{ row }">
+            <el-tag size="small">{{ t(`console.ledgerKind.${row.kind}`) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('admin.amountUsd')" width="110">
+          <template #default="{ row }">${{ row.amount_usd.toFixed(6) }}</template>
+        </el-table-column>
+        <el-table-column prop="reason" :label="t('admin.reason')" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+      </el-table>
+      <p v-else class="muted">{{ t('admin.empty') }}</p>
+    </el-dialog>
   </div>
 </template>
 
 <style scoped>
-h2 {
-  margin: 0 0 16px;
+.gate {
+  max-width: 460px;
+  margin: 60px auto;
 }
-.key-card {
-  margin-bottom: 16px;
-}
-.key-label {
+.gate-card {
+  text-align: center;
+  padding: 40px 32px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 14px;
+}
+.gate-card h1 {
+  margin: 0;
+  font-size: 22px;
+}
+.gate-card .muted {
+  margin: 0;
   font-size: 13px;
-  color: var(--text-dim);
 }
 .hint {
-  margin: 10px 0 0;
   font-size: 12px;
 }
-.stats {
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  color: #0b0b12;
+  font-size: 18px;
+  font-weight: 800;
+}
+.brand-name {
+  font-weight: 800;
+  font-size: 16px;
+  background: linear-gradient(90deg, var(--text), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.layout {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 76px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 110px);
+}
+.side-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 14px;
+}
+.side-nav {
+  flex: 1;
+  overflow-y: auto;
+}
+.side-group {
+  margin-bottom: 8px;
+}
+.side-section {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 8px 10px 4px;
+}
+.side-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.13s ease;
+}
+.side-item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.side-item.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+.side-icon {
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+}
+.side-foot {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.side-clear {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 7px 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.side-clear:hover {
+  color: #f87171;
+  border-color: #f87171;
+}
+.content {
+  flex: 1;
+  min-width: 0;
+}
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.page-head h1 {
+  margin: 0;
+  font-size: 20px;
+}
+.page-desc {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+}
+.page-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.search {
+  width: 220px;
+}
+.stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
+}
+.stat-grid-sm {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 .stat {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 18px;
-  text-align: center;
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
 }
 .stat-num {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--accent);
 }
@@ -958,47 +1505,64 @@ h2 {
   font-size: 12px;
   color: var(--text-dim);
 }
-.form-card {
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
+.dash-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 14px;
   margin-bottom: 16px;
 }
-.form-card h3 {
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    position: static;
+    width: 100%;
+    min-height: auto;
+  }
+  .dash-row {
+    grid-template-columns: 1fr;
+  }
+}
+.dash-card {
+  margin: 0;
+}
+.dash-card h3 {
   margin: 0 0 12px;
-  font-size: 15px;
+  font-size: 14px;
 }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  margin-bottom: 12px;
+.chart {
+  width: 100%;
+  height: auto;
 }
-.grid label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-dim);
+.chart-bar {
+  fill: var(--accent);
+  opacity: 0.85;
 }
-.grid label.full,
-.full {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-dim);
+.chart-label {
+  fill: var(--text-dim);
+  font-size: 9px;
 }
-.grid label.switch-label {
-  align-items: flex-start;
-}
-.form-actions {
+.health-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 4px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.health-row:last-child {
+  border-bottom: none;
+}
+.health-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
 }
 .cap-tag {
   margin-right: 4px;
@@ -1009,26 +1573,52 @@ h2 {
 .wide-field {
   width: 100%;
 }
+.dlg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.dlg-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.dlg-grid label.full {
+  grid-column: 1 / -1;
+}
+.dlg-grid label.switch-label {
+  align-items: flex-start;
+}
+.dlg-full {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 12px;
+}
 .pay-layout {
   display: flex;
   flex-direction: column;
+  gap: 14px;
 }
-.pay-general {
-  max-width: 640px;
+.pay-general h3,
+.pay-channel h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
 }
 .pay-channels {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 14px;
-  margin-bottom: 14px;
 }
-.pay-channel .channel-head {
+.channel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-.pay-channel .channel-head h3 {
-  margin: 0 0 6px;
+  margin-bottom: 6px;
 }
 .status {
   margin: 0 0 10px;
@@ -1039,5 +1629,23 @@ h2 {
 }
 .status.bad {
   color: #f87171;
+}
+.pay-save {
+  display: flex;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.grid label.full {
+  grid-column: 1 / -1;
 }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -13,7 +13,6 @@ const route = useRoute()
 const session = useSession()
 
 const nav = [
-  { to: '/', label: 'nav.home' },
   { to: '/chat', label: 'nav.chat' },
   { to: '/workbench', label: 'nav.workbench' },
   { to: '/drama', label: 'nav.drama' },
@@ -23,6 +22,9 @@ const nav = [
   { to: '/orgs', label: 'nav.orgs' },
   { to: '/admin', label: 'nav.admin' },
 ]
+
+// the chat page (and login) render their own full-bleed layout
+const hideChrome = computed(() => route.path === '/chat' || route.path === '/login')
 
 const theme = ref<Theme>(getTheme())
 
@@ -54,9 +56,9 @@ async function handleSignOut() {
 </script>
 
 <template>
-  <header class="topbar">
+  <header v-if="!hideChrome" class="topbar">
     <div class="topbar-inner">
-      <router-link to="/" class="brand">
+      <router-link to="/chat" class="brand">
         <span class="brand-mark">▲</span>
         <span class="brand-name">ModelHub</span>
       </router-link>
@@ -95,7 +97,7 @@ async function handleSignOut() {
       </div>
     </div>
   </header>
-  <main class="main">
+  <main class="main" :class="{ bare: hideChrome }">
     <router-view />
   </main>
 </template>
@@ -207,5 +209,8 @@ nav {
 }
 .main {
   min-height: calc(100vh - 53px);
+}
+.main.bare {
+  min-height: 100vh;
 }
 </style>

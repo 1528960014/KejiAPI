@@ -896,6 +896,56 @@ export async function deleteAssistant(id: number): Promise<void> {
   await http.delete(`/admin/assistants/${id}`, { headers: adminHeaders() })
 }
 
+export async function updateAssistant(id: number, patch: {
+  name?: string
+  description?: string
+  system_prompt?: string
+  model?: string
+  tools?: string
+  enabled?: boolean
+}): Promise<void> {
+  const payload: Record<string, unknown> = { ...patch }
+  if (typeof patch.tools === 'string' && patch.tools.trim()) {
+    try {
+      payload.tools = JSON.parse(patch.tools)
+    } catch {
+      throw new Error('tools 必须是 JSON 数组')
+    }
+  } else {
+    delete payload.tools
+  }
+  await http.patch(`/admin/assistants/${id}`, payload, { headers: adminHeaders() })
+}
+
+// --- admin: organizations (platform audit) ---
+
+export interface AdminOrg {
+  id: number
+  name: string
+  owner_user_id: number
+  owner_email: string
+  member_count: number
+  balance_micro: number
+  balance_usd: number
+  created_at: string
+}
+
+export async function adminListOrgs(limit = 100): Promise<AdminOrg[]> {
+  const { data } = await http.get<{ data: AdminOrg[] }>('/admin/organizations', {
+    params: { limit, offset: 0 },
+    headers: adminHeaders(),
+  })
+  return data.data
+}
+
+export async function adminCreditOrg(id: number, amountUsd: number, reason: string): Promise<void> {
+  await http.post(
+    `/admin/organizations/${id}/credit`,
+    { amount_usd: amountUsd, reason },
+    { headers: adminHeaders() },
+  )
+}
+
 // --- admin: recharge orders ---
 
 export async function adminRecharges(limit = 50): Promise<Recharge[]> {
