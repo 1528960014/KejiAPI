@@ -1,0 +1,15 @@
+# syntax=docker/dockerfile:1
+# ModelHub web console: Vite SPA built here, served by nginx with the API
+# proxied to the `app` service on the compose network (see nginx.docker.template).
+
+FROM node:22-alpine AS build
+RUN corepack enable
+WORKDIR /build
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY web/ ./
+RUN pnpm build
+
+FROM nginx:1.27-alpine
+COPY --from=build /build/dist /usr/share/nginx/html
+COPY deploy/nginx.docker.template /etc/nginx/templates/default.conf.template

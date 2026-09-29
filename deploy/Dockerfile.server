@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1
+# ModelHub API + task worker. Runtime needs ffmpeg/ffprobe + CJK fonts for
+# drama composition (subtitles render "Noto Sans CJK SC" via libass).
+
+FROM golang:1.25-alpine AS build
+WORKDIR /build
+COPY server/go.mod server/go.sum ./
+RUN go mod download
+COPY server/ ./
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/modelhub ./cmd/modelhub
+
+FROM alpine:3.21
+RUN apk add --no-cache ffmpeg font-noto-cjk tzdata
+WORKDIR /app
+COPY --from=build /out/modelhub /app/modelhub
+ENV MODELHUB_MEDIA_DIR=/data/media
+VOLUME ["/data/media"]
+EXPOSE 8080
+ENTRYPOINT ["/app/modelhub"]

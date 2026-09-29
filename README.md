@@ -49,13 +49,30 @@ curl http://127.0.0.1:8080/v1/chat/completions \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"hi"}],"stream":false}'
 ```
 
+## 生产部署（Docker 全套）
+
+`deploy/` 提供完整编排（app + web + postgres + redis + minio），一条命令起站：
+
+```bash
+git clone https://github.com/1528960014/modelhub /www/modelhub && cd /www/modelhub
+cp deploy/.env.example deploy/.env
+# 编辑 deploy/.env：MASTER_KEY（openssl rand -hex 32）、PAY_PUBLIC_URL 等
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+curl http://127.0.0.1/healthz
+```
+
+- 入口：`web` 容器占 80 端口（SPA + `/v1`、`/admin` 反代到 `app`）；`app` 直连 8080 可留作调试。
+- 数据都在命名卷（`pgdata` / `mediadata` / `miniodata`）；PostgreSQL/Redis/MinIO 只绑 `127.0.0.1`。
+- 漫剧合成需要镜像内 ffmpeg + Noto CJK 字体（`Dockerfile.server` 已含）。
+- 防火墙/安全组放行 80（如需 443 用面板或 certbot 再套一层 TLS）。
+
 ## 目录结构
 
 ```
 modelhub/
 ├── server/     # Go 网关：internal/{api,auth,gateway,billing,store,config}
 ├── web/        # Vue 3 + Vite + Element Plus 控制台
-├── deploy/     # docker-compose（依赖服务）+ nginx.conf（生产）
+├── deploy/     # 生产编排：Dockerfile(server/web) + docker-compose + nginx 模板
 └── docs/       # 架构与 API 文档
 ```
 

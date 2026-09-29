@@ -1,3 +1,9 @@
+# Production stack. From the repo root:
+#   cp deploy/.env.example deploy/.env   # then edit MASTER_KEY etc.
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+# Note: postgres/redis/minio are bound to 127.0.0.1 only — this is a public
+# VPS; keep the data stores off 0.0.0.0.
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -6,7 +12,7 @@ services:
       POSTGRES_PASSWORD: modelhub
       POSTGRES_DB: modelhub
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -14,16 +20,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
+    restart: unless-stopped
 
   minio:
     image: minio/minio:latest
@@ -32,11 +40,46 @@ services:
       MINIO_ROOT_USER: modelhub
       MINIO_ROOT_PASSWORD: modelhub123
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - miniodata:/data
+    restart: unless-stopped
+
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.server
+    env_file:
+      - .env
+    environment:
+      # Docker-network service names override the .env host addresses.
+      DATABASE_URL: postgres://modelhub:modelhub@postgres:5432/modelhub?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      MODELHUB_MEDIA_DIR: /data/media
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    volumes:
+      - mediadata:/data/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    restart: unless-stopped
 
 volumes:
   pgdata:
   miniodata:
+  mediadata:
