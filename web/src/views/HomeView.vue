@@ -125,8 +125,8 @@ const demoResp = {
             <span class="demo-status"><span class="dot" />{{ L.home.demoStatus }}</span>
           </div>
           <div class="demo-endpoint"><b>{{ demoTab === 0 ? demoChat.endpoint : demoResp.endpoint }}</b></div>
-          <pre class="demo-code"><span v-for="(line, i) in demoTab === 0 ? demoChat.code : demoResp.code" :key="'c' + i" class="line"><span v-for="(seg, j) in line" :key="j" :class="seg[0]">{{ seg[1] }}</span><br /></span></pre>
-          <pre class="demo-code resp"><span v-for="(line, i) in demoTab === 0 ? demoChat.resp : demoResp.resp" :key="'r' + i" class="line"><span v-for="(seg, j) in line" :key="j" :class="seg[0]">{{ seg[1] }}</span><br /></span></pre>
+          <pre class="demo-code"><span v-for="(line, i) in demoTab === 0 ? demoChat.code : demoResp.code" :key="'c' + i" class="line"><span :class="line[0]">{{ line[1] }}</span><br /></span></pre>
+          <pre class="demo-code resp"><span v-for="(line, i) in demoTab === 0 ? demoChat.resp : demoResp.resp" :key="'r' + i" class="line"><span :class="line[0]">{{ line[1] }}</span><br /></span></pre>
           <div class="demo-meta">
             <span v-for="m in demoTab === 0 ? demoChat.meta : demoResp.meta" :key="m">{{ m }}</span>
           </div>
