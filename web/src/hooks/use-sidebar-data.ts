@@ -32,6 +32,7 @@ import {
   ServerCog,
   Settings,
   ShieldCheck,
+  Sparkles,
   Ticket,
   User,
   Users,
@@ -61,6 +62,11 @@ export function useSidebarData(): SidebarData {
             title: t('Playground'),
             url: '/playground',
             icon: FlaskConical,
+          },
+          {
+            title: t('Chat Plaza'),
+            url: '/plaza',
+            icon: Sparkles,
           },
           {
             title: t('Chat'),
