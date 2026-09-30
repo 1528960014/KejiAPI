@@ -1793,7 +1793,9 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
           <div class="card">
             <h3>{{ t('admin.recent') }}</h3>
             <el-table v-if="usage.length" :data="usage.slice(0, 8)" size="small">
-              <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+              <el-table-column :label="t('admin.time')" width="170">
+                <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
+              </el-table-column>
               <el-table-column prop="model" :label="t('admin.modelId')" min-width="130" />
               <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
               <el-table-column :label="t('admin.cost')" width="110">
@@ -2133,7 +2135,9 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               </el-select>
             </div>
             <el-table v-if="usageF.length" :data="usageF" size="small">
-              <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+              <el-table-column :label="t('admin.time')" width="170">
+                <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
+              </el-table-column>
               <el-table-column prop="model" :label="t('admin.modelId')" min-width="130" />
               <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
               <el-table-column prop="prompt_tokens" label="in" width="80" />
@@ -2159,7 +2163,9 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               <span class="muted">{{ t('admin.auditTotal') }}: {{ auditTotal }}</span>
             </div>
             <el-table v-if="auditF.length" :data="auditF" size="small">
-              <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+              <el-table-column :label="t('admin.time')" width="170">
+                <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
+              </el-table-column>
               <el-table-column :label="t('admin.auditAction')" min-width="220">
                 <template #default="{ row }">
                   <el-tag size="small" :type="row.action.startsWith('DELETE') ? 'danger' : 'primary'" style="margin-right: 6px">
