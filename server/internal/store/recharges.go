@@ -21,17 +21,19 @@ type Recharge struct {
 	AmountCNY      int64
 	CreditMicro    int64
 	ChannelTradeNo string
-	Status         string // pending | paid | failed
+	Status         string // pending | paid | failed | refunded
+	PromoCode      string
 	CreatedAt      time.Time
 	PaidAt         *time.Time
+	RefundAt       *time.Time
 	Email          string // populated by AdminListRecharges
 }
 
-const rechargeColumns = `id, user_id, order_no, method, amount_cny, credit_micro, channel_trade_no, status, created_at, paid_at`
+const rechargeColumns = `id, user_id, order_no, method, amount_cny, credit_micro, channel_trade_no, status, promo_code, created_at, paid_at, refund_at`
 
 func scanRecharge(row pgx.Row) (*Recharge, error) {
 	r := &Recharge{}
-	err := row.Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.CreatedAt, &r.PaidAt)
+	err := row.Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.PromoCode, &r.CreatedAt, &r.PaidAt, &r.RefundAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -48,18 +50,19 @@ func genOrderNo() (string, error) {
 	return fmt.Sprintf("RH%013d%04x", time.Now().UnixMilli(), b), nil
 }
 
-// CreateRecharge inserts a pending recharge order.
-func (s *Store) CreateRecharge(ctx context.Context, userID int64, method string, amountCNYFen, creditMicro int64) (*Recharge, error) {
+// CreateRecharge inserts a pending recharge order. amountCNYFen is the
+// payable (post-promo) amount; promoCode may be empty.
+func (s *Store) CreateRecharge(ctx context.Context, userID int64, method string, amountCNYFen, creditMicro int64, promoCode string) (*Recharge, error) {
 	orderNo, err := genOrderNo()
 	if err != nil {
 		return nil, err
 	}
 	r := &Recharge{}
 	err = s.pool.QueryRow(ctx, `
-		INSERT INTO recharges (user_id, order_no, method, amount_cny, credit_micro)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING `+rechargeColumns, userID, orderNo, method, amountCNYFen, creditMicro,
-	).Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.CreatedAt, &r.PaidAt)
+		INSERT INTO recharges (user_id, order_no, method, amount_cny, credit_micro, promo_code)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING `+rechargeColumns, userID, orderNo, method, amountCNYFen, creditMicro, promoCode,
+	).Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.PromoCode, &r.CreatedAt, &r.PaidAt, &r.RefundAt)
 	return r, err
 }
 
@@ -87,7 +90,7 @@ func (s *Store) ListRecharges(ctx context.Context, userID int64, limit int) ([]R
 	out := []Recharge{}
 	for rows.Next() {
 		var r Recharge
-		if err := rows.Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.CreatedAt, &r.PaidAt); err != nil {
+		if err := rows.Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.PromoCode, &r.CreatedAt, &r.PaidAt, &r.RefundAt); err != nil {
 			return nil, err
 		}
 		out = append(out, r)
@@ -108,7 +111,7 @@ func (s *Store) AdminListRecharges(ctx context.Context, limit, offset int) ([]Re
 	out := []Recharge{}
 	for rows.Next() {
 		var r Recharge
-		if err := rows.Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.CreatedAt, &r.PaidAt, &r.Email); err != nil {
+		if err := rows.Scan(&r.ID, &r.UserID, &r.OrderNo, &r.Method, &r.AmountCNY, &r.CreditMicro, &r.ChannelTradeNo, &r.Status, &r.PromoCode, &r.CreatedAt, &r.PaidAt, &r.RefundAt, &r.Email); err != nil {
 			return nil, err
 		}
 		out = append(out, r)

@@ -23,6 +23,7 @@ const config = ref<RechargeConfig | null>(null)
 const amountYuan = ref<number>(50)
 const method = ref('')
 const yipaySub = ref<'alipay' | 'wxpay'>('alipay')
+const promoCode = ref('')
 const busy = ref(false)
 
 // active order being paid
@@ -129,7 +130,12 @@ async function submit() {
   if (fen < config.value.min_cny || fen > config.value.max_cny) return
   busy.value = true
   try {
-    const res = await createRecharge(fen, method.value, method.value === 'yipay' ? yipaySub.value : undefined)
+    const res = await createRecharge(
+      fen,
+      method.value,
+      method.value === 'yipay' ? yipaySub.value : undefined,
+      promoCode.value.trim() || undefined,
+    )
     lastPayUrl.value = res.payment.pay_url || ''
     if (res.payment.qr_code) {
       renderQR(res.payment.qr_code)
@@ -202,6 +208,16 @@ function statusLabel(s: string): string {
               <el-radio value="alipay">{{ t('recharge.yipaySub.alipay') }}</el-radio>
               <el-radio value="wxpay">{{ t('recharge.yipaySub.wxpay') }}</el-radio>
             </el-radio-group>
+          </div>
+
+          <div class="row">
+            <span class="label">{{ t('recharge.promoLabel') }}</span>
+            <el-input
+              v-model="promoCode"
+              style="min-width: 240px"
+              :placeholder="t('recharge.promoPlaceholder')"
+              clearable
+            />
           </div>
 
           <p class="muted small">{{ t('recharge.minHint') }}</p>

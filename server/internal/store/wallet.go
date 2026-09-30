@@ -77,6 +77,9 @@ func (s *Store) SettleFunds(ctx context.Context, userID *int64, holdMicro, actua
 				return err
 			}
 		}
+		if actualMicro > 0 {
+			AddSubUsageTx(ctx, tx, *userID, actualMicro)
+		}
 	}
 	if keyID != nil && actualMicro > 0 {
 		if _, err = tx.Exec(ctx, `UPDATE api_keys SET spend = spend + $2 WHERE id = $1`, *keyID, actualMicro); err != nil {

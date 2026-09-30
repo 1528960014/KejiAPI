@@ -755,9 +755,13 @@ export interface Recharge {
   amount_yuan: number
   credit_micro: number
   credit_usd: number
-  status: 'pending' | 'paid' | 'failed'
+  status: 'pending' | 'paid' | 'failed' | 'refunded'
+  promo_code?: string
   created_at: string
   paid_at: string | null
+  refund_at?: string | null
+  user_id?: number
+  email?: string
 }
 
 export interface RechargePayment {
@@ -774,11 +778,13 @@ export async function createRecharge(
   amountCnyFen: number,
   method: string,
   subType?: string,
+  promoCode?: string,
 ): Promise<{ order: Recharge; payment: RechargePayment }> {
   const { data } = await http.post('/api/me/recharges', {
     amount_cny: amountCnyFen,
     method,
     sub_type: subType || undefined,
+    promo_code: promoCode || undefined,
   })
   return data
 }
@@ -1140,4 +1146,256 @@ export async function putPayConfig(body: {
     headers: adminHeaders(),
   })
   return data
+}
+
+// --- P0: terms / announcements / redeem / promo / plans / subscription ---
+
+export interface TermsDoc {
+  content: string
+  updated_at: string
+}
+
+export async function getTerms(): Promise<TermsDoc> {
+  const { data } = await http.get<TermsDoc>('/api/terms')
+  return data
+}
+
+export async function adminGetTerms(): Promise<TermsDoc> {
+  const { data } = await http.get<TermsDoc>('/admin/terms', { headers: adminHeaders() })
+  return data
+}
+
+export async function adminPutTerms(content: string): Promise<TermsDoc> {
+  const { data } = await http.put<TermsDoc>('/admin/terms', { content }, { headers: adminHeaders() })
+  return data
+}
+
+export interface Announcement {
+  id: number
+  title: string
+  content: string
+  style: 'popup' | 'banner'
+  active: boolean
+  views: number
+  created_at: string
+}
+
+export async function listAnnouncements(): Promise<Announcement[]> {
+  const { data } = await http.get<{ data: Announcement[] }>('/api/announcements')
+  return data.data
+}
+
+export async function viewAnnouncement(id: number): Promise<void> {
+  await http.post(`/api/announcements/${id}/view`)
+}
+
+export async function adminListAnnouncements(): Promise<Announcement[]> {
+  const { data } = await http.get<{ data: Announcement[] }>('/admin/announcements', {
+    headers: adminHeaders(),
+  })
+  return data.data
+}
+
+export async function adminCreateAnnouncement(body: {
+  title: string
+  content?: string
+  style?: string
+}): Promise<void> {
+  await http.post('/admin/announcements', body, { headers: adminHeaders() })
+}
+
+export async function adminUpdateAnnouncement(
+  id: number,
+  patch: { title?: string; content?: string; style?: string; active?: boolean },
+): Promise<void> {
+  await http.patch(`/admin/announcements/${id}`, patch, { headers: adminHeaders() })
+}
+
+export async function adminDeleteAnnouncement(id: number): Promise<void> {
+  await http.delete(`/admin/announcements/${id}`, { headers: adminHeaders() })
+}
+
+export interface RedeemCode {
+  id: number
+  code: string
+  credit_micro: number
+  credit_usd: number
+  used_by: number | null
+  used_at: string | null
+  created_at: string
+}
+
+export async function adminListRedeemCodes(): Promise<RedeemCode[]> {
+  const { data } = await http.get<{ data: RedeemCode[] }>('/admin/redeem-codes', {
+    headers: adminHeaders(),
+  })
+  return data.data
+}
+
+export async function adminCreateRedeemCodes(
+  count: number,
+  creditUsd: number,
+): Promise<RedeemCode[]> {
+  const { data } = await http.post<{ data: RedeemCode[] }>('/admin/redeem-codes', {
+    count,
+    credit_usd: creditUsd,
+  }, { headers: adminHeaders() })
+  return data.data
+}
+
+export async function adminDeleteRedeemCode(id: number): Promise<void> {
+  await http.delete(`/admin/redeem-codes/${id}`, { headers: adminHeaders() })
+}
+
+export async function redeemCode(code: string): Promise<void> {
+  await http.post('/api/me/redeem', { code })
+}
+
+export interface PromoCode {
+  id: number
+  code: string
+  kind: 'percent' | 'amount_off'
+  value: number
+  min_cny: number // fen
+  max_uses: number
+  used_count: number
+  enabled: boolean
+  expires_at: string | null
+  created_at: string
+}
+
+export async function adminListPromos(): Promise<PromoCode[]> {
+  const { data } = await http.get<{ data: PromoCode[] }>('/admin/promo-codes', {
+    headers: adminHeaders(),
+  })
+  return data.data
+}
+
+export async function adminCreatePromo(body: {
+  code: string
+  kind: 'percent' | 'amount_off'
+  value: number
+  min_cny_fen?: number
+  max_uses?: number
+  expires_at?: string | null
+  enabled?: boolean
+}): Promise<void> {
+  await http.post('/admin/promo-codes', body, { headers: adminHeaders() })
+}
+
+export async function adminUpdatePromo(
+  id: number,
+  patch: {
+    kind?: 'percent' | 'amount_off'
+    value?: number
+    min_cny_fen?: number
+    max_uses?: number
+    expires_at?: string | null
+    enabled?: boolean
+  },
+): Promise<void> {
+  await http.patch(`/admin/promo-codes/${id}`, patch, { headers: adminHeaders() })
+}
+
+export async function adminDeletePromo(id: number): Promise<void> {
+  await http.delete(`/admin/promo-codes/${id}`, { headers: adminHeaders() })
+}
+
+export interface Plan {
+  id: number
+  name: string
+  quota_micro: number
+  quota_usd: number
+  period_days: number
+  price_cny: number // fen
+  price_yuan: number
+  enabled: boolean
+  created_at: string
+}
+
+export async function adminListPlans(): Promise<Plan[]> {
+  const { data } = await http.get<{ data: Plan[] }>('/admin/plans', { headers: adminHeaders() })
+  return data.data
+}
+
+export async function adminCreatePlan(body: {
+  name: string
+  quota_usd: number
+  period_days: number
+  price_cny_fen?: number
+  enabled?: boolean
+}): Promise<void> {
+  await http.post('/admin/plans', body, { headers: adminHeaders() })
+}
+
+export async function adminUpdatePlan(
+  id: number,
+  patch: {
+    name?: string
+    quota_usd?: number
+    period_days?: number
+    price_cny_fen?: number
+    enabled?: boolean
+  },
+): Promise<void> {
+  await http.patch(`/admin/plans/${id}`, patch, { headers: adminHeaders() })
+}
+
+export async function adminDeletePlan(id: number): Promise<void> {
+  await http.delete(`/admin/plans/${id}`, { headers: adminHeaders() })
+}
+
+export interface Subscription {
+  plan_id: number
+  plan_name: string
+  quota_micro: number
+  quota_usd: number
+  used_micro: number
+  used_usd: number
+  reset_at: string
+  created_at: string
+  user_id?: number
+}
+
+export async function mySubscription(): Promise<Subscription | null> {
+  const { data } = await http.get<{ subscription: Subscription | null }>('/api/me/subscription')
+  return data.subscription
+}
+
+export async function adminSetUserSubscription(userId: number, planId: number): Promise<Subscription> {
+  const { data } = await http.post<Subscription>(
+    `/admin/users/${userId}/subscription`,
+    { plan_id: planId },
+    { headers: adminHeaders() },
+  )
+  return data
+}
+
+export async function adminListSubscriptions(): Promise<Subscription[]> {
+  const { data } = await http.get<{ data: Subscription[] }>('/admin/subscriptions', {
+    headers: adminHeaders(),
+  })
+  return data.data
+}
+
+export interface RechargeStats {
+  total_micro: number
+  total_usd: number
+  by_day: { date: string; micro: number; usd: number }[]
+  by_method: { method: string; micro: number; usd: number; orders: number }[]
+  top_users: { user_id: number; email: string; micro: number; usd: number }[]
+}
+
+export async function adminRechargeStats(days = 30): Promise<RechargeStats> {
+  const { data } = await http.get<RechargeStats>('/admin/recharge-stats', {
+    params: { days },
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data
+}
+
+export async function adminRefundRecharge(id: number, reason?: string): Promise<void> {
+  await http.post(`/admin/recharges/${id}/refund`, { reason: reason || '' }, {
+    headers: adminHeaders(),
+  })
 }

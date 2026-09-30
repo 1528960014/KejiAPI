@@ -2,15 +2,61 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { LOCALES, setLocale, type Locale } from './i18n'
 import { getTheme, toggleTheme, type Theme } from './theme'
-import { formatUsd } from './api/client'
+import { formatUsd, listAnnouncements, viewAnnouncement, type Announcement } from './api/client'
 import { isLoggedIn, loadMe, signOut, useSession } from './session'
 
 const { t, locale } = useI18n()
 const route = useRoute()
 const session = useSession()
+
+// P0-2: announcements (popup once per session, banner until dismissed)
+const banner = ref<Announcement | null>(null)
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+async function loadAnnouncements() {
+  try {
+    const list = await listAnnouncements()
+    if (!list.length) {
+      banner.value = null
+      return
+    }
+    const b = list.find((a) => a.style === 'banner')
+    if (b) {
+      banner.value = b
+      void viewAnnouncement(b.id)
+    }
+    const seenRaw = sessionStorage.getItem('keji-ann-seen') || '[]'
+    let seen: number[] = []
+    try {
+      seen = JSON.parse(seenRaw)
+    } catch {
+      seen = []
+    }
+    const popup = list.find((a) => a.style === 'popup' && !seen.includes(a.id))
+    if (popup) {
+      seen.push(popup.id)
+      sessionStorage.setItem('keji-ann-seen', JSON.stringify(seen.slice(-20)))
+      void viewAnnouncement(popup.id)
+      ElMessageBox.alert(
+        popup.content ? escapeHtml(popup.content).replace(/\n/g, '<br>') : popup.title,
+        popup.title,
+        { dangerouslyUseHTMLString: !!popup.content, confirmButtonText: t('ann.close') },
+      )
+    }
+  } catch {
+    // announcements endpoint unavailable (e.g. old backend): ignore
+  }
+}
+
+function dismissBanner() {
+  banner.value = null
+}
 
 const nav = [
   { to: '/chat', label: 'nav.chat' },
@@ -32,6 +78,7 @@ const theme = ref<Theme>(getTheme())
 
 onMounted(() => {
   void loadMe(true)
+  void loadAnnouncements()
 })
 
 watch(
@@ -99,6 +146,10 @@ async function handleSignOut() {
       </div>
     </div>
   </header>
+  <div v-if="banner" class="ann-banner" :class="{ 'ann-banner-bare': hideChrome }">
+    <span class="ann-text">{{ banner.title }}{{ banner.content ? ' — ' + banner.content : '' }}</span>
+    <button class="ann-close" type="button" @click="dismissBanner">✕</button>
+  </div>
   <main class="main" :class="{ bare: hideChrome }">
     <router-view />
   </main>
@@ -207,5 +258,39 @@ nav {
 }
 .main.bare {
   min-height: 100vh;
+}
+.ann-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 7px 16px;
+  font-size: 13px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-panel));
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--text);
+}
+.ann-banner-bare {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.ann-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ann-close {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.ann-close:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 </style>

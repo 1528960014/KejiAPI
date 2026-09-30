@@ -11,12 +11,15 @@ import {
   listSubkeys,
   myKeys,
   myLedger,
+  mySubscription,
+  redeemCode,
   setApiKey,
   type LedgerEntry,
   type MyKey,
+  type Subscription,
   type Subkey,
 } from '../api/client'
-import { isLoggedIn, useSession } from '../session'
+import { isLoggedIn, loadMe, useSession } from '../session'
 
 const { t } = useI18n()
 const session = useSession()
@@ -26,6 +29,17 @@ const ledger = ref<LedgerEntry[]>([])
 const newName = ref('')
 const busy = ref(false)
 const createdKey = ref('')
+
+// P0: subscription + redeem codes
+const subscription = ref<Subscription | null>(null)
+const redeemInput = ref('')
+const redeemBusy = ref(false)
+
+const subPct = computed(() => {
+  const s = subscription.value
+  if (!s || s.quota_micro <= 0) return 0
+  return Math.min(100, Math.round((s.used_micro / s.quota_micro) * 100))
+})
 
 // P2-3: reseller subkeys (only for agent accounts)
 const isAgent = computed(() => session.user?.agent_rate != null)
@@ -48,14 +62,34 @@ const example = `curl https://<your-host>/v1/chat/completions \\
 async function reload() {
   if (!isLoggedIn()) return
   try {
-    const [k, l] = await Promise.all([myKeys(), myLedger(50)])
+    const [k, l, s] = await Promise.all([myKeys(), myLedger(50), mySubscription()])
     keys.value = k
     ledger.value = l
+    subscription.value = s
     if (isAgent.value) {
       subkeys.value = await listSubkeys()
     }
   } catch {
     // session expired or network error; App.vue reloads /me on navigation
+  }
+}
+
+async function doRedeem() {
+  const code = redeemInput.value.trim()
+  if (!code || redeemBusy.value) return
+  redeemBusy.value = true
+  try {
+    await redeemCode(code)
+    ElMessage.success(t('console.redeemOk'))
+    redeemInput.value = ''
+    await loadMe(true)
+  } catch (e) {
+    const code = (e as { response?: { data?: { error?: { code?: string } } } })?.response?.data?.error?.code
+    if (code === 'redeem_used') ElMessage.error(t('console.redeemUsed'))
+    else if (code === 'redeem_not_found') ElMessage.error(t('console.redeemNotFound'))
+    else ElMessage.error(t('login.errNetwork'))
+  } finally {
+    redeemBusy.value = false
   }
 }
 
@@ -215,6 +249,39 @@ function kindLabel(kind: string): string {
         <p v-else class="muted">{{ t('console.keysEmpty') }}</p>
       </div>
 
+      <div class="card">
+        <div class="section-head">
+          <h3>{{ t('console.subscription') }}</h3>
+          <span v-if="subscription" class="balance">
+            {{ t('console.subResetAt') }}: {{ new Date(subscription.reset_at).toLocaleString() }}
+          </span>
+        </div>
+        <template v-if="subscription">
+          <div class="sub-row">
+            <el-tag type="primary" size="small">{{ subscription.plan_name }}</el-tag>
+            <span class="muted">
+              {{ formatUsd(subscription.used_micro, subscription.used_usd) }} /
+              {{ formatUsd(subscription.quota_micro, subscription.quota_usd) }}
+              · {{ t('console.subRemaining') }} {{ formatUsd(subscription.quota_micro - subscription.used_micro) }}
+            </span>
+          </div>
+          <el-progress :percentage="subPct" :stroke-width="10" class="sub-progress" />
+        </template>
+        <p v-else class="muted">{{ t('console.subNone') }}</p>
+
+        <div class="create-row" style="margin-top: 14px">
+          <el-input
+            v-model="redeemInput"
+            :placeholder="t('console.redeemPlaceholder')"
+            style="max-width: 320px"
+            @keydown.enter.prevent="doRedeem"
+          />
+          <el-button type="primary" :loading="redeemBusy" @click="doRedeem">
+            {{ t('console.redeemBtn') }}
+          </el-button>
+        </div>
+      </div>
+
       <div v-if="isAgent" class="card">
         <h3>{{ t('console.subkeys') }}</h3>
         <p class="muted">{{ t('console.subkeysHint', { rate: session.user?.agent_rate }) }}</p>
@@ -356,5 +423,15 @@ h3 {
 }
 .card {
   margin-bottom: 16px;
+}
+.sub-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.sub-progress {
+  max-width: 560px;
 }
 </style>

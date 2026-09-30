@@ -140,12 +140,49 @@ func (s *Server) Engine() *gin.Engine {
 		admin.POST("/external-pages", s.handleCreateExternalPage)
 		admin.PATCH("/external-pages/:id", s.handleUpdateExternalPage)
 		admin.DELETE("/external-pages/:id", s.handleDeleteExternalPage)
+
+		// P0-1: terms of service.
+		admin.GET("/terms", s.handleAdminGetTerms)
+		admin.PUT("/terms", s.handleAdminPutTerms)
+
+		// P0-2: announcements.
+		admin.GET("/announcements", s.handleAdminListAnnouncements)
+		admin.POST("/announcements", s.handleAdminCreateAnnouncement)
+		admin.PATCH("/announcements/:id", s.handleAdminUpdateAnnouncement)
+		admin.DELETE("/announcements/:id", s.handleAdminDeleteAnnouncement)
+
+		// P0-3: redeem codes.
+		admin.GET("/redeem-codes", s.handleAdminListRedeemCodes)
+		admin.POST("/redeem-codes", s.handleAdminCreateRedeemCodes)
+		admin.DELETE("/redeem-codes/:id", s.handleAdminDeleteRedeemCode)
+
+		// P0-4: promo codes.
+		admin.GET("/promo-codes", s.handleAdminListPromos)
+		admin.POST("/promo-codes", s.handleAdminCreatePromo)
+		admin.PATCH("/promo-codes/:id", s.handleAdminUpdatePromo)
+		admin.DELETE("/promo-codes/:id", s.handleAdminDeletePromo)
+
+		// P0-5: subscription plans + per-user subscriptions.
+		admin.GET("/plans", s.handleAdminListPlans)
+		admin.POST("/plans", s.handleAdminCreatePlan)
+		admin.PATCH("/plans/:id", s.handleAdminUpdatePlan)
+		admin.DELETE("/plans/:id", s.handleAdminDeletePlan)
+		admin.POST("/users/:id/subscription", s.handleAdminSetUserSubscription)
+		admin.GET("/subscriptions", s.handleAdminListSubscriptions)
+
+		// P0-6: recharge analytics + refunds.
+		admin.GET("/recharge-stats", s.handleAdminRechargeStats)
+		admin.POST("/recharges/:id/refund", s.handleAdminRefundRecharge)
 	}
 
 	api := r.Group("/api")
 	{
 		api.GET("/models", s.handlePublicModels)
 		api.GET("/rankings", s.handlePublicRankings)
+		// P0: public console content.
+		api.GET("/terms", s.handleGetTerms)
+		api.GET("/announcements", s.handlePublicAnnouncements)
+		api.POST("/announcements/:id/view", s.handleAnnouncementView)
 	}
 
 	// P2-1b: composed drama videos. Public by design: the drama UUID (32 hex
@@ -193,6 +230,10 @@ func (s *Server) Engine() *gin.Engine {
 		me.POST("/me/recharges", s.handleCreateRecharge)
 		me.GET("/me/recharges", s.handleMyRecharges)
 		me.GET("/me/recharges/:id", s.handleGetMyRecharge)
+
+		// P0: redeem code + subscription (JWT user).
+		me.POST("/me/redeem", s.handleMyRedeem)
+		me.GET("/me/subscription", s.handleMySubscription)
 	}
 
 	// P2-4: public payment channel callbacks (signature-verified, no auth).

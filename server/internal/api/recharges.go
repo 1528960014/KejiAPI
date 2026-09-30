@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -34,11 +35,15 @@ func rechargeJSON(r *store.Recharge) gin.H {
 		"credit_micro": r.CreditMicro,
 		"credit_usd":   billing.USD(r.CreditMicro),
 		"status":       r.Status,
+		"promo_code":   r.PromoCode,
 		"created_at":   r.CreatedAt,
 		"paid_at":      nil,
 	}
 	if r.PaidAt != nil {
 		out["paid_at"] = *r.PaidAt
+	}
+	if r.RefundAt != nil {
+		out["refund_at"] = *r.RefundAt
 	}
 	return out
 }
@@ -56,13 +61,15 @@ func (s *Server) handleRechargeConfig(c *gin.Context) {
 }
 
 type createRechargeReq struct {
-	AmountCNY int64  `json:"amount_cny"` // fen
-	Method    string `json:"method"`
-	SubType   string `json:"sub_type"` // yipay: "alipay" | "wxpay"
+	AmountCNY  int64  `json:"amount_cny"` // fen
+	Method     string `json:"method"`
+	SubType    string `json:"sub_type"` // yipay: "alipay" | "wxpay"
+	PromoCode  string `json:"promo_code"`
 }
 
 // handleCreateRecharge creates a pending order and asks the channel for a
-// QR code / payment URL.
+// QR code / payment URL. An optional promo code discounts the payable
+// amount; the credited balance is computed from the payable amount.
 func (s *Server) handleCreateRecharge(c *gin.Context) {
 	u := userFrom(c)
 	var req createRechargeReq
@@ -84,12 +91,33 @@ func (s *Server) handleCreateRecharge(c *gin.Context) {
 		abortWith(c, http.StatusBadRequest, "invalid_method", "payment method is not enabled")
 		return
 	}
-	credit := pay.CreditMicro(req.AmountCNY, st.cfg.CNYPerUSD)
+	payable := req.AmountCNY
+	if req.PromoCode != "" {
+		p, err := s.store.GetPromoCode(c.Request.Context(), req.PromoCode)
+		if errors.Is(err, store.ErrNotFound) {
+			abortWith(c, http.StatusBadRequest, "promo_not_found", "promo code does not exist")
+			return
+		}
+		if err != nil {
+			httpErr(c, err)
+			return
+		}
+		if !p.PromoUsable(time.Now()) {
+			abortWith(c, http.StatusBadRequest, "promo_unavailable", "promo code expired or fully used")
+			return
+		}
+		if req.AmountCNY < p.MinCNYFen {
+			abortWith(c, http.StatusBadRequest, "promo_min_amount", "amount below promo minimum")
+			return
+		}
+		payable = p.DiscountedCNYFen(req.AmountCNY)
+	}
+	credit := pay.CreditMicro(payable, st.cfg.CNYPerUSD)
 	if credit <= 0 {
 		abortWith(c, http.StatusBadRequest, "invalid_amount", "amount too small to credit any balance")
 		return
 	}
-	order, err := s.store.CreateRecharge(c.Request.Context(), u.ID, ch.ID(), req.AmountCNY, credit)
+	order, err := s.store.CreateRecharge(c.Request.Context(), u.ID, ch.ID(), payable, credit, req.PromoCode)
 	if err != nil {
 		httpErr(c, err)
 		return
@@ -109,6 +137,12 @@ func (s *Server) handleCreateRecharge(c *gin.Context) {
 		_ = s.store.FailRecharge(c.Request.Context(), order.OrderNo)
 		abortWith(c, http.StatusBadGateway, "payment_channel_error", "payment channel order failed: "+err.Error())
 		return
+	}
+	if req.PromoCode != "" {
+		if err := s.store.UsePromoCode(c.Request.Context(), req.PromoCode); err != nil {
+			httpErr(c, err)
+			return
+		}
 	}
 	c.JSON(http.StatusCreated, gin.H{
 		"order":   rechargeJSON(order),

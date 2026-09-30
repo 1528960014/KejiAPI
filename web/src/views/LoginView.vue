@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { login, register } from '../api/client'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getTerms, login, register } from '../api/client'
 import { loadMe } from '../session'
 
 const { t } = useI18n()
@@ -14,6 +14,60 @@ const mode = ref<'login' | 'register'>('login')
 const email = ref('')
 const password = ref('')
 const busy = ref(false)
+
+// --- terms of service acceptance ---
+const TERMS_KEY = 'keji-terms-accepted-at'
+const termsContent = ref('')
+const termsUpdatedAt = ref('')
+const accepted = ref(false)
+
+function termsLoaded(): boolean {
+  return termsContent.value.trim().length > 0
+}
+
+function checkAccepted() {
+  if (!termsLoaded()) {
+    accepted.value = false
+    return
+  }
+  const saved = localStorage.getItem(TERMS_KEY) || ''
+  accepted.value = saved >= termsUpdatedAt.value
+}
+
+async function loadTerms() {
+  try {
+    const doc = await getTerms()
+    termsContent.value = doc.content
+    termsUpdatedAt.value = doc.updated_at
+    checkAccepted()
+  } catch {
+    // terms endpoint unavailable (e.g. old backend): never block login
+    termsContent.value = ''
+    accepted.value = false
+  }
+}
+
+function viewTerms() {
+  if (!termsLoaded()) return
+  const html = termsContent.value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>')
+  ElMessageBox.alert(html, t('login.termsTitle'), {
+    confirmButtonText: t('login.termsAccept'),
+    dangerouslyUseHTMLString: true,
+    customClass: 'terms-dialog',
+    callback: () => {
+      localStorage.setItem(TERMS_KEY, termsUpdatedAt.value)
+      accepted.value = true
+    },
+  })
+}
+
+onMounted(() => {
+  void loadTerms()
+})
 
 const codeMessage: Record<string, string> = {
   invalid_credentials: 'login.errInvalidCredentials',
@@ -36,12 +90,19 @@ async function submit() {
     ElMessage.warning(t('login.errRequired'))
     return
   }
+  if (termsLoaded() && !accepted.value) {
+    ElMessage.warning(t('login.termsRequired'))
+    return
+  }
   busy.value = true
   try {
     if (mode.value === 'login') {
       await login(email.value.trim(), password.value)
     } else {
       await register(email.value.trim(), password.value)
+    }
+    if (termsLoaded() && accepted.value) {
+      localStorage.setItem(TERMS_KEY, termsUpdatedAt.value)
     }
     await loadMe(true)
     const raw = typeof route.query.redirect === 'string' ? route.query.redirect : ''
@@ -131,6 +192,13 @@ function switchMode() {
                 :placeholder="t('login.passwordHint')"
                 @keyup.enter="submit"
               />
+            </label>
+            <label v-if="termsLoaded()" class="terms-row" :class="{ warn: !accepted }">
+              <input v-model="accepted" type="checkbox" class="terms-check" />
+              <span class="terms-text">
+                {{ t('login.termsAgree') }}
+                <a href="#" @click.prevent="viewTerms">{{ t('login.termsView') }}</a>
+              </span>
             </label>
             <button class="cta" type="submit" :disabled="busy">
               <span v-if="busy" class="spinner"></span>
@@ -333,6 +401,29 @@ function switchMode() {
   font-size: 13px;
   color: var(--text-dim);
   font-weight: 500;
+}
+.terms-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+.terms-row.warn .terms-text {
+  color: #f59e0b;
+}
+.terms-check {
+  margin-top: 2px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.terms-text a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 4px;
 }
 .cta {
   margin-top: 6px;

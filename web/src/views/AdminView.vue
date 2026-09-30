@@ -5,8 +5,29 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
 import {
   adminCreditOrg,
+  adminCreateAnnouncement,
+  adminCreatePlan,
+  adminCreatePromo,
+  adminCreateRedeemCodes,
+  adminDeleteAnnouncement,
+  adminDeletePlan,
+  adminDeletePromo,
+  adminDeleteRedeemCode,
+  adminGetTerms,
+  adminListAnnouncements,
   adminListOrgs,
+  adminListPlans,
+  adminListPromos,
+  adminListRedeemCodes,
+  adminListSubscriptions,
+  adminPutTerms,
+  adminRechargeStats,
   adminRecharges,
+  adminRefundRecharge,
+  adminSetUserSubscription,
+  adminUpdateAnnouncement,
+  adminUpdatePlan,
+  adminUpdatePromo,
   createAdminModel,
   createAgent,
   createAssistant,
@@ -54,11 +75,17 @@ import {
   type AdminModel,
   type AdminOrg,
   type AdminUser,
+  type Announcement,
   type ChannelTestResult,
   type ExternalPage,
   type LedgerEntry,
   type PayConfigView,
+  type Plan,
+  type PromoCode,
   type Recharge,
+  type RechargeStats,
+  type RedeemCode,
+  type Subscription,
   type UsageDailyPoint,
   type UsageRecord,
   type UsageSummary,
@@ -76,6 +103,10 @@ type TabName =
   | 'agents'
   | 'orgs'
   | 'assistants'
+  | 'announcements'
+  | 'redeem'
+  | 'promos'
+  | 'plans'
   | 'pay'
   | 'usage'
   | 'recharges'
@@ -92,6 +123,10 @@ const loaded = reactive<Record<TabName, boolean>>({
   agents: false,
   orgs: false,
   assistants: false,
+  announcements: false,
+  redeem: false,
+  promos: false,
+  plans: false,
   pay: false,
   usage: false,
   recharges: false,
@@ -123,11 +158,20 @@ const NAV: { section: string; items: { key: TabName; icon: string; label: string
       { key: 'orgs', icon: '🏢', label: 'admin.tabOrgs' },
     ],
   },
-  { section: 'admin.sideContent', items: [{ key: 'assistants', icon: '🤖', label: 'admin.tabAssistants' }] },
+  {
+    section: 'admin.sideContent',
+    items: [
+      { key: 'assistants', icon: '🤖', label: 'admin.tabAssistants' },
+      { key: 'announcements', icon: '📢', label: 'admin.tabAnnouncements' },
+    ],
+  },
   {
     section: 'admin.sideFinance',
     items: [
       { key: 'pay', icon: '💳', label: 'admin.tabPay' },
+      { key: 'redeem', icon: '🎟️', label: 'admin.tabRedeem' },
+      { key: 'promos', icon: '🏷️', label: 'admin.tabPromos' },
+      { key: 'plans', icon: '💎', label: 'admin.tabPlans' },
       { key: 'recharges', icon: '🧾', label: 'admin.tabRecharges' },
     ],
   },
@@ -144,6 +188,10 @@ const PAGE: Record<TabName, { title: string; desc: string }> = {
   agents: { title: 'admin.pageAgents', desc: 'admin.pageAgentsDesc' },
   orgs: { title: 'admin.pageOrgs', desc: 'admin.pageOrgsDesc' },
   assistants: { title: 'admin.pageAssistants', desc: 'admin.pageAssistantsDesc' },
+  announcements: { title: 'admin.pageAnnouncements', desc: 'admin.pageAnnouncementsDesc' },
+  redeem: { title: 'admin.pageRedeem', desc: 'admin.pageRedeemDesc' },
+  promos: { title: 'admin.pagePromos', desc: 'admin.pagePromosDesc' },
+  plans: { title: 'admin.pagePlans', desc: 'admin.pagePlansDesc' },
   pay: { title: 'admin.pagePay', desc: 'admin.pagePayDesc' },
   usage: { title: 'admin.pageUsage', desc: 'admin.pageUsageDesc' },
   recharges: { title: 'admin.pageRecharges', desc: 'admin.pageRechargesDesc' },
@@ -159,6 +207,10 @@ const ADD_BTN: Record<TabName, string> = {
   agents: 'admin.agentAdd',
   orgs: '',
   assistants: 'admin.assistantAdd',
+  announcements: '',
+  redeem: '',
+  promos: '',
+  plans: '',
   pay: '',
   usage: '',
   recharges: '',
@@ -239,10 +291,14 @@ async function loadTab(name: TabName) {
     else if (name === 'agents') await loadAgents()
     else if (name === 'orgs') await loadOrgs()
     else if (name === 'assistants') await loadAssistants()
+    else if (name === 'announcements') await Promise.allSettled([loadTerms(), loadAnns()])
+    else if (name === 'redeem') await loadRedeemCodes()
+    else if (name === 'promos') await loadPromos()
+    else if (name === 'plans') await Promise.allSettled([loadPlans(), loadSubs(), loadUsers(true)])
     else if (name === 'external') await loadExternal()
     else if (name === 'pay') await loadPay()
     else if (name === 'usage') await Promise.allSettled([loadSummary(), loadUsage(200)])
-    else if (name === 'recharges') await loadRecharges()
+    else if (name === 'recharges') await Promise.allSettled([loadRecharges(), loadStats()])
     loaded[name] = true
   } catch (err) {
     ElMessage.error(errMsg(err))
@@ -442,12 +498,354 @@ const orgsF = computed(() => filterRows(orgs.value, ['name', 'owner_email']))
 const assistantsF = computed(() => filterRows(assistants.value, ['agent_id', 'name', 'model']))
 const extsF = computed(() => filterRows(exts.value, ['name', 'url']))
 const rechargesF = computed(() => filterRows(recharges.value, ['order_no', 'method', 'status']))
+
+function userEmail(id: number): string {
+  return users.value.find((u) => u.id === id)?.email ?? `#${id}`
+}
 const usageStatusFilter = ref('')
 const usageF = computed(() => {
   const rows = filterRows(usage.value, ['model', 'provider', 'status'])
   const s = usageStatusFilter.value
   return s ? rows.filter((r) => r.status === s) : rows
 })
+
+// ---------- P0: terms / announcements ----------
+
+const termsContent = ref('')
+const termsUpdatedAt = ref('')
+const termsSaving = ref(false)
+
+async function loadTerms() {
+  const doc = await adminGetTerms()
+  termsContent.value = doc.content
+  termsUpdatedAt.value = doc.updated_at
+}
+
+async function saveTerms() {
+  termsSaving.value = true
+  try {
+    const doc = await adminPutTerms(termsContent.value)
+    termsUpdatedAt.value = doc.updated_at
+    ElMessage.success(t('admin.saved'))
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  } finally {
+    termsSaving.value = false
+  }
+}
+
+const anns = ref<Announcement[]>([])
+const annForm = reactive({ title: '', content: '', style: 'popup' })
+const editingAnnId = ref<number | null>(null)
+
+async function loadAnns() {
+  anns.value = await adminListAnnouncements()
+}
+
+function openAnnCreate() {
+  editingAnnId.value = null
+  Object.assign(annForm, { title: '', content: '', style: 'popup' })
+}
+
+function openAnnEdit(a: Announcement) {
+  editingAnnId.value = a.id
+  Object.assign(annForm, { title: a.title, content: a.content, style: a.style })
+}
+
+async function saveAnn() {
+  if (!annForm.title.trim()) {
+    ElMessage.warning(t('admin.annTitleRequired'))
+    return
+  }
+  try {
+    const body = { title: annForm.title.trim(), content: annForm.content, style: annForm.style }
+    if (editingAnnId.value == null) {
+      await adminCreateAnnouncement(body)
+    } else {
+      await adminUpdateAnnouncement(editingAnnId.value, body)
+    }
+    ElMessage.success(t('admin.saved'))
+    editingAnnId.value = null
+    Object.assign(annForm, { title: '', content: '', style: 'popup' })
+    await loadAnns()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function toggleAnn(a: Announcement) {
+  try {
+    await adminUpdateAnnouncement(a.id, { active: !a.active })
+    await loadAnns()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function removeAnn(a: Announcement) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: a.title })))) return
+  try {
+    await adminDeleteAnnouncement(a.id)
+    await loadAnns()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+// ---------- P0: redeem codes ----------
+
+const redeemCodes = ref<RedeemCode[]>([])
+const redeemForm = reactive({ count: 5, creditUsd: 1 })
+const redeemBusy = ref(false)
+
+async function loadRedeemCodes() {
+  redeemCodes.value = await adminListRedeemCodes()
+}
+
+async function genRedeemCodes() {
+  if (redeemForm.creditUsd <= 0) {
+    ElMessage.warning(t('admin.redeemCreditRequired'))
+    return
+  }
+  redeemBusy.value = true
+  try {
+    const created = await adminCreateRedeemCodes(redeemForm.count, redeemForm.creditUsd)
+    ElMessage.success(t('admin.redeemCreated', { n: created.length }))
+    await loadRedeemCodes()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  } finally {
+    redeemBusy.value = false
+  }
+}
+
+async function removeRedeem(r: RedeemCode) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: r.code })))) return
+  try {
+    await adminDeleteRedeemCode(r.id)
+    await loadRedeemCodes()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function copyCode(code: string) {
+  try {
+    await navigator.clipboard.writeText(code)
+    ElMessage.success(t('admin.copied'))
+  } catch {
+    ElMessage.error(code)
+  }
+}
+
+// ---------- P0: promo codes ----------
+
+const promos = ref<PromoCode[]>([])
+const promoForm = reactive({
+  code: '',
+  kind: 'percent' as 'percent' | 'amount_off',
+  value: 10,
+  minCny: 0,
+  maxUses: 0,
+  expiresAt: '',
+  enabled: true,
+})
+const editingPromoId = ref<number | null>(null)
+
+async function loadPromos() {
+  promos.value = await adminListPromos()
+}
+
+function openPromoCreate() {
+  editingPromoId.value = null
+  Object.assign(promoForm, { code: '', kind: 'percent', value: 10, minCny: 0, maxUses: 0, expiresAt: '', enabled: true })
+}
+
+function openPromoEdit(p: PromoCode) {
+  editingPromoId.value = p.id
+  Object.assign(promoForm, {
+    code: p.code,
+    kind: p.kind,
+    value: p.value,
+    minCny: p.min_cny,
+    maxUses: p.max_uses,
+    expiresAt: p.expires_at ? p.expires_at.slice(0, 10) : '',
+    enabled: p.enabled,
+  })
+}
+
+async function savePromo() {
+  if (!promoForm.code.trim()) {
+    ElMessage.warning(t('admin.promoCodeRequired'))
+    return
+  }
+  try {
+    const expires = promoForm.expiresAt ? new Date(promoForm.expiresAt + 'T23:59:59Z').toISOString() : null
+    if (editingPromoId.value == null) {
+      await adminCreatePromo({
+        code: promoForm.code.trim(),
+        kind: promoForm.kind,
+        value: promoForm.value,
+        min_cny_fen: promoForm.minCny,
+        max_uses: promoForm.maxUses,
+        expires_at: expires,
+        enabled: promoForm.enabled,
+      })
+    } else {
+      await adminUpdatePromo(editingPromoId.value, {
+        kind: promoForm.kind,
+        value: promoForm.value,
+        min_cny_fen: promoForm.minCny,
+        max_uses: promoForm.maxUses,
+        expires_at: expires,
+        enabled: promoForm.enabled,
+      })
+    }
+    ElMessage.success(t('admin.saved'))
+    editingPromoId.value = null
+    Object.assign(promoForm, { code: '', kind: 'percent', value: 10, minCny: 0, maxUses: 0, expiresAt: '', enabled: true })
+    await loadPromos()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function removePromo(p: PromoCode) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: p.code })))) return
+  try {
+    await adminDeletePromo(p.id)
+    await loadPromos()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+function promoLabel(p: PromoCode): string {
+  return p.kind === 'percent'
+    ? t('admin.promoPercent', { v: p.value })
+    : t('admin.promoAmountOff', { v: (p.value / 100).toFixed(2) })
+}
+
+// ---------- P0: plans & subscriptions ----------
+
+const plans = ref<Plan[]>([])
+const planForm = reactive({ name: '', quotaUsd: 10, periodDays: 30, priceCny: 0, enabled: true })
+const editingPlanId = ref<number | null>(null)
+const subs = ref<Subscription[]>([])
+const subForm = reactive({ userId: '' as number | string, planId: '' as number | string })
+
+async function loadPlans() {
+  plans.value = await adminListPlans()
+}
+
+async function loadSubs() {
+  subs.value = await adminListSubscriptions()
+}
+
+function openPlanCreate() {
+  editingPlanId.value = null
+  Object.assign(planForm, { name: '', quotaUsd: 10, periodDays: 30, priceCny: 0, enabled: true })
+}
+
+function openPlanEdit(p: Plan) {
+  editingPlanId.value = p.id
+  Object.assign(planForm, {
+    name: p.name,
+    quotaUsd: p.quota_usd,
+    periodDays: p.period_days,
+    priceCny: p.price_cny,
+    enabled: p.enabled,
+  })
+}
+
+async function savePlan() {
+  if (!planForm.name.trim()) {
+    ElMessage.warning(t('admin.planNameRequired'))
+    return
+  }
+  try {
+    const body = {
+      name: planForm.name.trim(),
+      quota_usd: planForm.quotaUsd,
+      period_days: planForm.periodDays,
+      price_cny_fen: planForm.priceCny,
+      enabled: planForm.enabled,
+    }
+    if (editingPlanId.value == null) {
+      await adminCreatePlan(body)
+    } else {
+      await adminUpdatePlan(editingPlanId.value, body)
+    }
+    ElMessage.success(t('admin.saved'))
+    editingPlanId.value = null
+    Object.assign(planForm, { name: '', quotaUsd: 10, periodDays: 30, priceCny: 0, enabled: true })
+    await loadPlans()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function removePlan(p: Plan) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: p.name })))) return
+  try {
+    await adminDeletePlan(p.id)
+    await loadPlans()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function assignSubscription() {
+  const uid = Number(subForm.userId)
+  const pid = Number(subForm.planId)
+  if (!uid || !pid) {
+    ElMessage.warning(t('admin.subAssignRequired'))
+    return
+  }
+  try {
+    await adminSetUserSubscription(uid, pid)
+    ElMessage.success(t('admin.saved'))
+    await Promise.allSettled([loadSubs(), loadUsers(true)])
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+// ---------- P0: recharge stats & refund ----------
+
+const stats = ref<RechargeStats | null>(null)
+const statsDays = ref(30)
+
+async function loadStats() {
+  stats.value = await adminRechargeStats(statsDays.value)
+}
+
+async function changeStatsDays() {
+  try {
+    await loadStats()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function refundRecharge(r: Recharge) {
+  try {
+    await ElMessageBox.confirm(
+      t('admin.refundConfirm', { order: r.order_no }),
+      t('admin.refund'),
+      { type: 'warning' },
+    )
+  } catch {
+    return
+  }
+  try {
+    await adminRefundRecharge(r.id)
+    ElMessage.success(t('admin.saved'))
+    await Promise.allSettled([loadRecharges(), loadStats()])
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
 
 // ---------- dialogs ----------
 type DialogKind =
@@ -1532,8 +1930,313 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
           </div>
         </section>
 
+        <!-- ===== announcements & terms ===== -->
+        <section v-show="active === 'announcements'">
+          <div class="card">
+            <h3>{{ editingAnnId == null ? t('admin.annAdd') : t('admin.annEdit') }}</h3>
+            <div class="grid">
+              <label>{{ t('admin.annName') }}
+                <el-input v-model="annForm.title" />
+              </label>
+              <label>{{ t('admin.annStyle') }}
+                <el-select v-model="annForm.style" style="width: 100%">
+                  <el-option value="popup" label="Popup" />
+                  <el-option value="banner" label="Banner" />
+                </el-select>
+              </label>
+            </div>
+            <label style="margin-top: 12px; display: block">{{ t('admin.description') }}
+              <el-input v-model="annForm.content" type="textarea" :rows="3" />
+            </label>
+            <div class="pay-save">
+              <el-button type="primary" @click="saveAnn">{{ t('admin.save') }}</el-button>
+              <el-button v-if="editingAnnId != null" @click="openAnnCreate">{{ t('admin.cancel') }}</el-button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>{{ t('admin.annTitle') }}</h3>
+            <el-table v-if="anns.length" :data="anns" size="small">
+              <el-table-column prop="title" :label="t('admin.annName')" min-width="160" show-overflow-tooltip />
+              <el-table-column prop="content" :label="t('admin.description')" min-width="200" show-overflow-tooltip />
+              <el-table-column :label="t('admin.annStyle')" width="90">
+                <template #default="{ row }">
+                  <el-tag size="small" :type="row.style === 'popup' ? 'warning' : 'info'">{{ row.style }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.active ? 'success' : 'info'" size="small">
+                    {{ row.active ? t('admin.on') : t('admin.off') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="views" :label="t('admin.annViews')" width="80" />
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="200">
+                <template #default="{ row }">
+                  <el-button size="small" @click="openAnnEdit(row)">{{ t('admin.edit') }}</el-button>
+                  <el-button size="small" @click="toggleAnn(row)">{{ row.active ? t('admin.off') : t('admin.on') }}</el-button>
+                  <el-button size="small" type="danger" plain @click="removeAnn(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+
+          <div class="card">
+            <h3>{{ t('admin.termsTitle') }}</h3>
+            <p class="muted">{{ t('admin.termsUpdatedAt') }}: {{ termsUpdatedAt || '—' }}</p>
+            <el-input
+              v-model="termsContent"
+              type="textarea"
+              :rows="10"
+              :placeholder="t('admin.termsPlaceholder')"
+            />
+            <div class="pay-save">
+              <el-button type="primary" :loading="termsSaving" @click="saveTerms">{{ t('admin.save') }}</el-button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== redeem codes ===== -->
+        <section v-show="active === 'redeem'">
+          <div class="card">
+            <h3>{{ t('admin.redeemGen') }}</h3>
+            <div class="grid">
+              <label>{{ t('admin.redeemCount') }}
+                <el-input-number v-model="redeemForm.count" :min="1" :max="500" style="width: 100%" />
+              </label>
+              <label>{{ t('admin.redeemCreditUsd') }}
+                <el-input-number v-model="redeemForm.creditUsd" :min="0.01" :precision="2" :step="1" style="width: 100%" />
+              </label>
+            </div>
+            <div class="pay-save">
+              <el-button type="primary" :loading="redeemBusy" @click="genRedeemCodes">{{ t('admin.redeemGenBtn') }}</el-button>
+            </div>
+          </div>
+          <div class="card">
+            <el-table v-if="redeemCodes.length" :data="redeemCodes" size="small">
+              <el-table-column prop="code" :label="t('admin.redeemCode')" min-width="180">
+                <template #default="{ row }">
+                  <span class="mono">{{ row.code }}</span>
+                  <el-button size="small" text @click="copyCode(row.code)">{{ t('admin.copy') }}</el-button>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.redeemCredit')" width="120">
+                <template #default="{ row }">{{ formatUsd(row.credit_micro, row.credit_usd) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.redeemStatus')" width="100">
+                <template #default="{ row }">
+                  <el-tag :type="row.used_at ? 'info' : 'success'" size="small">
+                    {{ row.used_at ? t('admin.redeemUsed') : t('admin.redeemUnused') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="90">
+                <template #default="{ row }">
+                  <el-button v-if="!row.used_at" size="small" type="danger" plain @click="removeRedeem(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== promo codes ===== -->
+        <section v-show="active === 'promos'">
+          <div class="card">
+            <h3>{{ editingPromoId == null ? t('admin.promoAdd') : t('admin.promoEdit') }}</h3>
+            <div class="grid">
+              <label>{{ t('admin.promoCode') }}
+                <el-input v-model="promoForm.code" :disabled="editingPromoId != null" placeholder="WELCOME10" />
+              </label>
+              <label>{{ t('admin.promoKind') }}
+                <el-select v-model="promoForm.kind" style="width: 100%">
+                  <el-option value="percent" :label="t('admin.promoKindPercent')" />
+                  <el-option value="amount_off" :label="t('admin.promoKindAmount')" />
+                </el-select>
+              </label>
+              <label>{{ t('admin.promoValue') }}
+                <el-input-number
+                  v-model="promoForm.value"
+                  :min="1"
+                  :max="promoForm.kind === 'percent' ? 99 : 100000000"
+                  style="width: 100%"
+                />
+              </label>
+              <label>{{ t('admin.promoMinCny') }}
+                <el-input-number v-model="promoForm.minCny" :min="0" :precision="0" style="width: 100%" />
+              </label>
+              <label>{{ t('admin.promoMaxUses') }}
+                <el-input-number v-model="promoForm.maxUses" :min="0" :precision="0" style="width: 100%" />
+              </label>
+              <label>{{ t('admin.promoExpires') }}
+                <el-input v-model="promoForm.expiresAt" type="date" placeholder="—" />
+              </label>
+            </div>
+            <el-checkbox v-model="promoForm.enabled">{{ t('admin.enabled') }}</el-checkbox>
+            <div class="pay-save">
+              <el-button type="primary" @click="savePromo">{{ t('admin.save') }}</el-button>
+              <el-button v-if="editingPromoId != null" @click="openPromoCreate">{{ t('admin.cancel') }}</el-button>
+            </div>
+          </div>
+          <div class="card">
+            <el-table v-if="promos.length" :data="promos" size="small">
+              <el-table-column prop="code" :label="t('admin.promoCode')" min-width="140">
+                <template #default="{ row }"><span class="mono">{{ row.code }}</span></template>
+              </el-table-column>
+              <el-table-column :label="t('admin.promoDiscount')" width="130">
+                <template #default="{ row }">{{ promoLabel(row) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.promoUses')" width="100">
+                <template #default="{ row }">{{ row.used_count }} / {{ row.max_uses || '∞' }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
+                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="expires_at" :label="t('admin.promoExpires')" width="170">
+                <template #default="{ row }">{{ row.expires_at ? String(row.expires_at).slice(0, 10) : '—' }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.actions')" width="150">
+                <template #default="{ row }">
+                  <el-button size="small" @click="openPromoEdit(row)">{{ t('admin.edit') }}</el-button>
+                  <el-button size="small" type="danger" plain @click="removePromo(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== plans & subscriptions ===== -->
+        <section v-show="active === 'plans'">
+          <div class="card">
+            <h3>{{ editingPlanId == null ? t('admin.planAdd') : t('admin.planEdit') }}</h3>
+            <div class="grid">
+              <label>{{ t('admin.planName') }}
+                <el-input v-model="planForm.name" placeholder="Basic / Pro / Max" />
+              </label>
+              <label>{{ t('admin.planQuotaUsd') }}
+                <el-input-number v-model="planForm.quotaUsd" :min="0" :precision="2" style="width: 100%" />
+              </label>
+              <label>{{ t('admin.planPeriodDays') }}
+                <el-input-number v-model="planForm.periodDays" :min="1" :max="365" :precision="0" style="width: 100%" />
+              </label>
+              <label>{{ t('admin.planPriceCny') }}
+                <el-input-number v-model="planForm.priceCny" :min="0" :precision="0" style="width: 100%" />
+              </label>
+            </div>
+            <el-checkbox v-model="planForm.enabled">{{ t('admin.enabled') }}</el-checkbox>
+            <div class="pay-save">
+              <el-button type="primary" @click="savePlan">{{ t('admin.save') }}</el-button>
+              <el-button v-if="editingPlanId != null" @click="openPlanCreate">{{ t('admin.cancel') }}</el-button>
+            </div>
+          </div>
+
+          <div class="card">
+            <el-table v-if="plans.length" :data="plans" size="small">
+              <el-table-column prop="name" :label="t('admin.planName')" min-width="140" />
+              <el-table-column :label="t('admin.planQuota')" width="120">
+                <template #default="{ row }">{{ formatUsd(row.quota_micro, row.quota_usd) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.planPeriod')" width="110">
+                <template #default="{ row }">{{ t('admin.planPeriodDaysN', { n: row.period_days }) }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.planPrice')" width="110">
+                <template #default="{ row }">{{ row.price_cny > 0 ? '¥' + (row.price_cny / 100).toFixed(2) : '—' }}</template>
+              </el-table-column>
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
+                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.actions')" width="150">
+                <template #default="{ row }">
+                  <el-button size="small" @click="openPlanEdit(row)">{{ t('admin.edit') }}</el-button>
+                  <el-button size="small" type="danger" plain @click="removePlan(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+
+          <div class="card">
+            <h3>{{ t('admin.subAssign') }}</h3>
+            <div class="grid">
+              <label>{{ t('admin.user') }}
+                <el-select v-model="subForm.userId" filterable style="width: 100%">
+                  <el-option v-for="u in users" :key="u.id" :value="u.id" :label="u.email" />
+                </el-select>
+              </label>
+              <label>{{ t('admin.plan') }}
+                <el-select v-model="subForm.planId" style="width: 100%">
+                  <el-option v-for="p in plans.filter((p) => p.enabled)" :key="p.id" :value="p.id" :label="p.name" />
+                </el-select>
+              </label>
+            </div>
+            <div class="pay-save">
+              <el-button type="primary" @click="assignSubscription">{{ t('admin.subAssignBtn') }}</el-button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>{{ t('admin.subList') }}</h3>
+            <el-table v-if="subs.length" :data="subs" size="small">
+              <el-table-column :label="t('admin.user')" min-width="180">
+                <template #default="{ row }">{{ userEmail(row.user_id) }}</template>
+              </el-table-column>
+              <el-table-column prop="plan_name" :label="t('admin.plan')" min-width="120" />
+              <el-table-column :label="t('admin.subUsage')" width="190">
+                <template #default="{ row }">
+                  {{ formatUsd(row.used_micro, row.used_usd) }} / {{ formatUsd(row.quota_micro, row.quota_usd) }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="reset_at" :label="t('admin.subResetAt')" width="170" />
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
         <!-- ===== recharges ===== -->
         <section v-show="active === 'recharges'">
+          <div v-if="stats" class="card">
+            <div class="card-head">
+              <h3>{{ t('admin.rechargeStats') }}</h3>
+              <el-select v-model="statsDays" size="small" style="width: 110px" @change="changeStatsDays">
+                <el-option :value="7" label="7d" />
+                <el-option :value="30" label="30d" />
+                <el-option :value="90" label="90d" />
+              </el-select>
+            </div>
+            <div class="stat-grid stat-grid-sm">
+              <div class="stat">
+                <div class="stat-num">{{ formatUsd(stats.total_micro, stats.total_usd) }}</div>
+                <div class="stat-label">{{ t('admin.rechargeTotal') }}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num">{{ stats.by_method.reduce((n, m) => n + m.orders, 0) }}</div>
+                <div class="stat-label">{{ t('admin.rechargeOrders') }}</div>
+              </div>
+              <div v-for="m in stats.by_method" :key="m.method" class="stat">
+                <div class="stat-num">{{ formatUsd(m.micro, m.usd) }}</div>
+                <div class="stat-label">{{ m.method }} · {{ m.orders }}</div>
+              </div>
+            </div>
+            <el-table v-if="stats.top_users.length" :data="stats.top_users" size="small" style="margin-top: 12px">
+              <el-table-column prop="email" :label="t('admin.topUser')" min-width="200" />
+              <el-table-column :label="t('admin.topSpend')" width="140">
+                <template #default="{ row }">{{ formatUsd(row.micro, row.usd) }}</template>
+              </el-table-column>
+            </el-table>
+          </div>
           <div class="card">
             <el-table v-if="rechargesF.length" :data="rechargesF" size="small">
               <el-table-column prop="order_no" :label="t('admin.orderNo')" min-width="190" show-overflow-tooltip />
@@ -1546,12 +2249,17 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               </el-table-column>
               <el-table-column :label="t('admin.status')" width="100">
                 <template #default="{ row }">
-                  <el-tag :type="row.status === 'paid' ? 'success' : row.status === 'failed' ? 'danger' : 'warning'" size="small">
+                  <el-tag :type="row.status === 'paid' ? 'success' : row.status === 'failed' ? 'danger' : row.status === 'refunded' ? 'info' : 'warning'" size="small">
                     {{ t(`admin.rechargeStatus.${row.status}`) }}
                   </el-tag>
                 </template>
               </el-table-column>
               <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="90">
+                <template #default="{ row }">
+                  <el-button v-if="row.status === 'paid'" size="small" type="warning" plain @click="refundRecharge(row)">{{ t('admin.refund') }}</el-button>
+                </template>
+              </el-table-column>
             </el-table>
             <p v-else class="muted">{{ t('admin.empty') }}</p>
           </div>

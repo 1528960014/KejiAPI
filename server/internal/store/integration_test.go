@@ -707,7 +707,7 @@ func TestRecharges(t *testing.T) {
 	}
 
 	// create + fetch
-	r, err := st.CreateRecharge(ctx, u.ID, "alipay", 10000, 13888889)
+	r, err := st.CreateRecharge(ctx, u.ID, "alipay", 10000, 13888889, "")
 	if err != nil {
 		t.Fatalf("create recharge: %v", err)
 	}
@@ -745,7 +745,7 @@ func TestRecharges(t *testing.T) {
 	}
 
 	// a second order fails cleanly (channel create-order error path)
-	f, err := st.CreateRecharge(ctx, u.ID, "wechat", 500, 69444)
+	f, err := st.CreateRecharge(ctx, u.ID, "wechat", 500, 69444, "")
 	if err != nil {
 		t.Fatalf("create failed-order: %v", err)
 	}

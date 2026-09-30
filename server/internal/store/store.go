@@ -308,6 +308,76 @@ CREATE TABLE IF NOT EXISTS external_pages (
     sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- P0-1: terms of service. Single row (id=1); updated_at changes make the
+-- console require re-acceptance on the next login.
+CREATE TABLE IF NOT EXISTS system_terms (
+    id INT PRIMARY KEY DEFAULT 1,
+    content TEXT NOT NULL DEFAULT '',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- P0-2: announcements shown in the console (popup modal or top banner).
+CREATE TABLE IF NOT EXISTS announcements (
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    style TEXT NOT NULL DEFAULT 'popup', -- popup | banner
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    views INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- P0-3: redeem codes — one-time balance credit codes for users.
+CREATE TABLE IF NOT EXISTS redeem_codes (
+    id BIGSERIAL PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL,
+    credit_micro BIGINT NOT NULL,
+    used_by BIGINT REFERENCES users(id),
+    used_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- P0-4: promo codes — discounts applied to recharge orders at creation.
+-- kind: 'percent' (value = 1..99 percent off) or 'amount_off' (value = CNY
+-- fen subtracted). max_uses 0 = unlimited.
+CREATE TABLE IF NOT EXISTS promo_codes (
+    id BIGSERIAL PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'percent',
+    value BIGINT NOT NULL,
+    min_cny_fen BIGINT NOT NULL DEFAULT 0,
+    max_uses INT NOT NULL DEFAULT 0,
+    used_count INT NOT NULL DEFAULT 0,
+    expires_at TIMESTAMPTZ,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE recharges ADD COLUMN IF NOT EXISTS promo_code TEXT NOT NULL DEFAULT '';
+ALTER TABLE recharges ADD COLUMN IF NOT EXISTS refund_at TIMESTAMPTZ;
+
+-- P0-5: subscription plans + per-user active subscription. A plan grants a
+-- usage quota (micro-USD) per rolling period (period_days, e.g. 7/30).
+-- user_subscriptions.used_micro accumulates settled usage while the
+-- subscription is active (reset_at in the future).
+CREATE TABLE IF NOT EXISTS plans (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    quota_micro BIGINT NOT NULL,
+    period_days INT NOT NULL,
+    price_cny_fen BIGINT NOT NULL DEFAULT 0,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    plan_id BIGINT NOT NULL REFERENCES plans(id),
+    quota_micro BIGINT NOT NULL,
+    used_micro BIGINT NOT NULL DEFAULT 0,
+    reset_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 `
 
 func (s *Store) migrate(ctx context.Context) error {
