@@ -1,5 +1,0 @@
-# pnpm >= 11 configuration home (package.json "pnpm" block is ignored).
-# Dependencies allowed to run install scripts (what `pnpm approve-builds`
-# writes). esbuild needs it or `pnpm install` exits 1 in Docker builds.
-allowBuilds:
-  esbuild: true

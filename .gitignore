@@ -1,32 +1,46 @@
-# Node
-node_modules/
-dist/
-*.local
-.vite/
-
-# Go
-server/kejiapi
-server/bin/
-*.test
-*.out
-
-# Runtime data (composed drama videos, KEJIAPI_MEDIA_DIR)
-media/
-
-# Env & secrets
+.idea
+.review
+.vscode
+.zed
+.history
+upload
+*.exe
+*.db
+build
+*.db-journal
+*.db-shm
+*.db-wal
+logs
+web/dist
+web/node_modules
 .env
-.env.*
-!.env.example
-
-# IDE / OS
-.idea/
-.vscode/
+kejiapi
+kejiapi
+/__debug_bin*
 .DS_Store
-Thumbs.db
+tiktoken_cache
+.eslintcache
+.gocache
+.gomodcache/
+.cache
+.plans
+.claude
+.cursor
 
-# vue-tsc composite emit
-web/vite.config.js
-web/vite.config.d.ts
+electron/node_modules
+electron/dist
+/data/
+.gomodcache/
+.gocache-temp
+.gopath
+.test
+token_estimator_test.go
+skills-lock.json
+.playwright-mcp
 
-# tsc incremental info
-*.tsbuildinfo
+# Local-only live probes and scratch test workspaces.
+.local-tests/
+relaykit/relayconvert/chat_responses_live_local_test.go
+service/openaicompat/chat_responses_live_local_test.go
+go.work
+go.work.sum

@@ -1,9 +1,0 @@
-# Override for hosts where port 80 is already taken (e.g. a BT/宝塔 panel
-# nginx). Use:
-#   docker compose -f docker-compose.yml -f docker-compose.host-80.yml up -d --build
-# The host web server then reverse-proxies to 127.0.0.1:8000
-# (BT panel: 网站 -> 反向代理 -> http://127.0.0.1:8000).
-services:
-  web:
-    ports:
-      - "8000:80"
