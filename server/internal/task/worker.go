@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"time"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 // PollInterval is how often the worker looks for queued tasks.

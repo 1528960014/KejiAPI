@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/store"
+	"kejiapi/internal/store"
 )
 
 // assistantJSON renders the public form of a chat-agent template.

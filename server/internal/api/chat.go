@@ -15,9 +15,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 // handleChatCompletions proxies an OpenAI-compatible chat request to the

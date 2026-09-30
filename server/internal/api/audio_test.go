@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"modelhub/internal/store"
+	"kejiapi/internal/store"
 )
 
 func TestSpeechContentType(t *testing.T) {

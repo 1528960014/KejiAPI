@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"modelhub/internal/store"
+	"kejiapi/internal/store"
 )
 
 func TestBuildPayState(t *testing.T) {

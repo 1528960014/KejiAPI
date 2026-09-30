@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 // DramaTimeout bounds a whole drama (storyboard call + every shot).

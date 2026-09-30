@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 // fakeSource returns a fixed channel list (no database needed).

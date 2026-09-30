@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/store"
 )
 
 // handleListUsage returns recent usage records, optionally for one key.

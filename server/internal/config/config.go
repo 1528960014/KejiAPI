@@ -63,7 +63,7 @@ func Load() (*Config, error) {
 		RedisURL:    os.Getenv("REDIS_URL"),
 		MasterKey:   os.Getenv("MASTER_KEY"),
 		LogLevel:    getEnv("LOG_LEVEL", "info"),
-		MediaDir:    getEnv("MODELHUB_MEDIA_DIR", "./media"),
+		MediaDir:    getEnv("KEJIAPI_MEDIA_DIR", "./media"),
 
 		PublicURL: os.Getenv("PAY_PUBLIC_URL"),
 
@@ -82,10 +82,10 @@ func Load() (*Config, error) {
 		WechatPrivateKey:     expandNL(os.Getenv("PAY_WECHAT_PRIVATE_KEY")),
 		WechatPlatformKey:    expandNL(os.Getenv("PAY_WECHAT_PLATFORM_KEY")),
 	}
-	cfg.RPM = envInt(os.Getenv("MODELHUB_RPM"))
-	cfg.TPM = envInt(os.Getenv("MODELHUB_TPM"))
-	cfg.ConcPerKey = envInt(os.Getenv("MODELHUB_CONCURRENCY_PER_KEY"))
-	cfg.ConcPerChannel = envInt(os.Getenv("MODELHUB_CONCURRENCY_PER_CHANNEL"))
+	cfg.RPM = envInt(os.Getenv("KEJIAPI_RPM"))
+	cfg.TPM = envInt(os.Getenv("KEJIAPI_TPM"))
+	cfg.ConcPerKey = envInt(os.Getenv("KEJIAPI_CONCURRENCY_PER_KEY"))
+	cfg.ConcPerChannel = envInt(os.Getenv("KEJIAPI_CONCURRENCY_PER_CHANNEL"))
 	if v := os.Getenv("PAY_CNY_PER_USD"); v != "" {
 		rate, err := strconv.ParseFloat(v, 64)
 		if err != nil || rate <= 0 || rate > 100 {

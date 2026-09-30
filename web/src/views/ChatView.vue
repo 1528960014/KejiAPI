@@ -531,7 +531,7 @@ watch(
       <div class="brand">
         <span class="brand-mark">✦</span>
         <div class="brand-txt">
-          <span class="brand-name">ModelHub</span>
+          <span class="brand-name">KejiAPI</span>
           <span class="brand-sub">{{ t('shell.brandSub') }}</span>
         </div>
       </div>
@@ -830,7 +830,7 @@ watch(
           </div>
         </el-popover>
         <button type="button" class="r-btn" :title="t('shell.openConsole')" @click="router.push('/console')">⌘</button>
-        <a class="r-btn" :title="t('shell.help')" href="https://github.com/1528960014/modelhub" target="_blank" rel="noopener">?</a>
+        <a class="r-btn" :title="t('shell.help')" href="https://github.com/1528960014/KejiAPI" target="_blank" rel="noopener">?</a>
       </div>
     </div>
   </div>

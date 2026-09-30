@@ -31,7 +31,7 @@ type TokenService struct {
 // NewTokenService derives the HS256 signing key from the master key so no
 // extra configuration is required.
 func NewTokenService(masterKey string) *TokenService {
-	sum := sha256.Sum256([]byte("modelhub-jwt:" + masterKey))
+	sum := sha256.Sum256([]byte("kejiapi-jwt:" + masterKey))
 	return &TokenService{secret: sum[:]}
 }
 
@@ -53,7 +53,7 @@ func (s *TokenService) signWithTTL(userID int64, email string, ttl time.Duration
 		UserID: userID,
 		Email:  email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    "modelhub",
+			Issuer:    "kejiapi",
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
 		},

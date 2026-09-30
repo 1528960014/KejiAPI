@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/pay"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/pay"
+	"kejiapi/internal/store"
 )
 
 // P2-4: online recharge (CNY payment -> USD balance).
@@ -99,7 +99,7 @@ func (s *Server) handleCreateRecharge(c *gin.Context) {
 	payment, err := ch.CreateOrder(c.Request.Context(), pay.Order{
 		OutTradeNo:   order.OrderNo,
 		AmountCNYFen: order.AmountCNY,
-		Name:         "ModelHub 余额充值",
+		Name:         "KejiAPI 余额充值",
 		NotifyURL:    base + "/pay/notify/" + ch.ID(),
 		ReturnURL:    base + "/recharge?order=" + order.OrderNo,
 		ClientIP:     c.ClientIP(),

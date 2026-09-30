@@ -15,17 +15,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/store"
 )
 
 // P4-1: bidirectional real-time voice — a pass-through proxy for the OpenAI
 // Realtime API (WebSocket). Clients speak the standard OpenAI WS protocol:
 //
 //	POST /v1/realtime
-//	Sec-WebSocket-Protocol: openai-insecure-api-key.<modelhub sk-...>
+//	Sec-WebSocket-Protocol: openai-insecure-api-key.<kejiapi sk-...>
 //
-// The gateway validates the ModelHub key, waits for the client's first
+// The gateway validates the KejiAPI key, waits for the client's first
 // session.update to name a model (capability "realtime"), dials the channel
 // for that model with the upstream key subprotocol, then pipes frames in both
 // directions. Usage is captured from response.done events and settled when
@@ -41,7 +41,7 @@ const (
 
 // --- pure helpers (unit-tested) ---
 
-// realtimeKeyFromProtocols finds the ModelHub API key in the WS subprotocol
+// realtimeKeyFromProtocols finds the KejiAPI API key in the WS subprotocol
 // list ("Sec-Websocket-Protocol" header, comma separated).
 func realtimeKeyFromProtocols(protocols []string) string {
 	for _, p := range protocols {

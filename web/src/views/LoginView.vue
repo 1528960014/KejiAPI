@@ -71,7 +71,7 @@ function switchMode() {
       <div class="brand-panel">
         <router-link to="/" class="brand">
           <span class="brand-mark">▲</span>
-          <span class="brand-name">ModelHub</span>
+          <span class="brand-name">KejiAPI</span>
         </router-link>
         <h1 class="hero">{{ t('login.heroTitle') }}</h1>
         <p class="hero-sub">{{ t('login.heroSub') }}</p>
@@ -118,7 +118,7 @@ function switchMode() {
                 v-model="email"
                 type="email"
                 size="large"
-                placeholder="user@modelhub.dev"
+                placeholder="user@kejiapi.dev"
               />
             </label>
             <label class="field">

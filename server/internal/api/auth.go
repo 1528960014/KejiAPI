@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/auth"
-	"modelhub/internal/billing"
-	"modelhub/internal/store"
+	"kejiapi/internal/auth"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/store"
 )
 
 // ctxKeyUser is the gin context key holding the logged-in user.

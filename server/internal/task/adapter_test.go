@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 func newTestProvider(base string) *gateway.Provider {

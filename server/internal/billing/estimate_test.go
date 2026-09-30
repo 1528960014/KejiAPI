@@ -3,7 +3,7 @@ package billing
 import (
 	"testing"
 
-	"modelhub/internal/store"
+	"kejiapi/internal/store"
 )
 
 func TestEstimateTokensSimple(t *testing.T) {

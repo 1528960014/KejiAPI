@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"modelhub/internal/api"
-	"modelhub/internal/config"
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
-	"modelhub/internal/task"
+	"kejiapi/internal/api"
+	"kejiapi/internal/config"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
+	"kejiapi/internal/task"
 )
 
 func main() {
@@ -79,7 +79,7 @@ func main() {
 	}
 
 	go func() {
-		slog.Info("modelhub listening", "port", cfg.Port)
+		slog.Info("kejiapi listening", "port", cfg.Port)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("http server", "error", err)
 			stop()
@@ -92,5 +92,5 @@ func main() {
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
 		slog.Error("http shutdown", "error", err)
 	}
-	slog.Info("modelhub stopped")
+	slog.Info("kejiapi stopped")
 }

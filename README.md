@@ -1,12 +1,12 @@
 <div align="center">
 
-# ModelHub
+# KejiAPI
 
 **模型、应用与智能体一体的自托管 AI 网关平台**
 
 <p align="center">
-  <a href="https://github.com/1528960014/modelhub/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/1528960014/modelhub?color=brightgreen" alt="license">
+  <a href="https://github.com/1528960014/KejiAPI/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/1528960014/KejiAPI?color=brightgreen" alt="license">
   </a><!--
   --><a href="https://go.dev/">
     <img src="https://img.shields.io/badge/go-1.25-blue" alt="go">
@@ -36,7 +36,7 @@
 
 ## 📝 项目简介
 
-ModelHub 是一个**自托管的 AI 网关**,适用于应用程序、代理和团队。它连接上游模型服务,向客户端提供**一致的 OpenAI 兼容 API**,并集中管理路由、访问、使用情况和成本。
+KejiAPI 是一个**自托管的 AI 网关**,适用于应用程序、代理和团队。它连接上游模型服务,向客户端提供**一致的 OpenAI 兼容 API**,并集中管理路由、访问、使用情况和成本。
 
 您可以使用它在团队内共享授权模型访问权限,无需重新配置每个客户端即可切换服务提供商,或者通过 Web 控制台运行私有多模型服务。上游服务包括 OpenAI、Azure OpenAI、DeepSeek、通义千问(Qwen)、SiliconFlow、Moonshot 等 OpenAI 兼容服务——任何兼容端点都可以通过通道 Base URL 接入。
 
@@ -115,7 +115,7 @@ docker compose up -d
 cp server/.env.example server/.env   # 修改 MASTER_KEY；在线充值可选配 PAY_*
 cd server
 go mod tidy
-go run ./cmd/modelhub
+go run ./cmd/kejiapi
 
 # 3. 初始化数据（管理 API，MASTER_KEY 鉴权）
 curl -X POST http://127.0.0.1:8080/admin/models \
@@ -142,7 +142,7 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 `deploy/` 提供完整编排(app + web + postgres + redis + minio),一条命令起站:
 
 ```bash
-git clone https://github.com/1528960014/modelhub /www/modelhub && cd /www/modelhub
+git clone https://github.com/1528960014/KejiAPI /www/kejiapi && cd /www/kejiapi
 cp deploy/.env.example deploy/.env
 # 编辑 deploy/.env：MASTER_KEY（openssl rand -hex 32）、PAY_PUBLIC_URL 等
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
@@ -164,8 +164,8 @@ curl http://127.0.0.1/healthz
 | --- | --- |
 | `MASTER_KEY` | 管理 API 与 Web 管理登录密钥,≥16 位,建议 `openssl rand -hex 32` |
 | `PAY_PUBLIC_URL` | 公网地址(支付回调 / 回跳 URL 基于它拼接) |
-| `MODELHUB_RPM` / `MODELHUB_TPM` | 每 Key 限流,0 = 关闭 |
-| `MODELHUB_CONCURRENCY_PER_KEY` / `MODELHUB_CONCURRENCY_PER_CHANNEL` | 并发控制:每 Key / 每上游通道(账户)在途并发上限,0 = 关闭 |
+| `KEJIAPI_RPM` / `KEJIAPI_TPM` | 每 Key 限流,0 = 关闭 |
+| `KEJIAPI_CONCURRENCY_PER_KEY` / `KEJIAPI_CONCURRENCY_PER_CHANNEL` | 并发控制:每 Key / 每上游通道(账户)在途并发上限,0 = 关闭 |
 | `PAY_CNY_PER_USD` | 充值汇率(0 = 关闭在线充值) |
 | `PAY_YIPAY_*` | 易支付(聚合):`MAPI_URL` / `PID` / `KEY` |
 | `PAY_ALIPAY_*` | 支付宝官方:`APP_ID` / `PRIVATE_KEY` / `PUBLIC_KEY` |
@@ -185,7 +185,7 @@ cd web && pnpm install && pnpm dev
 
 # 后端构建（前端先 build，server 内嵌 web/dist）
 cd web && pnpm build
-cd ../server && go build ./cmd/modelhub
+cd ../server && go build ./cmd/kejiapi
 ```
 
 | 目录 | 职责 |
@@ -233,7 +233,7 @@ cd ../server && go build ./cmd/modelhub
 | 架构设计 | [docs/architecture.md](docs/architecture.md) |
 | API 参考 | [docs/api.md](docs/api.md) |
 | 贡献指南 | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| 问题反馈 | [GitHub Issues](https://github.com/1528960014/modelhub/issues) |
+| 问题反馈 | [GitHub Issues](https://github.com/1528960014/KejiAPI/issues) |
 
 ---
 
@@ -245,7 +245,7 @@ cd ../server && go build ./cmd/modelhub
 
 <div align="center">
 
-[![Star History Chart](https://api.star-history.com/svg?repos=1528960014/modelhub&type=Date)](https://star-history.com/#1528960014/modelhub&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=1528960014/KejiAPI&type=Date)](https://star-history.com/#1528960014/KejiAPI&Date)
 
 </div>
 
@@ -253,10 +253,10 @@ cd ../server && go build ./cmd/modelhub
 
 <div align="center">
 
-### 💖 感谢使用 ModelHub
+### 💖 感谢使用 KejiAPI
 
 如果这个项目对你有帮助,欢迎点个 ⭐️ Star!
 
-**[API 参考](docs/api.md)** • **[Issues](https://github.com/1528960014/modelhub/issues)** • **[贡献指南](CONTRIBUTING.md)**
+**[API 参考](docs/api.md)** • **[Issues](https://github.com/1528960014/KejiAPI/issues)** • **[贡献指南](CONTRIBUTING.md)**
 
 </div>

@@ -813,7 +813,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
         <div class="side-brand">
           <span class="brand-mark">▲</span>
           <div>
-            <div class="brand-name">ModelHub</div>
+            <div class="brand-name">KejiAPI</div>
             <div class="brand-sub">Admin</div>
           </div>
         </div>
@@ -1171,7 +1171,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
                   <el-input-number v-model="pay.cny_per_usd" :min="0" :max="100" :precision="2" :step="0.1" style="width: 100%" />
                 </label>
                 <label>{{ t('admin.payPublicUrl') }}
-                  <el-input v-model="pay.public_url" placeholder="https://modelhub.example.com" />
+                  <el-input v-model="pay.public_url" placeholder="https://kejiapi.example.com" />
                 </label>
               </div>
             </div>
@@ -1320,7 +1320,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               <el-option label="tts" value="tts" />
             </el-select>
           </label>
-          <template v-if="modelForm.priceUnit === 'token'">
+          <template v-if="modelForm.price_unit === 'token'">
             <label>{{ t('admin.inputPrice') }}
               <el-input-number v-model="modelForm.input_price_per_1k" :min="0" :precision="6" :step="0.001" style="width: 100%" />
             </label>

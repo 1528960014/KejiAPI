@@ -1,7 +1,7 @@
 package pay
 
 import (
-	"modelhub/internal/config"
+	"kejiapi/internal/config"
 )
 
 // Config is the validated payment configuration used by the API layer.

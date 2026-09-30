@@ -137,7 +137,7 @@ OpenAI 兼容。`stream: true` 时返回 SSE。请求体其余字段原样透传
 - 前端提供"导出素材包"：即此 JSON（shots + 元数据）下载。
 - **成片（P2-1b）**：所有镜头成功后，服务端用 ffmpeg 自动合成 MP4（1280x720@30：画面信箱铺满 + 台词字幕烧录 + 配音/静音，镜头间直接拼接），完成后响应里多一个 `video_url`（`/media/dramas/{drama_id}.mp4`，公开访问，UUID 即凭证）与 `video_error`（未生成时的原因，如服务器没装 ffmpeg）。
   - 成片在**结算之后**渲染：渲染失败不影响扣费，素材包仍然有效。
-  - 服务器主机需安装 `ffmpeg`/`ffprobe`（`apk add ffmpeg` / `apt install ffmpeg`）；中文字幕建议安装 CJK 字体（如 `font-noto-cjk`）。视频存于 `MODELHUB_MEDIA_DIR`（默认 `./media`）。
+  - 服务器主机需安装 `ffmpeg`/`ffprobe`（`apk add ffmpeg` / `apt install ffmpeg`）；中文字幕建议安装 CJK 字体（如 `font-noto-cjk`）。视频存于 `KEJIAPI_MEDIA_DIR`（默认 `./media`）。
 
 ### POST /v1/audio/speech（P3-4 实时语音）
 
@@ -172,7 +172,7 @@ OpenAI Realtime API（麦克风↔麦克风）的 WebSocket 透传代理。客�
 import websockets, json
 
 uri = "wss://<host>/v1/realtime"
-proto = "openai-insecure-api-key.sk-xxxx"   # ModelHub 的 API key
+proto = "openai-insecure-api-key.sk-xxxx"   # KejiAPI 的 API key
 async with websockets.connect(uri, subprotocols=[proto]) as ws:
     await ws.send(json.dumps({
         "type": "session.update",
@@ -198,7 +198,7 @@ async with websockets.connect(uri, subprotocols=[proto]) as ws:
 
 ## 限流（P4-3）
 
-- 环境变量 `MODELHUB_RPM` / `MODELHUB_TPM`（请求/分钟、token/分钟，按 **API key** 计数；0 或未设 = 关闭）。
+- 环境变量 `KEJIAPI_RPM` / `KEJIAPI_TPM`（请求/分钟、token/分钟，按 **API key** 计数；0 或未设 = 关闭）。
 - 固定 1 分钟窗口（Unix 分钟桶，非滑动窗口）：RPM 在请求进入时计数，TPM 在请求结算后按**实际** token 记账（超限在下一个请求入口拦截）。
 - 超限返回 **429 `rate_limited`**（错误消息指明是 rpm 还是 tpm）。四个计费入口 + realtime 统一生效；单实例内存实现，多实例部署时限流为每实例近似值。
 

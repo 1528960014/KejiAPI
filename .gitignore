@@ -5,12 +5,12 @@ dist/
 .vite/
 
 # Go
-server/modelhub
+server/kejiapi
 server/bin/
 *.test
 *.out
 
-# Runtime data (composed drama videos, MODELHUB_MEDIA_DIR)
+# Runtime data (composed drama videos, KEJIAPI_MEDIA_DIR)
 media/
 
 # Env & secrets

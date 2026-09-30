@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢关注 ModelHub！
+感谢关注 KejiAPI！
 
 ## 开发环境
 
@@ -11,7 +11,7 @@
 ```bash
 cd deploy && docker compose up -d
 cp .env.example .env
-cd server && go mod tidy && go run ./cmd/modelhub
+cd server && go mod tidy && go run ./cmd/kejiapi
 ```
 
 前端开发：
@@ -36,16 +36,16 @@ cd server
 go vet ./... && go test ./...
 ```
 
-存储层集成测试需要本地数据库（未设置 `MODELHUB_TEST_DSN` 时自动跳过）。
+存储层集成测试需要本地数据库（未设置 `KEJIAPI_TEST_DSN` 时自动跳过）。
 **集成测试会 DROP 并重建目标库的全部表，请指向一次性数据库。**
 
 ```bash
 cd deploy && docker compose up -d postgres
-MODELHUB_TEST_DSN=postgres://modelhub:modelhub@127.0.0.1:5432/modelhub \
+KEJIAPI_TEST_DSN=postgres://kejiapi:kejiapi@127.0.0.1:5432/kejiapi \
   go test ./internal/store/
 ```
 
-（Windows PowerShell：`$env:MODELHUB_TEST_DSN='postgres://modelhub:modelhub@127.0.0.1:5432/modelhub'; go test ./internal/store/`）
+（Windows PowerShell：`$env:KEJIAPI_TEST_DSN='postgres://kejiapi:kejiapi@127.0.0.1:5432/kejiapi'; go test ./internal/store/`）
 
 ## 安全红线
 

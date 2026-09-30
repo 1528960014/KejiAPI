@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/store"
 )
 
 // userJSON renders a user without secrets; balances in both micro-USD and USD.

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"modelhub/internal/gateway"
+	"kejiapi/internal/gateway"
 )
 
 // P6-1: channel failover for the media/drama task pipeline. Adapters report

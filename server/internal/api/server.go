@@ -10,10 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/auth"
-	"modelhub/internal/config"
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/auth"
+	"kejiapi/internal/config"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 // ctxKeyAPIKey is the gin context key holding the resolved API key.

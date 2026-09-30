@@ -83,7 +83,7 @@ func TestYiPayNotifyVerify(t *testing.T) {
 	form.Set("trade_no", "TP123")
 	form.Set("out_trade_no", "RH123")
 	form.Set("type", "alipay")
-	form.Set("name", "ModelHub 余额充值")
+	form.Set("name", "KejiAPI 余额充值")
 	form.Set("money", "10.00")
 	form.Set("trade_status", "TRADE_SUCCESS")
 	form.Set("sign_type", "MD5")

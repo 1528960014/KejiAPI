@@ -1,4 +1,4 @@
-module modelhub
+module kejiapi
 
 go 1.25.0
 

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"modelhub/internal/store"
+	"kejiapi/internal/store"
 )
 
 // ChatResult carries the upstream response so the handler can stream it

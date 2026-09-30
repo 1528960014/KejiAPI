@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 // P5-1: automatic channel failover with a short failure cooldown. When a

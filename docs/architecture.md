@@ -110,7 +110,7 @@ PostgreSQL（用户/账本/模型/通道/任务队列）  MinIO（媒体产物�
 - 计费沿用 M4 媒体任务：`unit_price` 冻结 1 单位 → 成功结算 / 失败退回，无其他变化。
 
 ### 每 key 限流（P4-3，内存固定 1 分钟窗口）
-- `MODELHUB_RPM` / `MODELHUB_TPM`（>0 启用，0/未设 = 关闭），网关启动时构造 `rateLimiter`，四个计费入口（chat 同步/流式、audio/speech、media/generate、drama/generate）+ P4-1 的 realtime 入口统一在鉴权后 `AllowRequest(keyID)`，超限返回 **429 `rate_limited`**（与 429 `quota_exceeded` 区分：后者是 key 自身额度）。
+- `KEJIAPI_RPM` / `KEJIAPI_TPM`（>0 启用，0/未设 = 关闭），网关启动时构造 `rateLimiter`，四个计费入口（chat 同步/流式、audio/speech、media/generate、drama/generate）+ P4-1 的 realtime 入口统一在鉴权后 `AllowRequest(keyID)`，超限返回 **429 `rate_limited`**（与 429 `quota_exceeded` 区分：后者是 key 自身额度）。
 - 语义：固定 Unix 分钟桶，先查 token 窗口（`AddTokens` 在请求结算后按**实际** token 记账）再查请求窗口；窗口惰性清理（>1024 个 key 时清理 2 分钟前的条目），无后台 sweeper。
 - 边界：**单实例内存实现，多实例部署时限流是每实例的近似值**（精确全局限流需共享存储，如 Redis——技术选型表已预留）；分钟边界不滑动（边界处瞬时吞吐可达 2× 配额，量级可接受）。
 

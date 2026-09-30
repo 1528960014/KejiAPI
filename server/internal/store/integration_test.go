@@ -1,9 +1,9 @@
 package store
 
 // Integration tests for the billing wallet. They run only when
-// MODELHUB_TEST_DSN is set, e.g.:
+// KEJIAPI_TEST_DSN is set, e.g.:
 //
-//	MODELHUB_TEST_DSN=postgres://modelhub:modelhub@127.0.0.1:5432/modelhub go test ./internal/store/
+//	KEJIAPI_TEST_DSN=postgres://kejiapi:kejiapi@127.0.0.1:5432/kejiapi go test ./internal/store/
 //
 // (start the dependencies first with `docker compose up -d` in deploy/).
 // The suite drops and recreates the schema, so point it at a disposable
@@ -22,9 +22,9 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	dsn := os.Getenv("MODELHUB_TEST_DSN")
+	dsn := os.Getenv("KEJIAPI_TEST_DSN")
 	if dsn == "" {
-		fmt.Println("store: MODELHUB_TEST_DSN not set, skipping integration tests")
+		fmt.Println("store: KEJIAPI_TEST_DSN not set, skipping integration tests")
 		os.Exit(0)
 	}
 	ctx := context.Background()
@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 
 func newTestStore(t *testing.T) *Store {
 	t.Helper()
-	st, err := New(context.Background(), os.Getenv("MODELHUB_TEST_DSN"))
+	st, err := New(context.Background(), os.Getenv("KEJIAPI_TEST_DSN"))
 	if err != nil {
 		t.Fatalf("new store: %v", err)
 	}

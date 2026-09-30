@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"modelhub/internal/gateway"
-	"modelhub/internal/store"
+	"kejiapi/internal/gateway"
+	"kejiapi/internal/store"
 )
 
 // Adapter implements one upstream protocol for one media type. Run blocks

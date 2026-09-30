@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/store"
+	"kejiapi/internal/store"
 )
 
 // P7-6: external systems. Admin-managed third-party pages rendered as

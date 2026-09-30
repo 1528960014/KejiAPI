@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/config"
-	"modelhub/internal/pay"
-	"modelhub/internal/store"
+	"kejiapi/internal/config"
+	"kejiapi/internal/pay"
+	"kejiapi/internal/store"
 )
 
 // P3-2: runtime-editable payment channel configuration.

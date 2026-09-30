@@ -12,9 +12,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/store"
-	"modelhub/internal/task"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/store"
+	"kejiapi/internal/task"
 )
 
 // drama shot-count bounds (clamped server-side).

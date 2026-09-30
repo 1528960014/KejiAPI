@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/store"
 )
 
 // --- admin: agent (reseller) management ---

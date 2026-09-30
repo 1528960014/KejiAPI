@@ -60,7 +60,7 @@ async function handleSignOut() {
     <div class="topbar-inner">
       <router-link to="/chat" class="brand">
         <span class="brand-mark">▲</span>
-        <span class="brand-name">ModelHub</span>
+        <span class="brand-name">KejiAPI</span>
       </router-link>
       <nav>
         <router-link

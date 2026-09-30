@@ -13,8 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"modelhub/internal/billing"
-	"modelhub/internal/store"
+	"kejiapi/internal/billing"
+	"kejiapi/internal/store"
 )
 
 // P3-4: real-time speech — an OpenAI-compatible synchronous text-to-speech

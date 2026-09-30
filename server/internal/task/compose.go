@@ -61,7 +61,7 @@ func (c *Composer) Compose(ctx context.Context, shots []Shot, outPath string) er
 	if len(shots) == 0 {
 		return fmt.Errorf("no shots to compose")
 	}
-	tmp, err := os.MkdirTemp("", "modelhub-drama-*")
+	tmp, err := os.MkdirTemp("", "kejiapi-drama-*")
 	if err != nil {
 		return fmt.Errorf("make temp dir: %w", err)
 	}
