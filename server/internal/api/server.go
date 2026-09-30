@@ -28,6 +28,7 @@ type Server struct {
 	payMu    sync.RWMutex
 	payState payConfigState         // P3-2: hot-swappable payment config
 	limiter  *rateLimiter           // P4-3: per-key RPM/TPM (nil when disabled)
+	conc     *gateway.ConcurrencyLimiter // P7-3: per-key / per-channel concurrency (nil when disabled)
 	health   *gateway.ChannelHealth // P5-1/P6-1: channel failure cooldown,
 	// shared with the task workers so one failure cools down everywhere
 	// P5-1: *store.Store in production; swappable in unit tests.
@@ -50,6 +51,9 @@ func New(cfg *config.Config, st *store.Store, p *gateway.Provider, health *gatew
 	}
 	if cfg.RPM > 0 || cfg.TPM > 0 {
 		s.limiter = newRateLimiter(cfg.RPM, cfg.TPM)
+	}
+	if cfg.ConcPerKey > 0 || cfg.ConcPerChannel > 0 {
+		s.conc = gateway.NewConcurrencyLimiter(cfg.ConcPerKey, cfg.ConcPerChannel)
 	}
 	return s
 }
@@ -125,6 +129,12 @@ func (s *Server) Engine() *gin.Engine {
 		// P3-3: organizations (platform audit + wallet credit).
 		admin.GET("/organizations", s.handleAdminListOrgs)
 		admin.POST("/organizations/:id/credit", s.handleAdminCreditOrg)
+
+		// P7-6: external systems (iframe-embedded admin extensions).
+		admin.GET("/external-pages", s.handleListExternalPages)
+		admin.POST("/external-pages", s.handleCreateExternalPage)
+		admin.PATCH("/external-pages/:id", s.handleUpdateExternalPage)
+		admin.DELETE("/external-pages/:id", s.handleDeleteExternalPage)
 	}
 
 	api := r.Group("/api")

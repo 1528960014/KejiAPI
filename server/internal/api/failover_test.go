@@ -43,7 +43,7 @@ func TestDialChatFailover(t *testing.T) {
 		{ID: 1, Name: "c1", BaseURL: srv1.URL, APIKey: "k1"},
 		{ID: 2, Name: "c2", BaseURL: srv2.URL, APIKey: "k2"},
 	})
-	att, err := s.dialChat(context.Background(), "m", []byte(`{}`))
+	att, err := s.dialChat(context.Background(), "m", []byte(`{}`), 0)
 	if err != nil {
 		t.Fatalf("dialChat: %v", err)
 	}
@@ -78,7 +78,7 @@ func TestDialChatNonRetryableNoFailover(t *testing.T) {
 		{ID: 1, Name: "c1", BaseURL: srv1.URL, APIKey: "k1"},
 		{ID: 2, Name: "c2", BaseURL: srv2.URL, APIKey: "k2"},
 	})
-	att, err := s.dialChat(context.Background(), "m", []byte(`{}`))
+	att, err := s.dialChat(context.Background(), "m", []byte(`{}`), 0)
 	if err != nil {
 		t.Fatalf("dialChat: %v", err)
 	}
@@ -105,7 +105,7 @@ func TestDialChatTransportErrorFailover(t *testing.T) {
 		{ID: 1, Name: "c1", BaseURL: "http://127.0.0.1:9", APIKey: "k1"}, // closed port
 		{ID: 2, Name: "c2", BaseURL: srv.URL, APIKey: "k2"},
 	})
-	att, err := s.dialChat(context.Background(), "m", []byte(`{}`))
+	att, err := s.dialChat(context.Background(), "m", []byte(`{}`), 0)
 	if err != nil {
 		t.Fatalf("dialChat: %v", err)
 	}
@@ -120,7 +120,7 @@ func TestDialChatAllCoolingDown(t *testing.T) {
 		{ID: 1, Name: "c1", BaseURL: "http://127.0.0.1:9", APIKey: "k1"},
 	})
 	s.health.MarkFailed(1, time.Now())
-	_, err := s.dialChat(context.Background(), "m", []byte(`{}`))
+	_, err := s.dialChat(context.Background(), "m", []byte(`{}`), 0)
 	if !errors.Is(err, errNoUsableChannel) {
 		t.Fatalf("want errNoUsableChannel, got %v", err)
 	}
@@ -128,7 +128,7 @@ func TestDialChatAllCoolingDown(t *testing.T) {
 
 func TestDialChatNoChannels(t *testing.T) {
 	s := newFailoverTestServer(nil)
-	_, err := s.dialChat(context.Background(), "m", []byte(`{}`))
+	_, err := s.dialChat(context.Background(), "m", []byte(`{}`), 0)
 	if !errors.Is(err, errNoUsableChannel) {
 		t.Fatalf("want errNoUsableChannel, got %v", err)
 	}
@@ -143,7 +143,7 @@ func TestDialJSONFailover(t *testing.T) {
 		{ID: 1, Name: "c1", BaseURL: srv1.URL, APIKey: "k1"},
 		{ID: 2, Name: "c2", BaseURL: srv2.URL, APIKey: "k2"},
 	})
-	status, body, err := s.dialJSON(context.Background(), "m", http.MethodPost, "/audio/speech", []byte(`{}`), nil)
+	status, body, err := s.dialJSON(context.Background(), "m", http.MethodPost, "/audio/speech", []byte(`{}`), nil, 0)
 	if err != nil {
 		t.Fatalf("dialJSON: %v", err)
 	}
@@ -164,7 +164,7 @@ func TestDialJSONExhaustedForwardsLastError(t *testing.T) {
 		{ID: 1, Name: "c1", BaseURL: srv1.URL, APIKey: "k1"},
 		{ID: 2, Name: "c2", BaseURL: srv2.URL, APIKey: "k2"},
 	})
-	status, body, err := s.dialJSON(context.Background(), "m", http.MethodPost, "/audio/speech", []byte(`{}`), nil)
+	status, body, err := s.dialJSON(context.Background(), "m", http.MethodPost, "/audio/speech", []byte(`{}`), nil, 0)
 	if err != nil {
 		t.Fatalf("dialJSON: %v", err)
 	}

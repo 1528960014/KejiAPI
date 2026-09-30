@@ -917,6 +917,43 @@ export async function updateAssistant(id: number, patch: {
   await http.patch(`/admin/assistants/${id}`, payload, { headers: adminHeaders() })
 }
 
+// --- admin: external systems (iframe-embedded pages) ---
+
+export interface ExternalPage {
+  id: number
+  name: string
+  url: string
+  enabled: boolean
+  sort_order: number
+  created_at: string
+}
+
+export async function listExternalPages(): Promise<ExternalPage[]> {
+  const { data } = await http.get('/admin/external-pages', { headers: adminHeaders() })
+  return data.data as ExternalPage[]
+}
+
+export async function createExternalPage(body: {
+  name: string
+  url: string
+  sort_order?: number
+}): Promise<void> {
+  await http.post('/admin/external-pages', body, { headers: adminHeaders() })
+}
+
+export async function updateExternalPage(id: number, patch: {
+  name?: string
+  url?: string
+  enabled?: boolean
+  sort_order?: number
+}): Promise<void> {
+  await http.patch(`/admin/external-pages/${id}`, patch, { headers: adminHeaders() })
+}
+
+export async function deleteExternalPage(id: number): Promise<void> {
+  await http.delete(`/admin/external-pages/${id}`, { headers: adminHeaders() })
+}
+
 // --- admin: organizations (platform audit) ---
 
 export interface AdminOrg {

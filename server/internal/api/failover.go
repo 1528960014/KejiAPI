@@ -32,6 +32,10 @@ const dialErrBodyLimit = 64 * 1024
 // channel is inside its cooldown window.
 var errNoUsableChannel = errors.New("no usable channel")
 
+// errConcurrencyLimited (P7-3): every usable channel is at its in-flight
+// concurrency limit. Callers should surface this as 429 concurrency_limited.
+var errConcurrencyLimited = errors.New("channel concurrency limit reached")
+
 // channelSource is the subset of the store the dial loop needs, so the
 // failover logic is unit-testable without a database.
 type channelSource interface {
@@ -68,11 +72,14 @@ func (s *Server) hasUsableChannel(ctx context.Context, modelID string) (bool, er
 // order until one succeeds or a non-retryable error is reached.
 //
 // Returns:
-//   - (attempt with res, nil)        — usable 2xx response
-//   - (attempt with status>=400, nil) — final upstream error to forward
-//   - (nil, errNoUsableChannel)      — no enabled/usable channel
-//   - (nil, err)                     — every channel had a transport failure
-func (s *Server) dialChat(ctx context.Context, modelID string, body []byte) (*upstreamAttempt, error) {
+//   - (attempt with res, nil)          — usable 2xx response (the caller
+//     owns the in-flight concurrency slot and must release it)
+//   - (attempt with status>=400, nil)  — final upstream error to forward
+//   - (nil, errNoUsableChannel)        — no enabled/usable channel
+//   - (nil, errConcurrencyLimited)     — P7-3: every usable channel is at
+//     its in-flight limit
+//   - (nil, err)                       — every channel had a transport failure
+func (s *Server) dialChat(ctx context.Context, modelID string, body []byte, keyID int64) (*upstreamAttempt, error) {
 	channels, err := s.channelSource.ChannelsForModel(ctx, modelID)
 	if err != nil {
 		return nil, err
@@ -80,12 +87,20 @@ func (s *Server) dialChat(ctx context.Context, modelID string, body []byte) (*up
 	now := time.Now()
 	var last *upstreamAttempt
 	var lastErr error
+	var skippedLimit bool
 	for _, ch := range channels {
 		if s.health.IsDown(ch.ID, now) {
 			continue
 		}
+		// P7-3: take an in-flight slot before dialing; a channel at its
+		// limit is skipped without marking it failed.
+		if !s.conc.Begin(keyID, ch.ID) {
+			skippedLimit = true
+			continue
+		}
 		res, dErr := s.provider.Chat(ctx, ch, body)
 		if dErr != nil {
+			s.conc.End(keyID, ch.ID)
 			s.health.MarkFailed(ch.ID, now)
 			lastErr = fmt.Errorf("channel %s: %w", ch.Name, dErr)
 			slog.Warn("channel transport failure, failing over",
@@ -94,8 +109,11 @@ func (s *Server) dialChat(ctx context.Context, modelID string, body []byte) (*up
 		}
 		if res.StatusCode < 400 {
 			s.health.MarkOK(ch.ID)
+			// Slot stays held: the caller owns the live response and must
+			// call s.conc.End(keyID, ch.ID) when the response finishes.
 			return &upstreamAttempt{ch: ch, res: res}, nil
 		}
+		s.conc.End(keyID, ch.ID)
 		errBody, _ := io.ReadAll(io.LimitReader(res.Body, dialErrBodyLimit))
 		_ = res.Body.Close()
 		if !gateway.UpstreamRetryable(res.StatusCode, false) {
@@ -112,12 +130,15 @@ func (s *Server) dialChat(ctx context.Context, modelID string, body []byte) (*up
 	if lastErr != nil {
 		return nil, lastErr
 	}
+	if skippedLimit {
+		return nil, errConcurrencyLimited
+	}
 	return nil, errNoUsableChannel
 }
 
 // dialJSON is the DoJSON variant of the failover loop (audio/speech and
 // other single-shot upstream calls).
-func (s *Server) dialJSON(ctx context.Context, modelID, method, path string, body []byte, extraHeaders map[string]string) (int, []byte, error) {
+func (s *Server) dialJSON(ctx context.Context, modelID, method, path string, body []byte, extraHeaders map[string]string, keyID int64) (int, []byte, error) {
 	channels, err := s.channelSource.ChannelsForModel(ctx, modelID)
 	if err != nil {
 		return 0, nil, err
@@ -126,18 +147,26 @@ func (s *Server) dialJSON(ctx context.Context, modelID, method, path string, bod
 	var lastStatus int
 	var lastBody []byte
 	var lastErr error
+	var skippedLimit bool
 	for _, ch := range channels {
 		if s.health.IsDown(ch.ID, now) {
 			continue
 		}
+		// P7-3: same in-flight slot management as dialChat.
+		if !s.conc.Begin(keyID, ch.ID) {
+			skippedLimit = true
+			continue
+		}
 		status, respBody, dErr := s.provider.DoJSON(ctx, ch, method, path, body, extraHeaders)
 		if dErr != nil {
+			s.conc.End(keyID, ch.ID)
 			s.health.MarkFailed(ch.ID, now)
 			lastErr = fmt.Errorf("channel %s: %w", ch.Name, dErr)
 			slog.Warn("channel transport failure, failing over",
 				"channel", ch.Name, "model", modelID, "error", dErr)
 			continue
 		}
+		s.conc.End(keyID, ch.ID)
 		if status < 400 {
 			s.health.MarkOK(ch.ID)
 			return status, respBody, nil
@@ -155,6 +184,9 @@ func (s *Server) dialJSON(ctx context.Context, modelID, method, path string, bod
 	}
 	if lastErr != nil {
 		return 0, nil, lastErr
+	}
+	if skippedLimit {
+		return 0, nil, errConcurrencyLimited
 	}
 	return 0, nil, errNoUsableChannel
 }

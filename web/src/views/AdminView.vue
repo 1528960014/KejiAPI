@@ -10,6 +10,7 @@ import {
   createAgent,
   createAssistant,
   createChannel,
+  createExternalPage,
   createKey,
   createUser,
   creditUser,
@@ -17,6 +18,7 @@ import {
   deleteAgent,
   deleteAssistant,
   deleteChannel,
+  deleteExternalPage,
   deleteKey,
   formatUsd,
   getMasterKey,
@@ -25,6 +27,7 @@ import {
   listAgents,
   listAssistants,
   listChannels,
+  listExternalPages,
   listKeys,
   listUsers,
   listUsage,
@@ -32,6 +35,7 @@ import {
   setMasterKey,
   updateAgentRate,
   updateAssistant,
+  updateExternalPage,
   updateKey,
   usageSummary,
   userLedger,
@@ -44,6 +48,7 @@ import {
   type AdminModel,
   type AdminOrg,
   type AdminUser,
+  type ExternalPage,
   type LedgerEntry,
   type PayConfigView,
   type Recharge,
@@ -55,6 +60,7 @@ const { t } = useI18n()
 
 type TabName =
   | 'overview'
+  | 'external'
   | 'models'
   | 'channels'
   | 'users'
@@ -70,6 +76,7 @@ const masterKey = ref(getMasterKey())
 const active = ref<TabName>('overview')
 const loaded = reactive<Record<TabName, boolean>>({
   overview: false,
+  external: false,
   models: false,
   channels: false,
   users: false,
@@ -85,7 +92,13 @@ const search = ref('')
 const saving = ref(false)
 
 const NAV: { section: string; items: { key: TabName; icon: string; label: string }[] }[] = [
-  { section: 'admin.sideGeneral', items: [{ key: 'overview', icon: '📊', label: 'admin.tabOverview' }] },
+  {
+    section: 'admin.sideGeneral',
+    items: [
+      { key: 'overview', icon: '📊', label: 'admin.tabOverview' },
+      { key: 'external', icon: '🔗', label: 'admin.tabExternal' },
+    ],
+  },
   {
     section: 'admin.sideResources',
     items: [
@@ -115,6 +128,7 @@ const NAV: { section: string; items: { key: TabName; icon: string; label: string
 
 const PAGE: Record<TabName, { title: string; desc: string }> = {
   overview: { title: 'admin.pageOverview', desc: 'admin.pageOverviewDesc' },
+  external: { title: 'admin.pageExternal', desc: 'admin.pageExternalDesc' },
   models: { title: 'admin.pageModels', desc: 'admin.pageModelsDesc' },
   channels: { title: 'admin.pageChannels', desc: 'admin.pageChannelsDesc' },
   users: { title: 'admin.pageUsers', desc: 'admin.pageUsersDesc' },
@@ -129,6 +143,7 @@ const PAGE: Record<TabName, { title: string; desc: string }> = {
 
 const ADD_BTN: Record<TabName, string> = {
   overview: '',
+  external: 'admin.extAdd',
   models: 'admin.modelAdd',
   channels: 'admin.channelAdd',
   users: 'admin.userAdd',
@@ -181,6 +196,7 @@ function reload() {
 
 function openAdd() {
   const map: Partial<Record<TabName, DialogKind>> = {
+    external: 'ext',
     models: 'model',
     channels: 'channel',
     users: 'user',
@@ -213,6 +229,7 @@ async function loadTab(name: TabName) {
     else if (name === 'agents') await loadAgents()
     else if (name === 'orgs') await loadOrgs()
     else if (name === 'assistants') await loadAssistants()
+    else if (name === 'external') await loadExternal()
     else if (name === 'pay') await loadPay()
     else if (name === 'usage') await Promise.allSettled([loadSummary(), loadUsage(200)])
     else if (name === 'recharges') await loadRecharges()
@@ -235,6 +252,7 @@ const keys = ref<AdminKey[]>([])
 const agents = ref<AdminAgent[]>([])
 const orgs = ref<AdminOrg[]>([])
 const assistants = ref<AdminAssistant[]>([])
+const exts = ref<ExternalPage[]>([])
 const usage = ref<UsageRecord[]>([])
 const recharges = ref<Recharge[]>([])
 const pay = ref<PayConfigView | null>(null)
@@ -262,6 +280,9 @@ async function loadOrgs() {
 }
 async function loadAssistants() {
   assistants.value = await listAssistants()
+}
+async function loadExternal() {
+  exts.value = await listExternalPages()
 }
 async function loadUsage(limit = 200) {
   usage.value = await listUsage(undefined, limit)
@@ -341,15 +362,17 @@ const keysF = computed(() => filterRows(keys.value, ['name']))
 const agentsF = computed(() => filterRows(agents.value, ['email']))
 const orgsF = computed(() => filterRows(orgs.value, ['name', 'owner_email']))
 const assistantsF = computed(() => filterRows(assistants.value, ['agent_id', 'name', 'model']))
+const extsF = computed(() => filterRows(exts.value, ['name', 'url']))
 const rechargesF = computed(() => filterRows(recharges.value, ['order_no', 'method', 'status']))
 const usageF = computed(() => filterRows(usage.value, ['model', 'provider', 'status']))
 
 // ---------- dialogs ----------
-type DialogKind = '' | 'model' | 'channel' | 'user' | 'key' | 'keyEdit' | 'agent' | 'assistant' | 'ledger'
+type DialogKind = '' | 'ext' | 'model' | 'channel' | 'user' | 'key' | 'keyEdit' | 'agent' | 'assistant' | 'ledger'
 const dialog = ref<DialogKind>('')
 const dialogVisible = ref(false)
 const editingKey = ref<AdminKey | null>(null)
 const editingAssistant = ref<AdminAssistant | null>(null)
+const editingExt = ref<ExternalPage | null>(null)
 const ledgerUser = ref<AdminUser | null>(null)
 const ledger = ref<LedgerEntry[]>([])
 
@@ -370,10 +393,15 @@ const keyForm = reactive({ name: '' })
 const keyEditForm = reactive({ name: '', quota: '', allowed: '', expires: '' })
 const agentForm = reactive({ user_id: '', rate: 1 })
 const assistantForm = reactive({ agent_id: '', name: '', description: '', model: '', system_prompt: '', tools: '', enabled: true })
+const extForm = reactive({ name: '', url: '', sort: 0, enabled: true })
+const previewExt = ref<ExternalPage | null>(null)
 const CAPS = ['text', 'image', 'video', 'music', 'tts']
 
 function openNew(kind: DialogKind) {
-  if (kind === 'model') {
+  if (kind === 'ext') {
+    Object.assign(extForm, { name: '', url: '', sort: 0, enabled: true })
+    editingExt.value = null
+  } else if (kind === 'model') {
     Object.assign(modelForm, {
       model_id: '',
       provider: '',
@@ -426,6 +454,21 @@ function openAssistantEdit(a: AdminAssistant) {
   dialogVisible.value = true
 }
 
+function openExtEdit(p: ExternalPage) {
+  editingExt.value = p
+  Object.assign(extForm, { name: p.name, url: p.url, sort: p.sort_order, enabled: p.enabled })
+  dialog.value = 'ext'
+  dialogVisible.value = true
+}
+
+function openExtPreview(p: ExternalPage) {
+  previewExt.value = p
+}
+
+function closeExtPreview() {
+  previewExt.value = null
+}
+
 function openLedger(u: AdminUser) {
   ledgerUser.value = u
   ledger.value = []
@@ -442,6 +485,8 @@ function openLedger(u: AdminUser) {
 
 const dialogTitle = computed(() => {
   switch (dialog.value) {
+    case 'ext':
+      return editingExt.value ? t('admin.extEdit') : t('admin.extAdd')
     case 'model':
       return t('admin.modelAdd')
     case 'channel':
@@ -465,7 +510,8 @@ async function saveDialog() {
   saving.value = true
   try {
     let ok = false
-    if (dialog.value === 'model') ok = await saveModel()
+    if (dialog.value === 'ext') ok = await saveExt()
+    else if (dialog.value === 'model') ok = await saveModel()
     else if (dialog.value === 'channel') ok = await saveChannel()
     else if (dialog.value === 'user') ok = await saveUser()
     else if (dialog.value === 'key') ok = await saveKey()
@@ -598,6 +644,28 @@ async function saveAssistant(): Promise<boolean> {
   return true
 }
 
+async function saveExt(): Promise<boolean> {
+  const editing = editingExt.value
+  if (!extForm.name.trim() || !extForm.url.trim()) {
+    ElMessage.warning(t('admin.extRequired'))
+    return false
+  }
+  const body = {
+    name: extForm.name.trim(),
+    url: extForm.url.trim(),
+    sort_order: extForm.sort,
+    enabled: extForm.enabled,
+  }
+  if (editing) {
+    await updateExternalPage(editing.id, body)
+  } else {
+    await createExternalPage(body)
+  }
+  ElMessage.success(t('admin.saved'))
+  await loadExternal()
+  return true
+}
+
 // ---------- row actions ----------
 async function confirmDelete(message: string): Promise<boolean> {
   try {
@@ -648,6 +716,24 @@ async function removeAssistant(a: AdminAssistant) {
   try {
     await deleteAssistant(a.id)
     await loadAssistants()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function removeExt(p: ExternalPage) {
+  if (!(await confirmDelete(t('admin.confirmDelete', { name: p.name })))) return
+  try {
+    await deleteExternalPage(p.id)
+    if (previewExt.value?.id === p.id) previewExt.value = null
+    await loadExternal()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function toggleExt(p: ExternalPage) {
+  try {
+    await updateExternalPage(p.id, { enabled: !p.enabled })
+    await loadExternal()
   } catch (err) {
     ElMessage.error(errMsg(err))
   }
@@ -1014,6 +1100,42 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
         </section>
 
         <!-- ===== assistants ===== -->
+        <!-- ===== external (P7-6) ===== -->
+        <section v-show="active === 'external'">
+          <div class="card">
+            <el-table v-if="extsF.length" :data="extsF">
+              <el-table-column prop="name" :label="t('admin.extName')" min-width="130" />
+              <el-table-column prop="url" :label="t('admin.extUrl')" min-width="200" show-overflow-tooltip />
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
+                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="sort_order" :label="t('admin.extSort')" width="70" />
+              <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="210">
+                <template #default="{ row }">
+                  <el-button size="small" @click="openExtEdit(row)">{{ t('admin.edit') }}</el-button>
+                  <el-button size="small" @click="openExtPreview(row)">{{ t('admin.extPreview') }}</el-button>
+                  <el-button size="small" @click="toggleExt(row)">{{ row.enabled ? t('admin.off') : t('admin.on') }}</el-button>
+                  <el-button size="small" type="danger" plain @click="removeExt(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+
+          <div v-if="previewExt" class="card ext-preview">
+            <div class="ext-preview-head">
+              <strong>{{ previewExt.name }}</strong>
+              <el-button size="small" text @click="closeExtPreview">{{ t('admin.close') }}</el-button>
+            </div>
+            <iframe :src="previewExt.url" class="ext-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" />
+          </div>
+        </section>
+
         <section v-show="active === 'assistants'">
           <div class="card">
             <el-table v-if="assistantsF.length" :data="assistantsF">
@@ -1158,7 +1280,22 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 
     <!-- ============ dialogs ============ -->
     <el-dialog v-if="dialog !== 'ledger'" v-model="dialogVisible" :title="dialogTitle" width="620px" destroy-on-close>
-      <el-form v-if="dialog === 'model'" label-position="top">
+      <el-form v-if="dialog === 'ext'" label-position="top">
+        <div class="dlg-grid">
+          <label>{{ t('admin.extName') }}
+            <el-input v-model="extForm.name" placeholder="Ticketing" />
+          </label>
+          <label>{{ t('admin.extSort') }}
+            <el-input-number v-model="extForm.sort" :min="0" :step="1" style="width: 100%" />
+          </label>
+          <label class="full">{{ t('admin.extUrl') }}
+            <el-input v-model="extForm.url" placeholder="https://help.example.com/admin" />
+          </label>
+        </div>
+        <el-switch v-model="extForm.enabled" :active-text="t('admin.enabled')" />
+      </el-form>
+
+      <el-form v-else-if="dialog === 'model'" label-position="top">
         <div class="dlg-grid">
           <label>{{ t('admin.modelId') }}
             <el-input v-model="modelForm.model_id" placeholder="grok-4.7" />
@@ -1647,5 +1784,25 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 }
 .grid label.full {
   grid-column: 1 / -1;
+}
+.ext-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.ext-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.ext-frame {
+  width: 100%;
+  height: 70vh;
+  min-height: 380px;
+  border: 1px solid var(--border, #2a2f3a);
+  border-radius: 10px;
+  background: #0b0e14;
 }
 </style>

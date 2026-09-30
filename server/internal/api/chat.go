@@ -102,6 +102,13 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		}
 	}
 
+	// P7-3: fast key-level concurrency pre-check before holding funds.
+	if key != nil && s.conc.KeyAtLimit(key.ID) {
+		abortWith(c, http.StatusTooManyRequests, "concurrency_limited",
+			"too many in-flight requests for this API key; reduce parallelism or retry")
+		return
+	}
+
 	usable, err := s.hasUsableChannel(ctx, model.ModelID)
 	if err != nil {
 		httpErr(c, err)
@@ -218,7 +225,12 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 	}
 
 	// P5-1: dial the model's channels in priority order with failover.
-	att, err := s.dialChat(ctx, model.ModelID, upstreamBody)
+	// P7-3: keyID feeds the per-key / per-channel in-flight accounting.
+	keyID := int64(0)
+	if key != nil {
+		keyID = key.ID
+	}
+	att, err := s.dialChat(ctx, model.ModelID, upstreamBody, keyID)
 	if err != nil {
 		release()
 		if errors.Is(err, errNoUsableChannel) {
@@ -226,6 +238,13 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 				"all channels cooling down", 0)
 			abortWith(c, http.StatusBadGateway, "no_channel",
 				"all channels for model "+modelID+" are cooling down after recent failures; retry shortly")
+			return
+		}
+		if errors.Is(err, errConcurrencyLimited) {
+			s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "concurrency_limited",
+				"all channels at their in-flight limit", 0)
+			abortWith(c, http.StatusTooManyRequests, "concurrency_limited",
+				"upstream channels for model "+modelID+" are at their concurrency limit; retry shortly")
 			return
 		}
 		s.logUsage(ctx, key, model, reqMeta.Stream, 0, 0, "upstream_error", err.Error(), 0)
@@ -245,6 +264,8 @@ func (s *Server) handleChatCompletions(c *gin.Context) {
 		return
 	}
 	defer att.res.Close()
+	// P7-3: release the in-flight slot when the response is done.
+	defer s.conc.End(keyID, att.ch.ID)
 
 	ct := att.res.Header.Get("Content-Type")
 	if ct == "" {

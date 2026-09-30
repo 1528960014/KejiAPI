@@ -297,6 +297,17 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_org_ledger_request_id ON org_ledger_entrie
 CREATE INDEX IF NOT EXISTS idx_org_ledger_org ON org_ledger_entries(org_id, created_at DESC);
 ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS org_id BIGINT REFERENCES organizations(id) ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS idx_api_keys_org ON api_keys(org_id);
+
+-- P7-6: external systems — third-party web pages the admin console
+-- renders as iframes (ticketing, monitoring, docs, ...).
+CREATE TABLE IF NOT EXISTS external_pages (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

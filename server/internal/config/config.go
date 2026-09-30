@@ -46,6 +46,13 @@ type Config struct {
 	// P4-3: per-key in-memory rate limits (0 = disabled).
 	RPM int
 	TPM int
+
+	// P7-3: in-flight concurrency limits (0 = disabled):
+	// ConcPerKey caps concurrent upstream requests per API key;
+	// ConcPerChannel caps concurrent in-flight calls per upstream
+	// account (channel). Both are per-instance in-memory state.
+	ConcPerKey     int
+	ConcPerChannel int
 }
 
 // Load reads configuration from the environment and validates required values.
@@ -77,6 +84,8 @@ func Load() (*Config, error) {
 	}
 	cfg.RPM = envInt(os.Getenv("MODELHUB_RPM"))
 	cfg.TPM = envInt(os.Getenv("MODELHUB_TPM"))
+	cfg.ConcPerKey = envInt(os.Getenv("MODELHUB_CONCURRENCY_PER_KEY"))
+	cfg.ConcPerChannel = envInt(os.Getenv("MODELHUB_CONCURRENCY_PER_CHANNEL"))
 	if v := os.Getenv("PAY_CNY_PER_USD"); v != "" {
 		rate, err := strconv.ParseFloat(v, 64)
 		if err != nil || rate <= 0 || rate > 100 {

@@ -251,6 +251,11 @@ func (s *Server) handleAudioSpeech(c *gin.Context) {
 	}
 
 	// P5-1: dial with channel failover.
+	// P7-3: keyID feeds the per-key / per-channel in-flight accounting.
+	keyID := int64(0)
+	if key != nil {
+		keyID = key.ID
+	}
 	var audio []byte
 	if model.Provider == "dashscope" {
 		dsBody, _ := json.Marshal(map[string]any{
@@ -258,7 +263,7 @@ func (s *Server) handleAudioSpeech(c *gin.Context) {
 			"input": map[string]any{"text": req.Input},
 		})
 		status, respBody, dErr := s.dialJSON(ctx, model.ModelID, http.MethodPost,
-			"/api/v1/services/aigc/multimodal-generation/generation", dsBody, nil)
+			"/api/v1/services/aigc/multimodal-generation/generation", dsBody, nil, keyID)
 		if dErr != nil {
 			fail(http.StatusBadGateway, "upstream_error", dErr.Error())
 			return
@@ -271,7 +276,7 @@ func (s *Server) handleAudioSpeech(c *gin.Context) {
 		audio, err = s.fetchDashscopeAudio(ctx, respBody)
 	} else {
 		rawBody := speechUpstreamBody(model, &req)
-		status, respBody, dErr := s.dialJSON(ctx, model.ModelID, http.MethodPost, "/audio/speech", rawBody, nil)
+		status, respBody, dErr := s.dialJSON(ctx, model.ModelID, http.MethodPost, "/audio/speech", rawBody, nil, keyID)
 		if dErr != nil {
 			fail(http.StatusBadGateway, "upstream_error", dErr.Error())
 			return
