@@ -390,6 +390,18 @@ CREATE TABLE IF NOT EXISTS ip_rules (
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- audit logs: automatic trail of every mutating admin request
+-- (POST/PATCH/PUT/DELETE on /admin/*), written by middleware.
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGSERIAL PRIMARY KEY,
+    action TEXT NOT NULL,
+    target TEXT NOT NULL DEFAULT '',
+    status INT NOT NULL,
+    ip TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs (created_at DESC);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

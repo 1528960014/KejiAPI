@@ -16,6 +16,7 @@ import {
   adminDeleteRedeemCode,
   adminGetTerms,
   adminListAnnouncements,
+  adminListAuditLogs,
   adminListOrgs,
   adminListPlans,
   adminListPromos,
@@ -82,6 +83,7 @@ import {
   type AdminOrg,
   type AdminUser,
   type Announcement,
+  type AuditLog,
   type ChannelTestResult,
   type ExternalPage,
   type IPRule,
@@ -120,6 +122,7 @@ type TabName =
   | 'pay'
   | 'usage'
   | 'recharges'
+  | 'audit'
 
 const masterKey = ref(getMasterKey())
 const theme = ref<Theme>(getTheme())
@@ -146,6 +149,7 @@ const loaded = reactive<Record<TabName, boolean>>({
   pay: false,
   usage: false,
   recharges: false,
+  audit: false,
 })
 const search = ref('')
 const saving = ref(false)
@@ -193,7 +197,13 @@ const NAV: { section: string; items: { key: TabName; icon: string; label: string
       { key: 'recharges', icon: '🧾', label: 'admin.tabRecharges' },
     ],
   },
-  { section: 'admin.sideAnalytics', items: [{ key: 'usage', icon: '📈', label: 'admin.tabUsage' }] },
+  {
+    section: 'admin.sideAnalytics',
+    items: [
+      { key: 'usage', icon: '📈', label: 'admin.tabUsage' },
+      { key: 'audit', icon: '📜', label: 'admin.tabAudit' },
+    ],
+  },
 ]
 
 const PAGE: Record<TabName, { title: string; desc: string }> = {
@@ -215,6 +225,7 @@ const PAGE: Record<TabName, { title: string; desc: string }> = {
   pay: { title: 'admin.pagePay', desc: 'admin.pagePayDesc' },
   usage: { title: 'admin.pageUsage', desc: 'admin.pageUsageDesc' },
   recharges: { title: 'admin.pageRecharges', desc: 'admin.pageRechargesDesc' },
+  audit: { title: 'admin.pageAudit', desc: 'admin.pageAuditDesc' },
 }
 
 const ADD_BTN: Record<TabName, string> = {
@@ -236,6 +247,7 @@ const ADD_BTN: Record<TabName, string> = {
   pay: '',
   usage: '',
   recharges: '',
+  audit: '',
 }
 
 function onKeyChange() {
@@ -332,6 +344,7 @@ async function loadTab(name: TabName) {
     else if (name === 'pay') await loadPay()
     else if (name === 'usage') await Promise.allSettled([loadSummary(), loadUsage(200)])
     else if (name === 'recharges') await Promise.allSettled([loadRecharges(), loadStats()])
+    else if (name === 'audit') await loadAudit()
     loaded[name] = true
   } catch (err) {
     ElMessage.error(errMsg(err))
@@ -545,6 +558,17 @@ const orgsF = computed(() => filterRows(orgs.value, ['name', 'owner_email']))
 const assistantsF = computed(() => filterRows(assistants.value, ['agent_id', 'name', 'model']))
 const extsF = computed(() => filterRows(exts.value, ['name', 'url']))
 const rechargesF = computed(() => filterRows(recharges.value, ['order_no', 'method', 'status']))
+
+// ---------- audit logs ----------
+const auditLogs = ref<AuditLog[]>([])
+const auditTotal = ref(0)
+const auditF = computed(() => filterRows(auditLogs.value, ['action', 'target', 'ip']))
+
+async function loadAudit() {
+  const res = await adminListAuditLogs(200)
+  auditLogs.value = res.data
+  auditTotal.value = res.total
+}
 
 function userEmail(id: number): string {
   return users.value.find((u) => u.id === id)?.email ?? `#${id}`
@@ -2124,6 +2148,35 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               </el-table-column>
             </el-table>
             <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
+        </section>
+
+        <!-- ===== audit logs ===== -->
+        <section v-show="active === 'audit'">
+          <div class="card">
+            <div class="card-head">
+              <h3>{{ t('admin.auditTitle') }}</h3>
+              <span class="muted">{{ t('admin.auditTotal') }}: {{ auditTotal }}</span>
+            </div>
+            <el-table v-if="auditF.length" :data="auditF" size="small">
+              <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+              <el-table-column :label="t('admin.auditAction')" min-width="220">
+                <template #default="{ row }">
+                  <el-tag size="small" :type="row.action.startsWith('DELETE') ? 'danger' : 'primary'" style="margin-right: 6px">
+                    {{ row.action.split(' ')[0] }}
+                  </el-tag>
+                  <span class="muted">{{ row.action.split(' ').slice(1).join(' ') }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="target" :label="t('admin.auditTarget')" min-width="120" show-overflow-tooltip />
+              <el-table-column :label="t('admin.auditStatus')" width="90">
+                <template #default="{ row }">
+                  <el-tag :type="row.status < 400 ? 'success' : 'danger'" size="small">{{ row.status }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="ip" :label="t('admin.auditIp')" width="140" />
+            </el-table>
+            <p v-else class="muted">{{ t('admin.auditEmpty') }}</p>
           </div>
         </section>
 

@@ -93,9 +93,10 @@ func (s *Server) Engine() *gin.Engine {
 	r.POST("/v1/realtime", s.handleRealtime)
 
 	admin := r.Group("/admin")
-	admin.Use(s.authMasterKey())
+	admin.Use(s.authMasterKey(), s.auditLog())
 	{
 		admin.GET("/ops", s.handleOps)
+		admin.GET("/audit-logs", s.handleListAuditLogs)
 
 		// IP access control (blacklist / whitelist).
 		admin.GET("/ip-rules", s.handleListIPRules)

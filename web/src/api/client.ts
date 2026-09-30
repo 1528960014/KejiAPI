@@ -1466,3 +1466,23 @@ export async function adminDeleteIPRule(id: number): Promise<void> {
     headers: adminHeaders() as Record<string, string>,
   })
 }
+
+export interface AuditLog {
+  id: number
+  action: string
+  target: string
+  status: number
+  ip: string
+  created_at: string
+}
+
+export async function adminListAuditLogs(limit = 100, offset = 0): Promise<{
+  data: AuditLog[]
+  total: number
+}> {
+  const { data } = await http.get<{ data: AuditLog[]; total: number }>('/admin/audit-logs', {
+    params: { limit, offset },
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data
+}
