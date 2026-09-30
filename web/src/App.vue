@@ -236,6 +236,17 @@ nav {
 }
 .login-link {
   text-decoration: none;
+  border: none;
+  background: var(--accent-grad);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.login-link:hover {
+  background: var(--accent-grad);
+  filter: brightness(1.08);
 }
 .user {
   display: flex;

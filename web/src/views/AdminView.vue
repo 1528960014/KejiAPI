@@ -466,6 +466,16 @@ function renderChart() {
   const rows = daily.value
   chartInstance.setOption({
     backgroundColor: 'transparent',
+    graphic: rows.length
+      ? []
+      : [
+          {
+            type: 'text',
+            left: 'center',
+            top: 'middle',
+            style: { text: t('admin.empty'), fill: 'rgba(154, 164, 178, 0.85)', fontSize: 13 },
+          },
+        ],
     tooltip: { trigger: 'axis' },
     legend: {
       data: [t('admin.chartRequests'), t('admin.chartCost')],

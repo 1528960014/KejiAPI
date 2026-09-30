@@ -120,7 +120,7 @@ h3 {
   --el-button-text-color: #ffffff;
 }
 html[data-theme='dark'] .el-button--primary:not(.is-text):not(.is-link) {
-  --el-button-text-color: #08252b;
+  --el-button-text-color: #ffffff;
 }
 .el-button--primary:not(.is-text):not(.is-link):hover {
   filter: brightness(1.08);

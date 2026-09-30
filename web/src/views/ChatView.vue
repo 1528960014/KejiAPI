@@ -681,8 +681,8 @@ watch(
               />
               <defs>
                 <linearGradient id="sparkGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#38bdf8" />
-                  <stop offset="100%" stop-color="#2563eb" />
+                  <stop offset="0%" stop-color="#8b7cf6" />
+                  <stop offset="100%" stop-color="#f472b6" />
                 </linearGradient>
               </defs>
             </svg>
@@ -1184,8 +1184,8 @@ watch(
 }
 .cta {
   border: none;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #1a1205;
+  background: var(--accent-grad);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 700;
   padding: 7px 16px;
@@ -1195,6 +1195,7 @@ watch(
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 32%, transparent);
 }
 .cta:hover {
   filter: brightness(1.06);
@@ -1318,7 +1319,7 @@ watch(
   padding: 9vh 0 40px;
 }
 .spark {
-  filter: drop-shadow(0 0 24px rgba(56, 189, 248, 0.45));
+  filter: drop-shadow(0 0 24px rgba(139, 124, 246, 0.45));
 }
 .hero-card {
   max-width: 640px;
