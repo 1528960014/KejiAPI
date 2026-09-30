@@ -87,6 +87,7 @@ func (s *Server) Engine() *gin.Engine {
 	admin := r.Group("/admin")
 	admin.Use(s.authMasterKey())
 	{
+		admin.GET("/ops", s.handleOps)
 		admin.GET("/models", s.handleListModels)
 		admin.POST("/models", s.handleCreateModel)
 		admin.PATCH("/models/:id", s.handleUpdateModel)

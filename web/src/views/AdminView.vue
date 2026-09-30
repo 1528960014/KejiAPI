@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'v
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
+import { getTheme, toggleTheme, type Theme } from '../theme'
 import {
   adminCreditOrg,
   adminCreateAnnouncement,
@@ -20,6 +21,7 @@ import {
   adminListPromos,
   adminListRedeemCodes,
   adminListSubscriptions,
+  adminOps,
   adminPutTerms,
   adminRechargeStats,
   adminRecharges,
@@ -79,6 +81,7 @@ import {
   type ChannelTestResult,
   type ExternalPage,
   type LedgerEntry,
+  type OpsInfo,
   type PayConfigView,
   type Plan,
   type PromoCode,
@@ -95,6 +98,7 @@ const { t } = useI18n()
 
 type TabName =
   | 'overview'
+  | 'ops'
   | 'external'
   | 'models'
   | 'channels'
@@ -112,9 +116,14 @@ type TabName =
   | 'recharges'
 
 const masterKey = ref(getMasterKey())
+const theme = ref<Theme>(getTheme())
+function switchTheme() {
+  theme.value = toggleTheme()
+}
 const active = ref<TabName>('overview')
 const loaded = reactive<Record<TabName, boolean>>({
   overview: false,
+  ops: false,
   external: false,
   models: false,
   channels: false,
@@ -139,6 +148,7 @@ const NAV: { section: string; items: { key: TabName; icon: string; label: string
     section: 'admin.sideGeneral',
     items: [
       { key: 'overview', icon: '📊', label: 'admin.tabOverview' },
+      { key: 'ops', icon: '🩺', label: 'admin.tabOps' },
       { key: 'external', icon: '🔗', label: 'admin.tabExternal' },
     ],
   },
@@ -180,6 +190,7 @@ const NAV: { section: string; items: { key: TabName; icon: string; label: string
 
 const PAGE: Record<TabName, { title: string; desc: string }> = {
   overview: { title: 'admin.pageOverview', desc: 'admin.pageOverviewDesc' },
+  ops: { title: 'admin.pageOps', desc: 'admin.pageOpsDesc' },
   external: { title: 'admin.pageExternal', desc: 'admin.pageExternalDesc' },
   models: { title: 'admin.pageModels', desc: 'admin.pageModelsDesc' },
   channels: { title: 'admin.pageChannels', desc: 'admin.pageChannelsDesc' },
@@ -199,6 +210,7 @@ const PAGE: Record<TabName, { title: string; desc: string }> = {
 
 const ADD_BTN: Record<TabName, string> = {
   overview: '',
+  ops: '',
   external: 'admin.extAdd',
   models: 'admin.modelAdd',
   channels: 'admin.channelAdd',
@@ -243,6 +255,15 @@ function errMsg(err: unknown): string {
   return msg || String(err)
 }
 
+function fmtUptime(sec: number): string {
+  const d = Math.floor(sec / 86400)
+  const h = Math.floor((sec % 86400) / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  if (d > 0) return `${d}d ${h}h`
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
+}
+
 function go(key: TabName) {
   active.value = key
   search.value = ''
@@ -284,7 +305,8 @@ async function loadTab(name: TabName) {
         loadDaily(),
       ])
       if (active.value === 'overview') void nextTick(renderChart)
-    } else if (name === 'models') await loadModels()
+    } else if (name === 'ops') await loadOps()
+    else if (name === 'models') await loadModels()
     else if (name === 'channels') await loadChannels()
     else if (name === 'users') await loadUsers()
     else if (name === 'keys') await loadKeys()
@@ -320,6 +342,7 @@ onBeforeUnmount(() => {
 
 // ---------- data ----------
 const summary = ref<UsageSummary | null>(null)
+const ops = ref<OpsInfo | null>(null)
 const models = ref<AdminModel[]>([])
 const channels = ref<AdminChannel[]>([])
 const users = ref<AdminUser[]>([])
@@ -334,6 +357,9 @@ const pay = ref<PayConfigView | null>(null)
 
 async function loadSummary() {
   summary.value = await usageSummary()
+}
+async function loadOps() {
+  ops.value = await adminOps()
 }
 async function loadModels(_silent = false) {
   models.value = await listAdminModels()
@@ -1485,6 +1511,9 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
           </div>
         </nav>
         <div class="side-foot">
+          <button type="button" class="side-theme" @click="switchTheme">
+            {{ theme === 'dark' ? '☀️' : '🌙' }} {{ t(theme === 'dark' ? 'admin.themeLight' : 'admin.themeDark') }}
+          </button>
           <router-link to="/" class="side-back">{{ t('admin.backToSite') }} ←</router-link>
           <button type="button" class="side-clear" @click="clearKey">{{ t('admin.clearKey') }}</button>
         </div>
@@ -1504,6 +1533,57 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
             <el-button @click="reload">{{ t('admin.refresh') }}</el-button>
           </div>
         </div>
+
+        <!-- ===== ops ===== -->
+        <section v-show="active === 'ops'">
+          <div v-if="ops">
+            <div class="stat-grid">
+              <div class="stat">
+                <div class="stat-num">v{{ ops.version }}</div>
+                <div class="stat-label">🏷️ {{ t('admin.opsVersion') }}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num">{{ fmtUptime(ops.uptime) }}</div>
+                <div class="stat-label">⏱️ {{ t('admin.opsUptime') }}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num">{{ ops.goroutines }}</div>
+                <div class="stat-label">🧵 {{ t('admin.opsGoroutines') }}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num">{{ ops.mem.alloc_mb }} MB</div>
+                <div class="stat-label">💾 {{ t('admin.opsMem') }} (Sys {{ ops.mem.sys_mb }})</div>
+              </div>
+              <div class="stat">
+                <div class="stat-num" style="font-size: 18px; line-height: 28px">
+                  <el-tag :type="ops.database.status === 'ok' ? 'success' : 'danger'" effect="dark">
+                    {{ t(ops.database.status === 'ok' ? 'admin.opsDbOk' : 'admin.opsDbDown') }}
+                  </el-tag>
+                </div>
+                <div class="stat-label">🗄️ {{ t('admin.opsDatabase') }} · {{ ops.database.latency_ms }}ms</div>
+              </div>
+            </div>
+            <div class="dash-row">
+              <div class="dash-card">
+                <h3>🗄️ {{ t('admin.opsDbPool') }}</h3>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsDbTotal') }}</span><b>{{ ops.database.total_conns ?? '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsDbIdle') }}</span><b>{{ ops.database.idle_conns ?? '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsDbAcquired') }}</span><b>{{ ops.database.acquired_conns ?? '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsDbMax') }}</span><b>{{ ops.database.max_conns ?? '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsDbLatency') }}</span><b class="test-ok">{{ ops.database.latency_ms }} ms</b></div>
+              </div>
+              <div class="dash-card">
+                <h3>🚦 {{ t('admin.opsLimits') }}</h3>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsRpm') }}</span><b>{{ ops.limits.rpm || '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsTpm') }}</span><b>{{ ops.limits.tpm || '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsConcKey') }}</span><b>{{ ops.limits.conc_per_key || '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsConcChannel') }}</span><b>{{ ops.limits.conc_per_channel || '—' }}</b></div>
+                <div class="health-row"><span class="health-name">{{ t('admin.opsTime') }}</span><b>{{ ops.time }}</b></div>
+              </div>
+            </div>
+          </div>
+          <p v-else class="muted">{{ t('admin.empty') }}</p>
+        </section>
 
         <!-- ===== overview ===== -->
         <section v-show="active === 'overview'">
@@ -2652,6 +2732,21 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.side-theme {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 12.5px;
+  padding: 7px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.side-theme:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .side-back {
   display: block;

@@ -1399,3 +1399,27 @@ export async function adminRefundRecharge(id: number, reason?: string): Promise<
     headers: adminHeaders(),
   })
 }
+
+export interface OpsInfo {
+  version: string
+  time: string
+  uptime: number
+  goroutines: number
+  mem: { alloc_mb: number; sys_mb: number; num_gc: number }
+  database: {
+    status: string
+    latency_ms: number
+    total_conns?: number
+    idle_conns?: number
+    acquired_conns?: number
+    max_conns?: number
+  }
+  limits: { rpm: number; tpm: number; conc_per_key: number; conc_per_channel: number }
+}
+
+export async function adminOps(): Promise<OpsInfo> {
+  const { data } = await http.get<OpsInfo>('/admin/ops', {
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data
+}
