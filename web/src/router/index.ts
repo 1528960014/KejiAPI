@@ -12,7 +12,6 @@ const router = createRouter({
     { path: '/console', name: 'console', component: () => import('../views/ConsoleView.vue') },
     { path: '/orgs', name: 'orgs', component: () => import('../views/OrgsView.vue') },
     { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue') },
-    { path: '/admin/', redirect: '/admin' },
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue') },
   ],
 })
