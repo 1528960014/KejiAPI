@@ -33,6 +33,10 @@ type Task struct {
 // worker can settle/release without a second lookup.
 const taskColumns = `t.id, t.task_uuid, t.api_key_id, k.user_id, k.org_id, t.type, t.model_id, t.payload, t.status, COALESCE(t.hold_micro, 0), t.result_urls, COALESCE(t.cost, 0), t.error_msg, t.created_at, t.updated_at`
 
+// claimTaskColumns is taskColumns with the key's billing target inlined as
+// scalar subqueries: UPDATE ... RETURNING cannot reference joined tables.
+const claimTaskColumns = `t.id, t.task_uuid, t.api_key_id, (SELECT k.user_id FROM api_keys k WHERE k.id = t.api_key_id), (SELECT k.org_id FROM api_keys k WHERE k.id = t.api_key_id), t.type, t.model_id, t.payload, t.status, COALESCE(t.hold_micro, 0), t.result_urls, COALESCE(t.cost, 0), t.error_msg, t.created_at, t.updated_at`
+
 func taskSelect() string {
 	return `SELECT ` + taskColumns + ` FROM tasks t LEFT JOIN api_keys k ON k.id = t.api_key_id`
 }
@@ -70,7 +74,7 @@ func (s *Store) ClaimNextQueued(ctx context.Context) (*Task, error) {
 			SELECT id FROM tasks WHERE status = 'queued' ORDER BY id LIMIT 1
 			FOR UPDATE SKIP LOCKED
 		)
-		RETURNING `+taskColumns)
+		RETURNING `+claimTaskColumns)
 	return scanTask(row)
 }
 

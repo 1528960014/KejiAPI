@@ -37,6 +37,10 @@ type Drama struct {
 
 const dramaColumns = `d.id, d.drama_uuid, d.api_key_id, k.user_id, k.org_id, d.title, d.script, d.style, d.storyboard_model, d.image_model, d.tts_model, d.shots_planned, d.status, COALESCE(d.hold_micro, 0), d.shots, COALESCE(d.cost, 0), d.error_msg, COALESCE(d.video_url, ''), COALESCE(d.video_error, ''), d.created_at, d.updated_at`
 
+// claimDramaColumns is dramaColumns with the key's billing target inlined as
+// scalar subqueries: UPDATE ... RETURNING cannot reference joined tables.
+const claimDramaColumns = `d.id, d.drama_uuid, d.api_key_id, (SELECT k.user_id FROM api_keys k WHERE k.id = d.api_key_id), (SELECT k.org_id FROM api_keys k WHERE k.id = d.api_key_id), d.title, d.script, d.style, d.storyboard_model, d.image_model, d.tts_model, d.shots_planned, d.status, COALESCE(d.hold_micro, 0), d.shots, COALESCE(d.cost, 0), d.error_msg, COALESCE(d.video_url, ''), COALESCE(d.video_error, ''), d.created_at, d.updated_at`
+
 func dramaSelect() string {
 	return `SELECT ` + dramaColumns + ` FROM dramas d LEFT JOIN api_keys k ON k.id = d.api_key_id`
 }
@@ -85,7 +89,7 @@ func (s *Store) ClaimNextQueuedDrama(ctx context.Context) (*Drama, error) {
 			SELECT id FROM dramas WHERE status = 'queued' ORDER BY id LIMIT 1
 			FOR UPDATE SKIP LOCKED
 		)
-		RETURNING `+dramaColumns)
+		RETURNING `+claimDramaColumns)
 	return scanDrama(row)
 }
 
