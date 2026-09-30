@@ -89,9 +89,12 @@ func (s *Server) Engine() *gin.Engine {
 	{
 		admin.GET("/models", s.handleListModels)
 		admin.POST("/models", s.handleCreateModel)
+		admin.PATCH("/models/:id", s.handleUpdateModel)
 		admin.DELETE("/models/:id", s.handleDeleteModel)
 		admin.GET("/channels", s.handleListChannels)
 		admin.POST("/channels", s.handleCreateChannel)
+		admin.PATCH("/channels/:id", s.handleUpdateChannel)
+		admin.POST("/channels/:id/test", s.handleTestChannel)
 		admin.DELETE("/channels/:id", s.handleDeleteChannel)
 		admin.GET("/api-keys", s.handleListKeys)
 		admin.POST("/api-keys", s.handleCreateKey)
@@ -100,12 +103,14 @@ func (s *Server) Engine() *gin.Engine {
 
 		admin.GET("/users", s.handleListUsers)
 		admin.POST("/users", s.handleCreateUser)
+		admin.PATCH("/users/:id", s.handleUpdateUser)
 		admin.GET("/users/:id", s.handleGetUser)
 		admin.POST("/users/:id/credit", s.handleCreditUser)
 		admin.GET("/users/:id/ledger", s.handleUserLedger)
 
 		admin.GET("/usage", s.handleListUsage)
 		admin.GET("/usage/summary", s.handleUsageSummary)
+		admin.GET("/usage/daily", s.handleUsageDaily)
 		admin.GET("/tasks", s.handleListTasks)
 		admin.GET("/dramas", s.handleListDramas)
 		admin.GET("/recharges", s.handleAdminRecharges)

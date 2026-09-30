@@ -94,6 +94,19 @@ func (s *Store) GetUser(ctx context.Context, id int64) (*User, error) {
 	return u, err
 }
 
+// SetUserEnabled enables or disables a user (disabled users cannot
+// authenticate or call the API).
+func (s *Store) SetUserEnabled(ctx context.Context, id int64, enabled bool) (*User, error) {
+	tag, err := s.pool.Exec(ctx, `UPDATE users SET enabled = $2 WHERE id = $1`, id, enabled)
+	if err != nil {
+		return nil, err
+	}
+	if tag.RowsAffected() == 0 {
+		return nil, ErrNotFound
+	}
+	return s.GetUser(ctx, id)
+}
+
 // ListUsers returns all users, oldest first.
 func (s *Store) ListUsers(ctx context.Context) ([]User, error) {
 	rows, err := s.pool.Query(ctx, `SELECT `+userColumns+` FROM users ORDER BY id`)

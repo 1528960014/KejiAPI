@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -87,6 +88,73 @@ func (s *Store) CreateChannel(ctx context.Context, c *Channel) error {
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		c.Name, c.Provider, c.BaseURL, c.APIKey, c.ModelID, c.Priority, c.Enabled)
 	return err
+}
+
+// GetChannel fetches one channel by ID.
+func (s *Store) GetChannel(ctx context.Context, id int64) (*Channel, error) {
+	c := &Channel{}
+	err := s.pool.QueryRow(ctx, `
+		SELECT id, name, provider, base_url, api_key, model_id, priority, enabled
+		FROM channels WHERE id = $1`, id,
+	).Scan(&c.ID, &c.Name, &c.Provider, &c.BaseURL, &c.APIKey, &c.ModelID, &c.Priority, &c.Enabled)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	return c, err
+}
+
+// ChannelPatch is a partial channel update; nil fields are left untouched.
+type ChannelPatch struct {
+	Name     *string
+	Provider *string
+	BaseURL  *string
+	APIKey   *string
+	ModelID  *string
+	Priority *int
+	Enabled  *bool
+}
+
+// UpdateChannel partially updates a channel and returns the fresh row.
+func (s *Store) UpdateChannel(ctx context.Context, id int64, p *ChannelPatch) (*Channel, error) {
+	sets := []string{}
+	args := []any{}
+	add := func(col string, v any) {
+		args = append(args, v)
+		sets = append(sets, col+" = $"+itoa(len(args)))
+	}
+	if p.Name != nil {
+		add("name", *p.Name)
+	}
+	if p.Provider != nil {
+		add("provider", *p.Provider)
+	}
+	if p.BaseURL != nil {
+		add("base_url", *p.BaseURL)
+	}
+	if p.APIKey != nil {
+		add("api_key", *p.APIKey)
+	}
+	if p.ModelID != nil {
+		add("model_id", *p.ModelID)
+	}
+	if p.Priority != nil {
+		add("priority", *p.Priority)
+	}
+	if p.Enabled != nil {
+		add("enabled", *p.Enabled)
+	}
+	if len(sets) == 0 {
+		return s.GetChannel(ctx, id)
+	}
+	args = append(args, id)
+	tag, err := s.pool.Exec(ctx, `UPDATE channels SET `+strings.Join(sets, ", ")+` WHERE id = $`+itoa(len(args)), args...)
+	if err != nil {
+		return nil, err
+	}
+	if tag.RowsAffected() == 0 {
+		return nil, ErrNotFound
+	}
+	return s.GetChannel(ctx, id)
 }
 
 // DeleteChannel removes a channel by ID.

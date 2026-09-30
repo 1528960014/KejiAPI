@@ -208,6 +208,21 @@ export async function deleteAdminModel(modelId: string): Promise<void> {
   await http.delete(`/admin/models/${encodeURIComponent(modelId)}`, { headers: adminHeaders() })
 }
 
+export async function updateModel(
+  modelId: string,
+  patch: {
+    upstream_model?: string
+    capabilities?: string[]
+    input_price_per_1k?: number
+    output_price_per_1k?: number
+    price_unit?: string
+    unit_price?: number
+    enabled?: boolean
+  },
+): Promise<void> {
+  await http.patch(`/admin/models/${encodeURIComponent(modelId)}`, patch, { headers: adminHeaders() })
+}
+
 // --- admin: channels ---
 
 export interface AdminChannel {
@@ -241,6 +256,33 @@ export async function createChannel(body: {
 
 export async function deleteChannel(id: number): Promise<void> {
   await http.delete(`/admin/channels/${id}`, { headers: adminHeaders() })
+}
+
+export async function updateChannel(
+  id: number,
+  patch: {
+    name?: string
+    provider?: string
+    base_url?: string
+    api_key?: string
+    model_id?: string
+    priority?: number
+    enabled?: boolean
+  },
+): Promise<void> {
+  await http.patch(`/admin/channels/${id}`, patch, { headers: adminHeaders() })
+}
+
+export interface ChannelTestResult {
+  ok: boolean
+  status?: number
+  latency_ms?: number
+  error?: string
+}
+
+export async function testChannel(id: number): Promise<ChannelTestResult> {
+  const { data } = await http.post(`/admin/channels/${id}/test`, {}, { headers: adminHeaders() })
+  return data as ChannelTestResult
 }
 
 // --- admin: api keys ---
@@ -322,6 +364,10 @@ export async function creditUser(id: number, amountUsd: number, reason: string):
   return data as AdminUser
 }
 
+export async function updateUser(id: number, enabled: boolean): Promise<void> {
+  await http.patch(`/admin/users/${id}`, { enabled }, { headers: adminHeaders() })
+}
+
 export interface LedgerEntry {
   id: number
   kind: 'credit' | 'hold' | 'release' | 'debit'
@@ -378,6 +424,23 @@ export async function usageSummary(apiKeyId?: number, since?: string): Promise<U
     headers: adminHeaders() as Record<string, string>,
   })
   return data as UsageSummary
+}
+
+export interface UsageDailyPoint {
+  date: string
+  requests: number
+  prompt_tokens: number
+  completion_tokens: number
+  cost_micro: number
+  cost_usd: number
+}
+
+export async function usageDaily(days = 14): Promise<UsageDailyPoint[]> {
+  const { data } = await http.get('/admin/usage/daily', {
+    params: { days },
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data.data as UsageDailyPoint[]
 }
 
 export function formatUsd(micro?: number, usd?: number): string {

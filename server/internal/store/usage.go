@@ -104,3 +104,45 @@ func (s *Store) UsageSummary(ctx context.Context, apiKeyID *int64, since *time.T
 func itoa(n int) string {
 	return fmt.Sprintf("%d", n)
 }
+
+// UsageDaily is one day's aggregate for the dashboard trend chart.
+type UsageDaily struct {
+	Date             string // YYYY-MM-DD (UTC)
+	Requests         int64
+	PromptTokens     int64
+	CompletionTokens int64
+	CostMicro        int64
+}
+
+// UsageDaily aggregates usage_logs per UTC day for the last N days (1..90).
+func (s *Store) UsageDaily(ctx context.Context, days int) ([]UsageDaily, error) {
+	if days < 1 {
+		days = 1
+	}
+	if days > 90 {
+		days = 90
+	}
+	since := time.Now().UTC().AddDate(0, 0, -(days - 1))
+	rows, err := s.pool.Query(ctx, `
+		SELECT to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD'),
+		       count(*),
+		       COALESCE(sum(prompt_tokens), 0),
+		       COALESCE(sum(completion_tokens), 0),
+		       CAST(COALESCE(sum(cost), 0) * 1000000 AS BIGINT)
+		FROM usage_logs
+		WHERE created_at::date >= $1::date
+		GROUP BY 1 ORDER BY 1`, since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []UsageDaily{}
+	for rows.Next() {
+		var d UsageDaily
+		if err := rows.Scan(&d.Date, &d.Requests, &d.PromptTokens, &d.CompletionTokens, &d.CostMicro); err != nil {
+			return nil, err
+		}
+		out = append(out, d)
+	}
+	return out, rows.Err()
+}

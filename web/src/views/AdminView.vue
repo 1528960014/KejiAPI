@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import * as echarts from 'echarts'
 import {
   adminCreditOrg,
   adminListOrgs,
@@ -33,10 +34,15 @@ import {
   listUsage,
   putPayConfig,
   setMasterKey,
+  testChannel,
   updateAgentRate,
   updateAssistant,
+  updateChannel,
   updateExternalPage,
   updateKey,
+  updateModel,
+  updateUser,
+  usageDaily,
   usageSummary,
   userLedger,
   PAY_CHANNEL_FIELDS,
@@ -48,10 +54,12 @@ import {
   type AdminModel,
   type AdminOrg,
   type AdminUser,
+  type ChannelTestResult,
   type ExternalPage,
   type LedgerEntry,
   type PayConfigView,
   type Recharge,
+  type UsageDailyPoint,
   type UsageRecord,
   type UsageSummary,
 } from '../api/client'
@@ -221,7 +229,9 @@ async function loadTab(name: TabName) {
         loadOrgs(),
         loadSummary(),
         loadUsage(200),
+        loadDaily(),
       ])
+      if (active.value === 'overview') void nextTick(renderChart)
     } else if (name === 'models') await loadModels()
     else if (name === 'channels') await loadChannels()
     else if (name === 'users') await loadUsers()
@@ -241,6 +251,15 @@ async function loadTab(name: TabName) {
 
 onMounted(() => {
   if (masterKey.value) void loadTab('overview')
+  window.addEventListener('resize', onChartResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartResize)
+  if (chartInstance) {
+    chartInstance.dispose()
+    chartInstance = null
+  }
 })
 
 // ---------- data ----------
@@ -290,6 +309,11 @@ async function loadUsage(limit = 200) {
 async function loadRecharges() {
   recharges.value = await adminRecharges(100)
 }
+const daily = ref<UsageDailyPoint[]>([])
+async function loadDaily(days = 14) {
+  daily.value = await usageDaily(days)
+  if (active.value === 'overview') void nextTick(renderChart)
+}
 
 const payForms = reactive<Record<string, { enabled: boolean; config: Record<string, string> }>>({})
 async function loadPay() {
@@ -333,21 +357,75 @@ async function savePay() {
 }
 
 // ---------- dashboard ----------
-const chart7d = computed(() => {
-  const dayKeys: string[] = []
-  for (let i = 6; i >= 0; i--) {
-    dayKeys.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10))
+const chartRef = ref<HTMLElement | null>(null)
+let chartInstance: echarts.ECharts | null = null
+const days = ref(14)
+
+function onChartResize() {
+  chartInstance?.resize()
+}
+
+function renderChart() {
+  if (active.value !== 'overview' || !chartRef.value) return
+  if (!chartInstance) {
+    chartInstance = echarts.init(chartRef.value)
   }
-  const totals = dayKeys.map((k) =>
-    usage.value.filter((u) => u.created_at.slice(0, 10) === k).reduce((a, u) => a + u.cost_usd, 0),
-  )
-  const max = Math.max(...totals, 1e-9)
-  return dayKeys.map((k, i) => ({
-    label: k.slice(5),
-    total: totals[i],
-    h: totals[i] <= 0 ? 2 : Math.max(4, (totals[i] / max) * 90),
-  }))
-})
+  const rows = daily.value
+  chartInstance.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis' },
+    legend: {
+      data: [t('admin.chartRequests'), t('admin.chartCost')],
+      textStyle: { color: '#9aa4b2' },
+      top: 0,
+    },
+    grid: { left: 48, right: 58, top: 34, bottom: 26 },
+    xAxis: {
+      type: 'category',
+      data: rows.map((d) => d.date.slice(5)),
+      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.35)' } },
+      axisLabel: { color: '#9aa4b2' },
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: t('admin.chartRequests'),
+        axisLabel: { color: '#9aa4b2' },
+        splitLine: { lineStyle: { color: 'rgba(128,128,128,0.12)' } },
+      },
+      {
+        type: 'value',
+        name: 'USD',
+        axisLabel: { color: '#9aa4b2' },
+        splitLine: { show: false },
+      },
+    ],
+    series: [
+      {
+        name: t('admin.chartRequests'),
+        type: 'bar',
+        data: rows.map((d) => d.requests),
+        itemStyle: { color: 'rgba(64,158,255,0.75)', borderRadius: [4, 4, 0, 0] },
+        barMaxWidth: 22,
+      },
+      {
+        name: t('admin.chartCost'),
+        type: 'line',
+        yAxisIndex: 1,
+        smooth: true,
+        data: rows.map((d) => Number(d.cost_usd.toFixed(6))),
+        itemStyle: { color: '#f5a623' },
+        lineStyle: { width: 2 },
+      },
+    ],
+  })
+  chartInstance.resize()
+}
+
+function setDays(n: number) {
+  days.value = n
+  void loadDaily(n)
+}
 
 // ---------- client-side search ----------
 function filterRows<T extends object>(rows: T[], fields: (keyof T)[]): T[] {
@@ -364,15 +442,34 @@ const orgsF = computed(() => filterRows(orgs.value, ['name', 'owner_email']))
 const assistantsF = computed(() => filterRows(assistants.value, ['agent_id', 'name', 'model']))
 const extsF = computed(() => filterRows(exts.value, ['name', 'url']))
 const rechargesF = computed(() => filterRows(recharges.value, ['order_no', 'method', 'status']))
-const usageF = computed(() => filterRows(usage.value, ['model', 'provider', 'status']))
+const usageStatusFilter = ref('')
+const usageF = computed(() => {
+  const rows = filterRows(usage.value, ['model', 'provider', 'status'])
+  const s = usageStatusFilter.value
+  return s ? rows.filter((r) => r.status === s) : rows
+})
 
 // ---------- dialogs ----------
-type DialogKind = '' | 'ext' | 'model' | 'channel' | 'user' | 'key' | 'keyEdit' | 'agent' | 'assistant' | 'ledger'
+type DialogKind =
+  | ''
+  | 'ext'
+  | 'model'
+  | 'modelEdit'
+  | 'channel'
+  | 'channelEdit'
+  | 'user'
+  | 'key'
+  | 'keyEdit'
+  | 'agent'
+  | 'assistant'
+  | 'ledger'
 const dialog = ref<DialogKind>('')
 const dialogVisible = ref(false)
 const editingKey = ref<AdminKey | null>(null)
 const editingAssistant = ref<AdminAssistant | null>(null)
 const editingExt = ref<ExternalPage | null>(null)
+const editingModel = ref<AdminModel | null>(null)
+const editingChannelId = ref<number | null>(null)
 const ledgerUser = ref<AdminUser | null>(null)
 const ledger = ref<LedgerEntry[]>([])
 
@@ -387,7 +484,15 @@ const modelForm = reactive({
   unit_price: 0,
   enabled: true,
 })
-const channelForm = reactive({ name: '', provider: '', base_url: '', api_key: '', model_id: '', priority: 0 })
+const channelForm = reactive({
+  name: '',
+  provider: '',
+  base_url: '',
+  api_key: '',
+  model_id: '',
+  priority: 0,
+  enabled: true,
+})
 const userForm = reactive({ email: '', balance: 0 })
 const keyForm = reactive({ name: '' })
 const keyEditForm = reactive({ name: '', quota: '', allowed: '', expires: '' })
@@ -414,7 +519,35 @@ function openNew(kind: DialogKind) {
       enabled: true,
     })
   } else if (kind === 'channel') {
-    Object.assign(channelForm, { name: '', provider: '', base_url: '', api_key: '', model_id: '', priority: 0 })
+    Object.assign(channelForm, { name: '', provider: '', base_url: '', api_key: '', model_id: '', priority: 0, enabled: true })
+  } else if (kind === 'modelEdit') {
+    if (!editingModel.value) return
+    const m = editingModel.value
+    Object.assign(modelForm, {
+      model_id: m.model_id,
+      provider: m.provider,
+      upstream_model: m.upstream_model,
+      capabilities: [...(m.capabilities || [])],
+      price_unit: m.price_unit || 'token',
+      input_price_per_1k: m.input_price_per_1k ?? 0,
+      output_price_per_1k: m.output_price_per_1k ?? 0,
+      unit_price: m.unit_price ?? 0,
+      enabled: m.enabled,
+    })
+  } else if (kind === 'channelEdit') {
+    const id = editingChannelId.value
+    if (id == null) return
+    const ch = channels.value.find((c) => c.id === id)
+    if (!ch) return
+    Object.assign(channelForm, {
+      name: ch.name,
+      provider: ch.provider,
+      base_url: ch.base_url,
+      api_key: '',
+      model_id: ch.model_id,
+      priority: ch.priority,
+      enabled: ch.enabled,
+    })
   } else if (kind === 'user') {
     Object.assign(userForm, { email: '', balance: 0 })
   } else if (kind === 'key') {
@@ -437,6 +570,16 @@ function openKeyEdit(k: AdminKey) {
   keyEditForm.expires = k.expires_at ?? ''
   dialog.value = 'keyEdit'
   dialogVisible.value = true
+}
+
+function openModelEdit(m: AdminModel) {
+  editingModel.value = m
+  openNew('modelEdit')
+}
+
+function openChannelEdit(ch: AdminChannel) {
+  editingChannelId.value = ch.id
+  openNew('channelEdit')
 }
 
 function openAssistantEdit(a: AdminAssistant) {
@@ -489,8 +632,12 @@ const dialogTitle = computed(() => {
       return editingExt.value ? t('admin.extEdit') : t('admin.extAdd')
     case 'model':
       return t('admin.modelAdd')
+    case 'modelEdit':
+      return t('admin.modelEdit')
     case 'channel':
       return t('admin.channelAdd')
+    case 'channelEdit':
+      return t('admin.channelEdit')
     case 'user':
       return t('admin.userAdd')
     case 'key':
@@ -512,7 +659,9 @@ async function saveDialog() {
     let ok = false
     if (dialog.value === 'ext') ok = await saveExt()
     else if (dialog.value === 'model') ok = await saveModel()
+    else if (dialog.value === 'modelEdit') ok = await saveModelEdit()
     else if (dialog.value === 'channel') ok = await saveChannel()
+    else if (dialog.value === 'channelEdit') ok = await saveChannelEdit()
     else if (dialog.value === 'user') ok = await saveUser()
     else if (dialog.value === 'key') ok = await saveKey()
     else if (dialog.value === 'keyEdit') ok = await saveKeyEdit()
@@ -551,7 +700,59 @@ async function saveChannel(): Promise<boolean> {
     ElMessage.warning(t('admin.channelRequired'))
     return false
   }
-  await createChannel({ ...channelForm, name: channelForm.name.trim() })
+  await createChannel({
+    name: channelForm.name.trim(),
+    provider: channelForm.provider,
+    base_url: channelForm.base_url,
+    api_key: channelForm.api_key,
+    model_id: channelForm.model_id,
+    priority: channelForm.priority,
+  })
+  ElMessage.success(t('admin.saved'))
+  await loadChannels()
+  return true
+}
+async function saveModelEdit(): Promise<boolean> {
+  const m = editingModel.value
+  if (!m) return false
+  await updateModel(m.model_id, {
+    upstream_model: modelForm.upstream_model.trim(),
+    capabilities: modelForm.capabilities,
+    input_price_per_1k: modelForm.input_price_per_1k,
+    output_price_per_1k: modelForm.output_price_per_1k,
+    price_unit: modelForm.price_unit,
+    unit_price: modelForm.price_unit === 'token' ? undefined : modelForm.unit_price,
+    enabled: modelForm.enabled,
+  })
+  ElMessage.success(t('admin.saved'))
+  await loadModels()
+  return true
+}
+async function saveChannelEdit(): Promise<boolean> {
+  const id = editingChannelId.value
+  if (id == null) return false
+  if (!channelForm.name || !channelForm.provider || !channelForm.base_url || !channelForm.model_id) {
+    ElMessage.warning(t('admin.channelRequired'))
+    return false
+  }
+  const patch: {
+    name?: string
+    provider?: string
+    base_url?: string
+    api_key?: string
+    model_id?: string
+    priority?: number
+    enabled?: boolean
+  } = {
+    name: channelForm.name.trim(),
+    provider: channelForm.provider,
+    base_url: channelForm.base_url,
+    model_id: channelForm.model_id,
+    priority: channelForm.priority,
+    enabled: channelForm.enabled,
+  }
+  if (channelForm.api_key.trim()) patch.api_key = channelForm.api_key.trim()
+  await updateChannel(id, patch)
   ElMessage.success(t('admin.saved'))
   await loadChannels()
   return true
@@ -738,6 +939,59 @@ async function toggleExt(p: ExternalPage) {
     ElMessage.error(errMsg(err))
   }
 }
+
+// ---------- channel / model / user toggles & tests ----------
+const testState = reactive<Record<number, { busy: boolean; result?: ChannelTestResult }>>({})
+function testOf(id: number): { busy: boolean; result?: ChannelTestResult } {
+  if (!testState[id]) testState[id] = { busy: false }
+  return testState[id]
+}
+function testResult(id: number): ChannelTestResult | undefined {
+  return testState[id]?.result
+}
+async function runTest(ch: AdminChannel) {
+  const st = testOf(ch.id)
+  st.busy = true
+  st.result = undefined
+  try {
+    st.result = await testChannel(ch.id)
+    if (st.result.ok) {
+      ElMessage.success(t('admin.testOk', { ms: st.result.latency_ms ?? 0, status: st.result.status ?? '' }))
+    } else {
+      ElMessage.error(st.result.error || t('admin.testFailed'))
+    }
+    await loadChannels(true)
+  } catch (err) {
+    st.result = { ok: false, error: errMsg(err) }
+    ElMessage.error(errMsg(err))
+  } finally {
+    st.busy = false
+  }
+}
+async function toggleChannel(ch: AdminChannel) {
+  try {
+    await updateChannel(ch.id, { enabled: !ch.enabled })
+    await loadChannels(true)
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function toggleModel(m: AdminModel) {
+  try {
+    await updateModel(m.model_id, { enabled: !m.enabled })
+    await loadModels()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+async function toggleUser(u: AdminUser) {
+  try {
+    await updateUser(u.id, !u.enabled)
+    await loadUsers()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
 async function creditUserRow(u: AdminUser) {
   const { value } = await ElMessageBox.prompt(t('admin.creditPrompt'), t('admin.credit'), {
     inputPattern: /^\d+(\.\d+)?$/,
@@ -804,6 +1058,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
           @keyup.enter="onKeyChange"
         />
         <p class="muted hint">{{ t('admin.masterKeyHint') }}</p>
+        <a class="gate-back" href="/chat">{{ t('admin.backToApp') }} ←</a>
       </div>
     </div>
 
@@ -892,15 +1147,15 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 
           <div class="dash-row">
             <div class="card dash-card">
-              <h3>{{ t('admin.chartTitle') }}</h3>
-              <svg viewBox="0 0 320 140" class="chart">
-                <g v-for="(d, i) in chart7d" :key="d.label" :transform="`translate(${i * 44 + 10}, 0)`">
-                  <rect :x="0" :y="112 - d.h" :width="28" :height="d.h" rx="4" class="chart-bar">
-                    <title>{{ d.label }}: ${{ d.total.toFixed(4) }}</title>
-                  </rect>
-                  <text :x="14" y="128" text-anchor="middle" class="chart-label">{{ d.label }}</text>
-                </g>
-              </svg>
+              <div class="card-head">
+                <h3>{{ t('admin.chartTitle') }}</h3>
+                <el-select v-model="days" size="small" class="days-select" @change="setDays">
+                  <el-option :value="7" :label="t('admin.days7')" />
+                  <el-option :value="14" :label="t('admin.days14')" />
+                  <el-option :value="30" :label="t('admin.days30')" />
+                </el-select>
+              </div>
+              <div ref="chartRef" class="chart-box"></div>
             </div>
             <div class="card dash-card">
               <h3>{{ t('admin.channelMini') }}</h3>
@@ -959,13 +1214,12 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               </el-table-column>
               <el-table-column :label="t('admin.enabled')" width="80">
                 <template #default="{ row }">
-                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
-                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
-                  </el-tag>
+                  <el-switch :model-value="row.enabled" @change="toggleModel(row)" />
                 </template>
               </el-table-column>
-              <el-table-column :label="t('admin.actions')" width="80">
+              <el-table-column :label="t('admin.actions')" width="150">
                 <template #default="{ row }">
+                  <el-button size="small" @click="openModelEdit(row)">{{ t('admin.edit') }}</el-button>
                   <el-button size="small" type="danger" plain @click="removeModel(row)">{{ t('admin.delete') }}</el-button>
                 </template>
               </el-table-column>
@@ -983,6 +1237,11 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               <el-table-column prop="base_url" :label="t('admin.baseUrl')" min-width="170" show-overflow-tooltip />
               <el-table-column prop="model_id" :label="t('admin.modelId')" min-width="120" />
               <el-table-column prop="priority" :label="t('admin.priority')" width="80" />
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-switch :model-value="row.enabled" @change="toggleChannel(row)" />
+                </template>
+              </el-table-column>
               <el-table-column :label="t('admin.health')" width="100">
                 <template #default="{ row }">
                   <el-tag :type="row.health === 'ok' ? 'success' : 'warning'" size="small">
@@ -990,8 +1249,24 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column :label="t('admin.actions')" width="80">
+              <el-table-column :label="t('admin.lastTest')" min-width="130">
                 <template #default="{ row }">
+                  <span v-if="testOf(row.id).busy" class="muted">{{ t('admin.testing') }}</span>
+                  <span v-else-if="testResult(row.id)?.ok" class="test-ok">
+                    ✓ {{ testResult(row.id)!.status }} · {{ testResult(row.id)!.latency_ms }}ms
+                  </span>
+                  <el-tooltip v-else-if="testResult(row.id)" :content="testResult(row.id)!.error || ''" placement="top">
+                    <span class="test-bad">✗ {{ t('admin.testFailed') }}</span>
+                  </el-tooltip>
+                  <span v-else class="muted">—</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.actions')" width="220">
+                <template #default="{ row }">
+                  <el-button size="small" type="primary" plain :loading="testOf(row.id).busy" @click="runTest(row)">
+                    {{ t('admin.test') }}
+                  </el-button>
+                  <el-button size="small" @click="openChannelEdit(row)">{{ t('admin.edit') }}</el-button>
                   <el-button size="small" type="danger" plain @click="removeChannel(row)">{{ t('admin.delete') }}</el-button>
                 </template>
               </el-table-column>
@@ -1014,9 +1289,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
               </el-table-column>
               <el-table-column :label="t('admin.enabled')" width="80">
                 <template #default="{ row }">
-                  <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
-                    {{ row.enabled ? t('admin.on') : t('admin.off') }}
-                  </el-tag>
+                  <el-switch :model-value="row.enabled" @change="toggleUser(row)" />
                 </template>
               </el-table-column>
               <el-table-column prop="created_at" :label="t('admin.createdAt')" width="170" />
@@ -1232,6 +1505,14 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
             </div>
           </div>
           <div class="card">
+            <div class="card-head">
+              <h3>{{ t('admin.usageTable') }}</h3>
+              <el-select v-model="usageStatusFilter" size="small" class="usage-filter">
+                <el-option value="" :label="t('admin.filterAll')" />
+                <el-option value="ok" :label="t('admin.statusOk')" />
+                <el-option value="error" :label="t('admin.statusError')" />
+              </el-select>
+            </div>
             <el-table v-if="usageF.length" :data="usageF" size="small">
               <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
               <el-table-column prop="model" :label="t('admin.modelId')" min-width="130" />
@@ -1337,6 +1618,45 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
         </div>
       </el-form>
 
+      <el-form v-else-if="dialog === 'modelEdit'" label-position="top">
+        <div class="dlg-grid">
+          <label class="full">{{ t('admin.modelId') }}
+            <el-input :model-value="modelForm.model_id" disabled />
+          </label>
+          <label class="full">{{ t('admin.upstreamModel') }}
+            <el-input v-model="modelForm.upstream_model" placeholder="grok-4.7" />
+          </label>
+          <label class="full">{{ t('admin.capabilities') }}
+            <el-select v-model="modelForm.capabilities" multiple style="width: 100%">
+              <el-option v-for="c in CAPS" :key="c" :label="t(`admin.cap.${c}`)" :value="c" />
+            </el-select>
+          </label>
+          <label>{{ t('admin.priceUnit') }}
+            <el-select v-model="modelForm.price_unit" style="width: 100%">
+              <el-option label="token" value="token" />
+              <el-option label="image" value="image" />
+              <el-option label="video" value="video" />
+              <el-option label="music" value="music" />
+              <el-option label="tts" value="tts" />
+            </el-select>
+          </label>
+          <template v-if="modelForm.price_unit === 'token'">
+            <label>{{ t('admin.inputPrice') }}
+              <el-input-number v-model="modelForm.input_price_per_1k" :min="0" :precision="6" :step="0.001" style="width: 100%" />
+            </label>
+            <label>{{ t('admin.outputPrice') }}
+              <el-input-number v-model="modelForm.output_price_per_1k" :min="0" :precision="6" :step="0.001" style="width: 100%" />
+            </label>
+          </template>
+          <label v-else class="full">{{ t('admin.unitPrice') }}
+            <el-input-number v-model="modelForm.unit_price" :min="0" :precision="4" :step="0.01" style="width: 100%" />
+          </label>
+          <label class="switch-label">{{ t('admin.enabled') }}
+            <el-switch v-model="modelForm.enabled" />
+          </label>
+        </div>
+      </el-form>
+
       <el-form v-else-if="dialog === 'channel'" label-position="top">
         <div class="dlg-grid">
           <label>{{ t('admin.channelName') }}
@@ -1356,6 +1676,37 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
           </label>
           <label>{{ t('admin.priority') }}
             <el-input-number v-model="channelForm.priority" :min="0" style="width: 100%" />
+          </label>
+        </div>
+      </el-form>
+
+      <el-form v-else-if="dialog === 'channelEdit'" label-position="top">
+        <div class="dlg-grid">
+          <label>{{ t('admin.channelName') }}
+            <el-input v-model="channelForm.name" />
+          </label>
+          <label>{{ t('admin.provider') }}
+            <el-input v-model="channelForm.provider" />
+          </label>
+          <label class="full">{{ t('admin.baseUrl') }}
+            <el-input v-model="channelForm.base_url" />
+          </label>
+          <label class="full">{{ t('admin.apiKey') }}
+            <el-input
+              v-model="channelForm.api_key"
+              type="password"
+              show-password
+              :placeholder="t('admin.apiKeyKeep')"
+            />
+          </label>
+          <label>{{ t('admin.modelId') }}
+            <el-input v-model="channelForm.model_id" />
+          </label>
+          <label>{{ t('admin.priority') }}
+            <el-input-number v-model="channelForm.priority" :min="0" style="width: 100%" />
+          </label>
+          <label class="switch-label">{{ t('admin.enabled') }}
+            <el-switch v-model="channelForm.enabled" />
           </label>
         </div>
       </el-form>
@@ -1668,17 +2019,45 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
   margin: 0 0 12px;
   font-size: 14px;
 }
-.chart {
+.chart-box {
   width: 100%;
-  height: auto;
+  height: 280px;
+  min-height: 280px;
 }
-.chart-bar {
-  fill: var(--accent);
-  opacity: 0.85;
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.chart-label {
-  fill: var(--text-dim);
-  font-size: 9px;
+.card-head h3 {
+  margin: 0;
+}
+.days-select {
+  width: 104px;
+}
+.usage-filter {
+  width: 130px;
+}
+.test-ok {
+  color: #34d399;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.test-bad {
+  color: #f87171;
+  font-size: 12px;
+  cursor: help;
+}
+.gate-back {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+.gate-back:hover {
+  color: var(--accent);
 }
 .health-row {
   display: flex;
