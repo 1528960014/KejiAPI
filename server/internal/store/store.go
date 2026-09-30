@@ -402,6 +402,17 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs (created_at DESC);
+
+-- channel_health: latest probe snapshot per channel, persisted across
+-- restarts so the admin route table always shows a fresh line status.
+CREATE TABLE IF NOT EXISTS channel_health (
+    channel_id BIGINT PRIMARY KEY REFERENCES channels(id) ON DELETE CASCADE,
+    ok BOOLEAN NOT NULL DEFAULT FALSE,
+    status INT NOT NULL DEFAULT 0,
+    latency_ms BIGINT NOT NULL DEFAULT 0,
+    error TEXT NOT NULL DEFAULT '',
+    checked_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

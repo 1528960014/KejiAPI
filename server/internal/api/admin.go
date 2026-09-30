@@ -93,9 +93,10 @@ func (s *Server) handleListChannels(c *gin.Context) {
 	}
 	// P5-1: annotate each channel with its in-memory failover health.
 	now := time.Now()
+	probes, _ := s.store.ListChannelHealth(c.Request.Context()) // best-effort
 	out := make([]channelWithHealth, 0, len(channels))
 	for _, ch := range channels {
-		item := channelWithHealth{Channel: ch, Health: "ok"}
+		item := channelWithHealth{Channel: ch, Health: "ok", LastProbe: probes[ch.ID]}
 		if until, down := s.health.CooldownUntil(ch.ID, now); down {
 			item.Health = "cooldown"
 			item.CooldownUntil = until.UTC().Format(time.RFC3339)
@@ -109,8 +110,9 @@ func (s *Server) handleListChannels(c *gin.Context) {
 // state is per-instance in-memory, like the rate limiter).
 type channelWithHealth struct {
 	store.Channel
-	Health        string `json:"health"`
-	CooldownUntil string `json:"cooldown_until,omitempty"`
+	Health        string                   `json:"health"`
+	CooldownUntil string                   `json:"cooldown_until,omitempty"`
+	LastProbe     *store.ChannelHealthRow  `json:"last_probe,omitempty"`
 }
 
 type createChannelReq struct {

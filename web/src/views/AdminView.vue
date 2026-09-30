@@ -17,6 +17,7 @@ import {
   adminGetTerms,
   adminListAnnouncements,
   adminListAuditLogs,
+  adminProbeAllChannels,
   adminListOrgs,
   adminListPlans,
   adminListPromos,
@@ -1488,6 +1489,19 @@ async function toggleChannel(ch: AdminChannel) {
     ElMessage.error(errMsg(err))
   }
 }
+const probingAll = ref(false)
+async function runProbeAll() {
+  probingAll.value = true
+  try {
+    const res = await adminProbeAllChannels()
+    await loadChannels(true)
+    ElMessage.success(t('admin.probeDone', { ok: res.ok, total: res.count }))
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  } finally {
+    probingAll.value = false
+  }
+}
 async function toggleModel(m: AdminModel) {
   try {
     await updateModel(m.model_id, { enabled: !m.enabled })
@@ -1852,6 +1866,12 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
         <!-- ===== channels ===== -->
         <section v-show="active === 'channels'">
           <div class="card">
+            <div class="card-head">
+              <h3>{{ t('admin.channelTable') }}</h3>
+              <el-button size="small" type="primary" :loading="probingAll" @click="runProbeAll">
+                {{ t('admin.probeAll') }}
+              </el-button>
+            </div>
             <el-table v-if="channelsF.length" :data="channelsF">
               <el-table-column prop="name" :label="t('admin.channelName')" min-width="120" />
               <el-table-column prop="provider" :label="t('admin.provider')" width="100" />
@@ -1879,6 +1899,21 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
                   <el-tooltip v-else-if="testResult(row.id)" :content="testResult(row.id)!.error || ''" placement="top">
                     <span class="test-bad">✗ {{ t('admin.testFailed') }}</span>
                   </el-tooltip>
+                  <span v-else class="muted">—</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.lineStatus')" width="110">
+                <template #default="{ row }">
+                  <el-tooltip v-if="row.last_probe && !row.last_probe.ok" :content="row.last_probe.error || ('HTTP ' + row.last_probe.status)" placement="top">
+                    <span class="test-bad">✗ {{ t('admin.lineDown') }}</span>
+                  </el-tooltip>
+                  <span v-else-if="row.last_probe" class="test-ok">✓ {{ row.last_probe.latency_ms }}ms</span>
+                  <span v-else class="muted">—</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.lastProbeAt')" width="150">
+                <template #default="{ row }">
+                  <span v-if="row.last_probe" class="muted">{{ new Date(row.last_probe.checked_at).toLocaleString() }}</span>
                   <span v-else class="muted">—</span>
                 </template>
               </el-table-column>

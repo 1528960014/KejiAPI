@@ -112,6 +112,7 @@ func (s *Server) Engine() *gin.Engine {
 		admin.POST("/channels", s.handleCreateChannel)
 		admin.PATCH("/channels/:id", s.handleUpdateChannel)
 		admin.POST("/channels/:id/test", s.handleTestChannel)
+		admin.POST("/channels/probe-all", s.handleProbeAllChannels)
 		admin.DELETE("/channels/:id", s.handleDeleteChannel)
 		admin.GET("/api-keys", s.handleListKeys)
 		admin.POST("/api-keys", s.handleCreateKey)

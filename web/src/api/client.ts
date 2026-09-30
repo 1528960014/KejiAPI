@@ -236,11 +236,33 @@ export interface AdminChannel {
   enabled: boolean
   health?: string
   cooldown_until?: string
+  last_probe?: {
+    channel_id: number
+    ok: boolean
+    status: number
+    latency_ms: number
+    error?: string
+    checked_at: string
+  }
 }
 
 export async function listChannels(): Promise<AdminChannel[]> {
   const { data } = await http.get('/admin/channels', { headers: adminHeaders() })
   return data.data as AdminChannel[]
+}
+
+export interface ChannelProbeResult {
+  count: number
+  ok: number
+  data: Record<number, NonNullable<AdminChannel['last_probe']>>
+}
+
+// Probe every channel at once ("probe all routes").
+export async function adminProbeAllChannels(): Promise<ChannelProbeResult> {
+  const { data } = await http.post<ChannelProbeResult>('/admin/channels/probe-all', {}, {
+    headers: adminHeaders(),
+  })
+  return data
 }
 
 export async function createChannel(body: {

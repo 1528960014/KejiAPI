@@ -70,6 +70,10 @@ func main() {
 	dramaWorker := task.NewDramaWorker(st, provider, task.NewComposer(cfg.MediaDir), health)
 	go dramaWorker.Run(ctx)
 
+	// Channel line-health probe loop: first pass 30s after boot, then every
+	// 10 minutes; snapshots persist to channel_health for the admin table.
+	go srv.StartProbeLoop(ctx)
+
 	httpServer := &http.Server{
 		Addr:         ":" + cfg.Port,
 		Handler:      srv.Engine(),
