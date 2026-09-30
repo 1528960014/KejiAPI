@@ -17,6 +17,9 @@ version: '3.4' # For compatibility with older Docker versions
 services:
   kejiapi:
     image: 1528960014/kejiapi:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: kejiapi
     restart: always
     command: --log-dir /app/logs
