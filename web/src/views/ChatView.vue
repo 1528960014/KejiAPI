@@ -529,7 +529,7 @@ watch(
     <!-- ================= left sidebar ================= -->
     <aside class="side">
       <div class="brand">
-        <span class="brand-mark">✦</span>
+        <img src="/logo.svg" class="brand-logo" width="36" height="36" alt="KejiAPI" />
         <div class="brand-txt">
           <span class="brand-name">KejiAPI</span>
           <span class="brand-sub">{{ t('shell.brandSub') }}</span>
@@ -863,16 +863,9 @@ watch(
   gap: 10px;
   padding: 16px 16px 12px;
 }
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
+.brand-logo {
+  display: block;
   border-radius: 11px;
-  background: linear-gradient(135deg, #22d3ee, #818cf8);
-  color: #0b0b12;
-  font-size: 17px;
-  font-weight: 800;
 }
 .brand-txt {
   display: flex;
@@ -882,7 +875,7 @@ watch(
 .brand-name {
   font-size: 15px;
   font-weight: 800;
-  background: linear-gradient(90deg, #22d3ee, #818cf8);
+  background: linear-gradient(90deg, var(--text), var(--accent));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1019,8 +1012,8 @@ watch(
   color: var(--text-dim);
 }
 .mc-ic.cap-text {
-  color: #22d3ee;
-  border-color: color-mix(in srgb, #22d3ee 40%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 .mc-ic.cap-image {
   color: #a78bfa;
@@ -1066,8 +1059,8 @@ watch(
   color: var(--text-dim);
 }
 .mc-tag.tag-text {
-  color: #22d3ee;
-  border-color: color-mix(in srgb, #22d3ee 40%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 .mc-tag.tag-image {
   color: #a78bfa;
@@ -1108,7 +1101,7 @@ watch(
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  background: var(--accent-grad);
   color: #0b0b12;
   font-size: 13px;
   font-weight: 700;
@@ -1560,7 +1553,7 @@ watch(
   height: 38px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  background: var(--accent-grad);
   color: #0b0b12;
   font-size: 17px;
   font-weight: 800;

@@ -14,10 +14,12 @@ const session = useSession()
 
 const nav = [
   { to: '/chat', label: 'nav.chat' },
-  { to: '/workbench', label: 'nav.workbench' },
-  { to: '/drama', label: 'nav.drama' },
+  { to: '/models', label: 'nav.models' },
+  { to: '/rankings', label: 'nav.rankings' },
   { to: '/pricing', label: 'nav.pricing' },
   { to: '/recharge', label: 'nav.recharge' },
+  { to: '/workbench', label: 'nav.workbench' },
+  { to: '/drama', label: 'nav.drama' },
   { to: '/console', label: 'nav.console' },
   { to: '/orgs', label: 'nav.orgs' },
   { to: '/admin', label: 'nav.admin' },
@@ -58,8 +60,8 @@ async function handleSignOut() {
 <template>
   <header v-if="!hideChrome" class="topbar">
     <div class="topbar-inner">
-      <router-link to="/chat" class="brand">
-        <span class="brand-mark">▲</span>
+      <router-link to="/" class="brand">
+        <img src="/logo.svg" class="brand-logo" width="28" height="28" alt="KejiAPI" />
         <span class="brand-name">KejiAPI</span>
       </router-link>
       <nav>
@@ -125,16 +127,9 @@ async function handleSignOut() {
   gap: 8px;
   text-decoration: none;
 }
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
+.brand-logo {
+  display: block;
   border-radius: 8px;
-  background: linear-gradient(135deg, #22d3ee, #818cf8);
-  color: #0b0b12;
-  font-size: 12px;
-  font-weight: 800;
 }
 .brand-name {
   font-weight: 800;

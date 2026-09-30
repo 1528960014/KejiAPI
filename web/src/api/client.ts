@@ -550,6 +550,39 @@ export async function listPublicModels(): Promise<PublicModel[]> {
   return data.data
 }
 
+// --- public rankings ---
+
+export type RankingPeriod = 'today' | 'week' | 'month' | 'year'
+
+export interface RankingEntry {
+  model_id: string
+  provider: string
+  tokens: number
+  requests: number
+  cost_micro: number
+  change_pct: number
+}
+
+export interface RankingBucket {
+  bucket: string
+  model_id: string
+  tokens: number
+}
+
+export interface PublicRankings {
+  period: RankingPeriod
+  total_tokens: number
+  models: RankingEntry[]
+  buckets: RankingBucket[]
+}
+
+export async function publicRankings(period: RankingPeriod): Promise<PublicRankings> {
+  const { data } = await http.get<{ data: PublicRankings }>('/api/rankings', {
+    params: { period },
+  })
+  return data.data
+}
+
 // --- M4: async media tasks ---
 
 export type MediaStatus = 'queued' | 'running' | 'succeeded' | 'failed'

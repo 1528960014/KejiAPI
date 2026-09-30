@@ -1045,7 +1045,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
     <!-- ============ master key gate ============ -->
     <div v-if="!masterKey" class="gate">
       <div class="card gate-card">
-        <span class="brand-mark">▲</span>
+        <img src="/logo.svg" class="brand-logo" width="48" height="48" alt="KejiAPI" />
         <h1>{{ t('admin.gateTitle') }}</h1>
         <p class="muted">{{ t('admin.gateSub') }}</p>
         <el-input
@@ -1066,7 +1066,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
     <div v-else class="layout">
       <aside class="sidebar">
         <div class="side-brand">
-          <span class="brand-mark">▲</span>
+          <img src="/logo.svg" class="brand-logo" width="38" height="38" alt="KejiAPI" />
           <div>
             <div class="brand-name">KejiAPI</div>
             <div class="brand-sub">Admin</div>
@@ -1828,16 +1828,9 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 .hint {
   font-size: 12px;
 }
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
+.brand-logo {
+  display: block;
   border-radius: 12px;
-  background: linear-gradient(135deg, #22d3ee, #818cf8);
-  color: #0b0b12;
-  font-size: 18px;
-  font-weight: 800;
 }
 .brand-name {
   font-weight: 800;

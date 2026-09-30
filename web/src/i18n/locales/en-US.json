@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "chat": "Multi-model Chat", "workbench": "Workbench", "drama": "Drama", "pricing": "Pricing", "recharge": "Top up", "console": "API Console", "orgs": "Organizations", "admin": "Admin" },
+  "nav": { "home": "Home", "chat": "Multi-model Chat", "models": "Model Square", "rankings": "Rankings", "workbench": "Workbench", "drama": "Drama", "pricing": "Pricing", "recharge": "Top up", "console": "API Console", "orgs": "Organizations", "admin": "Admin" },
   "theme": { "toggle": "Toggle theme" },
   "orgs": {
     "title": "Organizations",
@@ -34,15 +34,77 @@
     "ledgerKind": { "credit": "Credit", "hold": "Hold", "release": "Release", "debit": "Debit" }
   },
   "home": {
-    "heroTitle": "A Unified Multi-Model AI Gateway",
-    "heroSub": "One API key for many models: chat, image, video, music and voice. Self-hosted, auditable, OpenAI-compatible.",
-    "start": "Get Started",
-    "features": [
-      { "title": "OpenAI Compatible", "desc": "Standard /v1/chat/completions with SSE streaming; your existing SDKs just work." },
-      { "title": "Channel Failover", "desc": "Route one model across multiple upstream channels by priority." },
-      { "title": "Ledger Billing", "desc": "Balance holds and settlements with auditable usage entries." },
-      { "title": "Self-Hosted", "desc": "One docker compose for dependencies, single binary for the server." }
-    ]
+    "badge": "Self-hosted · OpenAI compatible · Multi-model gateway",
+    "heroTitle1": "One gateway,",
+    "heroTitle2": "every model",
+    "heroSub": "KejiAPI connects many upstream model services behind one unified API, centralizing routing, access, usage and cost. Share model access across your team and switch providers without reconfiguring every client.",
+    "ctaStart": "Get Started",
+    "ctaPricing": "View Pricing",
+    "ctaModels": "Model Square",
+    "appsLabel": "Works with",
+    "apps": ["OpenAI SDK", "Claude Code", "ChatGPT-compatible", "Cursor", "any REST client"],
+    "stats": [
+      { "num": "100+", "label": "upstream models" },
+      { "num": "10+", "label": "providers" },
+      { "num": "99.9%", "label": "gateway uptime" },
+      { "num": "3 lines", "label": "to integrate" }
+    ],
+    "demoTitle": "API demo",
+    "demoTabs": ["Chat", "Responses"],
+    "demoStatus": "200 OK",
+    "bento": [
+      { "title": "Channel Failover", "desc": "Configure multiple upstream channels per model with priority and weight routing; automatic degradation keeps your service up." },
+      { "title": "Ledger Billing", "desc": "Token-level usage tracking, balance holds and settlements, per-request cost with fully auditable, exportable entries." },
+      { "title": "Centralized Access", "desc": "Distribute API keys to every member and org, with rate limits, concurrency caps and fine-grained authorization by channel, model and user." },
+      { "title": "Self-Hosted & Auditable", "desc": "One docker compose to start, single-binary server. Your data stays in your own infrastructure." }
+    ],
+    "ctaTitle": "Ready to unify your model access?",
+    "ctaSub": "Connect your first model in minutes, or browse the model square and live usage rankings first.",
+    "ctaBtn": "Start for free",
+    "ctaDocs": "Read the docs"
+  },
+  "models": {
+    "title": "Model Square",
+    "subtitle": "Browse every enabled model with pricing and capabilities — one unified API to call them all.",
+    "search": "Search models or providers…",
+    "count": "{n} models",
+    "sort": "Sort",
+    "sortName": "By name",
+    "sortInput": "By input price",
+    "sortOutput": "By output price",
+    "unit1m": "per 1M tokens",
+    "unit1k": "per 1K tokens",
+    "priceInput": "Input",
+    "priceOutput": "Output",
+    "priceUnit": "Unit",
+    "copy": "Copy model ID",
+    "copied": "Copied",
+    "capText": "Text",
+    "capVision": "Vision",
+    "capImage": "Image gen",
+    "capAudio": "Audio",
+    "capVideo": "Video",
+    "empty": "No enabled models yet",
+    "free": "Free"
+  },
+  "rankings": {
+    "title": "Model Rankings",
+    "subtitle": "Live usage and popularity across the network, by token consumption.",
+    "tabToday": "Today",
+    "tabWeek": "Week",
+    "tabMonth": "Month",
+    "tabYear": "Year",
+    "totalTokens": "Total tokens",
+    "hotTitle": "Hot model distribution",
+    "boardTitle": "Model popularity",
+    "tokens": "tokens",
+    "weekChange": "Change",
+    "up": "up",
+    "down": "down",
+    "flat": "flat",
+    "requests": "requests",
+    "empty": "No usage data for this period",
+    "chartEmpty": "No chart data yet"
   },
   "chat": {
     "title": "Multi-model Chat",

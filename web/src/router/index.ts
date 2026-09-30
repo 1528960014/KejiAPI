@@ -3,8 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', redirect: '/chat' },
+    { path: '/', redirect: '/home' },
+    { path: '/home', name: 'home', component: () => import('../views/HomeView.vue') },
     { path: '/chat', name: 'chat', component: () => import('../views/ChatView.vue') },
+    { path: '/models', name: 'models', component: () => import('../views/ModelSquareView.vue') },
+    { path: '/rankings', name: 'rankings', component: () => import('../views/RankingsView.vue') },
     { path: '/workbench', name: 'workbench', component: () => import('../views/WorkbenchView.vue') },
     { path: '/drama', name: 'drama', component: () => import('../views/DramaView.vue') },
     { path: '/pricing', name: 'pricing', component: () => import('../views/PricingView.vue') },

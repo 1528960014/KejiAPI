@@ -145,6 +145,7 @@ func (s *Server) Engine() *gin.Engine {
 	api := r.Group("/api")
 	{
 		api.GET("/models", s.handlePublicModels)
+		api.GET("/rankings", s.handlePublicRankings)
 	}
 
 	// P2-1b: composed drama videos. Public by design: the drama UUID (32 hex

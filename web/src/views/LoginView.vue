@@ -70,7 +70,7 @@ function switchMode() {
     <div class="auth-shell">
       <div class="brand-panel">
         <router-link to="/" class="brand">
-          <span class="brand-mark">▲</span>
+          <img src="/logo.svg" class="brand-logo" width="36" height="36" alt="KejiAPI" />
           <span class="brand-name">KejiAPI</span>
         </router-link>
         <h1 class="hero">{{ t('login.heroTitle') }}</h1>
@@ -176,7 +176,7 @@ function switchMode() {
 .blob-a {
   width: 480px;
   height: 480px;
-  background: #22d3ee;
+  background: #8b7cf6;
   top: -120px;
   left: -120px;
   animation: float 14s ease-in-out infinite alternate;
@@ -184,7 +184,7 @@ function switchMode() {
 .blob-b {
   width: 520px;
   height: 520px;
-  background: #818cf8;
+  background: #f472b6;
   bottom: -160px;
   right: -120px;
   animation: float 18s ease-in-out infinite alternate-reverse;
@@ -231,16 +231,9 @@ function switchMode() {
   gap: 10px;
   text-decoration: none;
 }
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
+.brand-logo {
+  display: block;
   border-radius: 10px;
-  background: linear-gradient(135deg, #22d3ee, #818cf8);
-  color: #0b0b12;
-  font-size: 16px;
-  font-weight: 800;
 }
 .brand-name {
   font-size: 20px;
@@ -349,8 +342,8 @@ function switchMode() {
   padding: 12px 0;
   font-size: 15px;
   font-weight: 700;
-  color: #0b0b12;
-  background: linear-gradient(135deg, #22d3ee, #818cf8);
+  color: #fff;
+  background: var(--accent-grad);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
