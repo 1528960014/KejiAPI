@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -27,6 +28,8 @@ type Server struct {
 	tokens   *auth.TokenService
 	payMu    sync.RWMutex
 	payState payConfigState         // P3-2: hot-swappable payment config
+	ipMu     sync.RWMutex
+	ipRules  []store.IPRule         // gateway IP blacklist/whitelist cache
 	limiter  *rateLimiter           // P4-3: per-key RPM/TPM (nil when disabled)
 	conc     *gateway.ConcurrencyLimiter // P7-3: per-key / per-channel concurrency (nil when disabled)
 	health   *gateway.ChannelHealth // P5-1/P6-1: channel failure cooldown,
@@ -55,6 +58,11 @@ func New(cfg *config.Config, st *store.Store, p *gateway.Provider, health *gatew
 	if cfg.ConcPerKey > 0 || cfg.ConcPerChannel > 0 {
 		s.conc = gateway.NewConcurrencyLimiter(cfg.ConcPerKey, cfg.ConcPerChannel)
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if rules, err := st.ListIPRules(ctx); err == nil {
+		s.ipRules = rules
+	}
 	return s
 }
 
@@ -65,7 +73,7 @@ func (s *Server) Engine() *gin.Engine {
 	r.GET("/healthz", s.handleHealth)
 
 	v1 := r.Group("/v1")
-	v1.Use(s.authAPIKey())
+	v1.Use(s.ipGate(), s.authAPIKey())
 	{
 		v1.GET("/models", s.handleModels)
 		v1.POST("/chat/completions", s.handleChatCompletions)
@@ -88,6 +96,13 @@ func (s *Server) Engine() *gin.Engine {
 	admin.Use(s.authMasterKey())
 	{
 		admin.GET("/ops", s.handleOps)
+
+		// IP access control (blacklist / whitelist).
+		admin.GET("/ip-rules", s.handleListIPRules)
+		admin.POST("/ip-rules", s.handleCreateIPRule)
+		admin.PATCH("/ip-rules/:id", s.handleUpdateIPRule)
+		admin.DELETE("/ip-rules/:id", s.handleDeleteIPRule)
+
 		admin.GET("/models", s.handleListModels)
 		admin.POST("/models", s.handleCreateModel)
 		admin.PATCH("/models/:id", s.handleUpdateModel)

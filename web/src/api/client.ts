@@ -1423,3 +1423,46 @@ export async function adminOps(): Promise<OpsInfo> {
   })
   return data
 }
+
+export interface IPRule {
+  id: number
+  kind: 'blacklist' | 'whitelist'
+  cidr: string
+  note: string
+  enabled: boolean
+  created_at: string
+}
+
+export async function adminListIPRules(): Promise<IPRule[]> {
+  const { data } = await http.get<{ data: IPRule[] }>('/admin/ip-rules', {
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data.data
+}
+
+export async function adminCreateIPRule(rule: {
+  kind: string
+  cidr: string
+  note: string
+}): Promise<IPRule> {
+  const { data } = await http.post<IPRule>('/admin/ip-rules', rule, {
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data
+}
+
+export async function adminUpdateIPRule(
+  id: number,
+  patch: { note?: string; enabled?: boolean },
+): Promise<IPRule> {
+  const { data } = await http.patch<IPRule>(`/admin/ip-rules/${id}`, patch, {
+    headers: adminHeaders() as Record<string, string>,
+  })
+  return data
+}
+
+export async function adminDeleteIPRule(id: number): Promise<void> {
+  await http.delete(`/admin/ip-rules/${id}`, {
+    headers: adminHeaders() as Record<string, string>,
+  })
+}

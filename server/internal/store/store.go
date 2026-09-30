@@ -378,6 +378,18 @@ CREATE TABLE IF NOT EXISTS user_subscriptions (
     reset_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- IP rules: gateway access control for /v1. kind='blacklist' blocks the
+-- CIDR; if any enabled whitelist rule exists, only IPs matching a whitelist
+-- rule are allowed (whitelist-only mode).
+CREATE TABLE IF NOT EXISTS ip_rules (
+    id BIGSERIAL PRIMARY KEY,
+    kind TEXT NOT NULL DEFAULT 'blacklist', -- blacklist | whitelist
+    cidr TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 `
 
 func (s *Store) migrate(ctx context.Context) error {

@@ -47,6 +47,10 @@ import {
   formatUsd,
   getMasterKey,
   getPayConfig,
+  adminCreateIPRule,
+  adminDeleteIPRule,
+  adminListIPRules,
+  adminUpdateIPRule,
   listAdminModels,
   listAgents,
   listAssistants,
@@ -80,6 +84,7 @@ import {
   type Announcement,
   type ChannelTestResult,
   type ExternalPage,
+  type IPRule,
   type LedgerEntry,
   type OpsInfo,
   type PayConfigView,
@@ -99,6 +104,7 @@ const { t } = useI18n()
 type TabName =
   | 'overview'
   | 'ops'
+  | 'ip'
   | 'external'
   | 'models'
   | 'channels'
@@ -124,6 +130,7 @@ const active = ref<TabName>('overview')
 const loaded = reactive<Record<TabName, boolean>>({
   overview: false,
   ops: false,
+  ip: false,
   external: false,
   models: false,
   channels: false,
@@ -157,6 +164,7 @@ const NAV: { section: string; items: { key: TabName; icon: string; label: string
     items: [
       { key: 'models', icon: '🧠', label: 'admin.tabModels' },
       { key: 'channels', icon: '🔌', label: 'admin.tabChannels' },
+      { key: 'ip', icon: '🌐', label: 'admin.tabIP' },
     ],
   },
   {
@@ -191,6 +199,7 @@ const NAV: { section: string; items: { key: TabName; icon: string; label: string
 const PAGE: Record<TabName, { title: string; desc: string }> = {
   overview: { title: 'admin.pageOverview', desc: 'admin.pageOverviewDesc' },
   ops: { title: 'admin.pageOps', desc: 'admin.pageOpsDesc' },
+  ip: { title: 'admin.pageIP', desc: 'admin.pageIPDesc' },
   external: { title: 'admin.pageExternal', desc: 'admin.pageExternalDesc' },
   models: { title: 'admin.pageModels', desc: 'admin.pageModelsDesc' },
   channels: { title: 'admin.pageChannels', desc: 'admin.pageChannelsDesc' },
@@ -211,6 +220,7 @@ const PAGE: Record<TabName, { title: string; desc: string }> = {
 const ADD_BTN: Record<TabName, string> = {
   overview: '',
   ops: '',
+  ip: '',
   external: 'admin.extAdd',
   models: 'admin.modelAdd',
   channels: 'admin.channelAdd',
@@ -306,6 +316,7 @@ async function loadTab(name: TabName) {
       ])
       if (active.value === 'overview') void nextTick(renderChart)
     } else if (name === 'ops') await loadOps()
+    else if (name === 'ip') await loadIPRules()
     else if (name === 'models') await loadModels()
     else if (name === 'channels') await loadChannels()
     else if (name === 'users') await loadUsers()
@@ -603,6 +614,49 @@ async function toggleAnn(a: Announcement) {
   try {
     await adminUpdateAnnouncement(a.id, { active: !a.active })
     await loadAnns()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+// ---------- ip rules ----------
+const ipRules = ref<IPRule[]>([])
+const ipForm = reactive({ kind: 'blacklist', cidr: '', note: '' })
+
+async function loadIPRules() {
+  ipRules.value = await adminListIPRules()
+}
+
+async function saveIPRule() {
+  if (!ipForm.cidr.trim()) {
+    ElMessage.warning(t('admin.ipCidrRequired'))
+    return
+  }
+  try {
+    await adminCreateIPRule({ kind: ipForm.kind, cidr: ipForm.cidr.trim(), note: ipForm.note })
+    ElMessage.success(t('admin.saved'))
+    Object.assign(ipForm, { kind: 'blacklist', cidr: '', note: '' })
+    await loadIPRules()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function toggleIPRule(r: IPRule) {
+  try {
+    await adminUpdateIPRule(r.id, { enabled: !r.enabled })
+    await loadIPRules()
+  } catch (err) {
+    ElMessage.error(errMsg(err))
+  }
+}
+
+async function deleteIPRule(r: IPRule) {
+  if (!(await confirmDelete(t('admin.ipDeleteConfirm', { cidr: r.cidr })))) return
+  try {
+    await adminDeleteIPRule(r.id)
+    ElMessage.success(t('admin.saved'))
+    await loadIPRules()
   } catch (err) {
     ElMessage.error(errMsg(err))
   }
@@ -1583,6 +1637,60 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
             </div>
           </div>
           <p v-else class="muted">{{ t('admin.empty') }}</p>
+        </section>
+
+        <!-- ===== ip ===== -->
+        <section v-show="active === 'ip'">
+          <div class="card">
+            <h3>{{ t('admin.ipAdd') }}</h3>
+            <p class="muted" style="margin-top: 0">{{ t('admin.ipHint') }}</p>
+            <div class="grid">
+              <label>{{ t('admin.ipKind') }}
+                <el-select v-model="ipForm.kind" style="width: 100%">
+                  <el-option value="blacklist" :label="t('admin.ipBlacklist')" />
+                  <el-option value="whitelist" :label="t('admin.ipWhitelist')" />
+                </el-select>
+              </label>
+              <label>{{ t('admin.ipCidr') }}
+                <el-input v-model="ipForm.cidr" placeholder="203.0.113.0/24" />
+              </label>
+              <label>{{ t('admin.description') }}
+                <el-input v-model="ipForm.note" />
+              </label>
+            </div>
+            <div class="pay-save">
+              <el-button type="primary" @click="saveIPRule">{{ t('admin.save') }}</el-button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>{{ t('admin.pageIP') }}</h3>
+            <el-table v-if="ipRules.length" :data="ipRules" size="small">
+              <el-table-column :label="t('admin.ipKind')" width="110">
+                <template #default="{ row }">
+                  <el-tag size="small" :type="row.kind === 'blacklist' ? 'danger' : 'success'">
+                    {{ t(row.kind === 'blacklist' ? 'admin.ipBlacklist' : 'admin.ipWhitelist') }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t('admin.ipCidr')" min-width="170">
+                <template #default="{ row }"><code class="cidr">{{ row.cidr }}</code></template>
+              </el-table-column>
+              <el-table-column prop="note" :label="t('admin.description')" min-width="140" show-overflow-tooltip />
+              <el-table-column :label="t('admin.enabled')" width="80">
+                <template #default="{ row }">
+                  <el-switch :model-value="row.enabled" size="small" @change="toggleIPRule(row)" />
+                </template>
+              </el-table-column>
+              <el-table-column prop="created_at" :label="t('admin.time')" width="170" />
+              <el-table-column :label="t('admin.actions')" width="80">
+                <template #default="{ row }">
+                  <el-button size="small" type="danger" plain @click="deleteIPRule(row)">{{ t('admin.delete') }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <p v-else class="muted">{{ t('admin.empty') }}</p>
+          </div>
         </section>
 
         <!-- ===== overview ===== -->
@@ -2596,6 +2704,13 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
   max-width: none;
   min-height: 100vh;
   padding: 20px;
+}
+.cidr {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  background: var(--bg-hover);
+  border-radius: 6px;
+  padding: 2px 6px;
 }
 .gate {
   max-width: 460px;
