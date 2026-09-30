@@ -10,14 +10,14 @@ import (
 
 // Channel is one upstream endpoint that can serve a model.
 type Channel struct {
-	ID       int64
-	Name     string
-	Provider string
-	BaseURL  string
-	APIKey   string
-	ModelID  string
-	Priority int
-	Enabled  bool
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Provider string `json:"provider"`
+	BaseURL  string `json:"base_url"`
+	APIKey   string `json:"api_key"`
+	ModelID  string `json:"model_id"`
+	Priority int    `json:"priority"`
+	Enabled  bool   `json:"enabled"`
 }
 
 // PickChannel returns the highest-priority enabled channel for a model.

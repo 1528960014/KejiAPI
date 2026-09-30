@@ -18,7 +18,7 @@ import (
 // by the on-demand "test" endpoint, the probe-all endpoint and the
 // background probe loop.
 func (s *Server) probeChannelOnce(ctx context.Context, ch *store.Channel) store.ChannelHealthRow {
-	h := store.ChannelHealthRow{ChannelID: ch.ID}
+	h := store.ChannelHealthRow{ChannelID: ch.ID, CheckedAt: time.Now()}
 	m, err := s.store.GetModel(ctx, ch.ModelID)
 	if err != nil {
 		h.Error = "model " + ch.ModelID + " not configured"
