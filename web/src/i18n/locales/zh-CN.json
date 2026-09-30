@@ -457,6 +457,7 @@
     "gateTitle": "管理员验证",
     "gateSub": "粘贴服务端的 MASTER_KEY 以解锁管理后台。密钥仅保存在当前浏览器。",
     "backToApp": "返回控制台",
+    "backToSite": "返回站点",
     "clearKey": "清除密钥",
     "search": "搜索…",
     "refresh": "刷新",

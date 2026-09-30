@@ -1463,13 +1463,11 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
     <!-- ============ console layout ============ -->
     <div v-else class="layout">
       <aside class="sidebar">
-        <div class="side-brand">
-          <img src="/logo.svg" class="brand-logo" width="38" height="38" alt="KejiAPI" />
-          <div>
-            <div class="brand-name">KejiAPI</div>
-            <div class="brand-sub">Admin</div>
-          </div>
-        </div>
+        <router-link to="/" class="side-brand" :title="t('admin.backToSite')">
+          <img src="/logo.svg" class="brand-logo" width="46" height="46" alt="KejiAPI" />
+          <div class="brand-name">KejiAPI</div>
+          <div class="brand-sub">Admin</div>
+        </router-link>
         <nav class="side-nav">
           <div v-for="group in NAV" :key="group.section" class="side-group">
             <div class="side-section">{{ t(group.section) }}</div>
@@ -1487,6 +1485,7 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
           </div>
         </nav>
         <div class="side-foot">
+          <router-link to="/" class="side-back">{{ t('admin.backToSite') }} ←</router-link>
           <button type="button" class="side-clear" @click="clearKey">{{ t('admin.clearKey') }}</button>
         </div>
       </aside>
@@ -2513,6 +2512,11 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 </template>
 
 <style scoped>
+.page.admin {
+  max-width: none;
+  min-height: 100vh;
+  padding: 20px;
+}
 .gate {
   max-width: 460px;
   margin: 60px auto;
@@ -2538,21 +2542,24 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 }
 .brand-logo {
   display: block;
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(139, 124, 246, 0.28);
 }
 .brand-name {
-  font-weight: 800;
-  font-size: 16px;
+  font-weight: 750;
+  font-size: 15px;
+  letter-spacing: 0.3px;
   background: linear-gradient(90deg, var(--text), var(--accent));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .brand-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dim);
-  letter-spacing: 1.5px;
+  letter-spacing: 3px;
   text-transform: uppercase;
+  margin-top: -4px;
 }
 .layout {
   display: flex;
@@ -2560,37 +2567,43 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
   align-items: flex-start;
 }
 .sidebar {
-  width: 230px;
+  width: 240px;
   flex-shrink: 0;
   position: sticky;
-  top: 76px;
+  top: 20px;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px;
+  border-radius: 18px;
+  padding: 18px 12px 14px;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 110px);
+  min-height: calc(100vh - 40px);
+  box-shadow: var(--shadow);
 }
 .side-brand {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 4px 8px 14px;
+  gap: 7px;
+  padding: 4px 8px 16px;
+  text-decoration: none;
 }
 .side-nav {
   flex: 1;
   overflow-y: auto;
+  padding-right: 2px;
 }
 .side-group {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .side-section {
-  font-size: 11px;
-  letter-spacing: 1px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-dim);
-  padding: 8px 10px 4px;
+  padding: 12px 12px 6px;
+  opacity: 0.75;
 }
 .side-item {
   display: flex;
@@ -2602,28 +2615,54 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
   color: var(--text-dim);
   font-size: 13.5px;
   font-weight: 500;
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: 6px 8px;
+  border-radius: 12px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.13s ease;
+  transition: all 0.15s ease;
 }
 .side-item:hover {
   background: var(--bg-hover);
   color: var(--text);
 }
 .side-item.active {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--text);
 }
 .side-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
   font-size: 15px;
-  width: 20px;
-  text-align: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  transition: background 0.15s ease;
+}
+.side-item:hover .side-icon {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.side-item.active .side-icon {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .side-foot {
   border-top: 1px solid var(--border);
   padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.side-back {
+  display: block;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 6px 0;
+}
+.side-back:hover {
+  color: var(--accent);
 }
 .side-clear {
   width: 100%;
@@ -2653,7 +2692,9 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 }
 .page-head h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: 0.2px;
 }
 .page-desc {
   margin: 4px 0 0;
@@ -2680,14 +2721,23 @@ const payStatusText = (ch: { ok: boolean; error?: string }) =>
 .stat {
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 16px 18px;
   box-shadow: var(--shadow);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.stat:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
 }
 .stat-num {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--accent);
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: 0.2px;
+  background: linear-gradient(90deg, var(--text), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .stat-label {
   margin-top: 6px;

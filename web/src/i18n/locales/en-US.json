@@ -457,6 +457,7 @@
     "gateTitle": "Administrator Access",
     "gateSub": "Paste the server MASTER_KEY to unlock the admin console. The key is stored only in this browser.",
     "backToApp": "Back to console",
+    "backToSite": "Back to site",
     "clearKey": "Clear Key",
     "search": "Search…",
     "refresh": "Refresh",

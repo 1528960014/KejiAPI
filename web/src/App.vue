@@ -68,11 +68,12 @@ const nav = [
   { to: '/drama', label: 'nav.drama' },
   { to: '/console', label: 'nav.console' },
   { to: '/orgs', label: 'nav.orgs' },
-  { to: '/admin', label: 'nav.admin' },
 ]
 
 // the chat page (and login) render their own full-bleed layout
-const hideChrome = computed(() => route.path === '/chat' || route.path === '/login')
+const hideChrome = computed(() =>
+  route.path === '/chat' || route.path === '/login' || route.path === '/admin',
+)
 
 const theme = ref<Theme>(getTheme())
 
