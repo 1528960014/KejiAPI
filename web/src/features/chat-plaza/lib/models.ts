@@ -19,14 +19,18 @@ For commercial licensing, please contact support@kejiapi.com
 import type { PricingModel } from '@/features/pricing/types'
 
 import rawLk888Models from './lk888-models.json'
+import rawSubKejikeModels from './sub_kejike_processed_models.json'
 import type { PlazaBadgeTone, PlazaCategory, PlazaModel } from '../types'
 
-interface Lk888ModelRaw {
-  model_id: number
+interface ModelMetaRaw {
+  model_id?: number
   model_name: string
   display_name?: string
   intro?: string
   vendor?: string
+  platform?: string
+  group_name?: string
+  group_multiplier?: number
   model_type?: 'chat' | 'image' | 'video' | 'audio'
   billing_mode?: string
   price_min?: number
@@ -40,49 +44,142 @@ interface Lk888ModelRaw {
   protocols?: string[]
 }
 
-export const LK888_OFFICIAL_MODELS: Lk888ModelRaw[] = rawLk888Models as Lk888ModelRaw[]
+export const SUB_KEJIKE_MODELS: ModelMetaRaw[] = rawSubKejikeModels as ModelMetaRaw[]
+export const LK888_OFFICIAL_MODELS: ModelMetaRaw[] = rawLk888Models as ModelMetaRaw[]
 
-export const LK888_MODELS_MAP = new Map<string, Lk888ModelRaw>(
-  LK888_OFFICIAL_MODELS.map((m) => [m.model_name.toLowerCase(), m])
-)
+// Combined list: sub.kejike.top groups first, then general official catalog
+export const ALL_OFFICIAL_MODELS: ModelMetaRaw[] = [
+  ...SUB_KEJIKE_MODELS,
+  ...LK888_OFFICIAL_MODELS,
+]
+
+export const ALL_MODELS_MAP = new Map<string, ModelMetaRaw>()
+for (const m of ALL_OFFICIAL_MODELS) {
+  const k = m.model_name.toLowerCase()
+  if (!ALL_MODELS_MAP.has(k)) {
+    ALL_MODELS_MAP.set(k, m)
+  }
+}
 
 /**
- * 官方 Logo 智能映射字典
+ * 官方 Logo 智能映射字典 (100% 精确官方 SVG / 高清图标)
  */
 export function getOfficialLogo(name: string, vendor?: string, fallbackIcon?: string): string {
-  if (fallbackIcon && fallbackIcon.startsWith('http')) return fallbackIcon
-
   const lower = name.toLowerCase()
   const vLower = (vendor || '').toLowerCase()
 
-  if (lower.includes('deepseek') || vLower.includes('deepseek')) return 'https://cos.lingkeai.vip/deepseek.svg'
-  if (lower.startsWith('gem-') || lower.includes('gemini')) return 'https://cos.lingkeai.vip/gem.svg'
-  if (lower.startsWith('claude') || lower.includes('anthropic') || vLower.includes('anthropic')) return 'https://cos.lingkeai.vip/claude.svg'
-  if (lower.startsWith('gpt-') || lower.startsWith('o1') || lower.startsWith('o3') || lower.startsWith('op-') || lower.startsWith('tt-')) return 'https://cos.lingkeai.vip/op.svg'
-  if (lower.startsWith('qwen') || vLower.includes('阿里') || vLower.includes('qwen')) return 'https://cos.lingkeai.vip/qwen.svg'
-  if (lower.startsWith('kling') || vLower.includes('快手') || vLower.includes('kling')) return 'https://cos.lingkeai.vip/kling.svg'
-  if (lower.startsWith('doubao') || lower.startsWith('seedance') || lower.startsWith('seedream') || vLower.includes('字节')) return 'https://cos.lingkeai.vip/doubao.svg'
-  if (lower.startsWith('glm') || vLower.includes('智谱') || vLower.includes('zhipu')) return 'https://cos.lingkeai.vip/glm.svg'
-  if (lower.startsWith('kimi') || lower.includes('moonshot') || vLower.includes('月之暗面')) return 'https://cos.lingkeai.vip/kimi.svg'
-  if (lower.startsWith('minimax') || lower.startsWith('hailuo') || vLower.includes('minimax') || vLower.includes('海螺')) return 'https://cos.lingkeai.vip/minimax.svg'
-  if (lower.startsWith('step') || vLower.includes('阶跃')) return 'https://cos.lingkeai.vip/step.svg'
-  if (lower.startsWith('vidu') || vLower.includes('vidu')) return 'https://cos.lingkeai.vip/vidu-icon.svg'
-  if (lower.startsWith('pixverse') || vLower.includes('pixverse')) return 'https://cos.lingkeai.vip/PixVerse.svg'
-  if (lower.startsWith('suno') || lower.includes('music')) return 'https://cos.lingkeai.vip/suno.svg'
-  if (lower.startsWith('mj_') || lower.includes('midjourney')) return 'https://cos.lingkeai.vip/Mj.svg'
-  if (lower.startsWith('mimo')) return 'https://cos.lingkeai.vip/mimo_bai.svg'
-  if (lower.startsWith('banana')) return 'https://cos.lingkeai.vip/banana.svg'
-  if (lower.startsWith('happyhorse')) return 'https://cos.lingkeai.vip/happyhorse.svg'
+  // 1. Claude 系列 (Anthropic 官方图标)
+  if (lower.includes('claude') || lower.includes('fable') || vLower.includes('anthropic')) {
+    return 'https://cos.lingkeai.vip/claude.svg'
+  }
 
-  return fallbackIcon || 'https://cos.lingkeai.vip/op.svg'
+  // 2. OpenAI / GPT / Codex 系列 (OpenAI 官方图标)
+  if (
+    lower.startsWith('gpt') ||
+    lower.startsWith('o1') ||
+    lower.startsWith('o3') ||
+    lower.startsWith('op-') ||
+    lower.startsWith('tt-') ||
+    lower.includes('codex') ||
+    lower.includes('chatgpt') ||
+    vLower.includes('openai')
+  ) {
+    return 'https://cos.lingkeai.vip/op.svg'
+  }
+
+  // 3. Google Gemini 系列 (Google 官方极光四角星 SVG)
+  if (lower.startsWith('gem-') || lower.includes('gemini') || vLower.includes('google')) {
+    return 'https://cos.lingkeai.vip/gem.svg'
+  }
+
+  // 4. DeepSeek 系列 (DeepSeek 官方鲸鱼蓝标)
+  if (lower.includes('deepseek') || vLower.includes('deepseek')) {
+    return 'https://cos.lingkeai.vip/deepseek.svg'
+  }
+
+  // 5. Kimi 系列 (月之暗面官方标志)
+  if (lower.includes('kimi') || lower.includes('moonshot') || vLower.includes('月之暗面')) {
+    return 'https://cos.lingkeai.vip/kimi.svg'
+  }
+
+  // 6. 智谱 GLM 系列 (智谱官方标志)
+  if (lower.includes('glm') || lower.includes('zhipu') || vLower.includes('智谱')) {
+    return 'https://cos.lingkeai.vip/glm.svg'
+  }
+
+  // 7. 通义千问 Qwen 系列 (通义官方彩色图标)
+  if (lower.includes('qwen') || vLower.includes('阿里') || vLower.includes('通义')) {
+    return 'https://cos.lingkeai.vip/qwen.svg'
+  }
+
+  // 8. 可灵 Kling 系列 (快手官方图标)
+  if (lower.includes('kling') || vLower.includes('快手')) {
+    return 'https://cos.lingkeai.vip/kling.svg'
+  }
+
+  // 9. 豆包 / 即梦 / Seedance 系列 (字节跳动官方图标)
+  if (
+    lower.includes('doubao') ||
+    lower.includes('seedance') ||
+    lower.includes('seedream') ||
+    lower.includes('jimeng') ||
+    vLower.includes('字节')
+  ) {
+    return 'https://cos.lingkeai.vip/doubao.svg'
+  }
+
+  // 10. MiniMax / 海螺 AI (MiniMax 官方图标)
+  if (lower.includes('minimax') || lower.includes('hailuo') || vLower.includes('minimax') || vLower.includes('海螺')) {
+    return 'https://cos.lingkeai.vip/minimax.svg'
+  }
+
+  // 11. 阶跃星辰 StepFun (Step 官方图标)
+  if (lower.includes('step') || vLower.includes('阶跃')) {
+    return 'https://cos.lingkeai.vip/step.svg'
+  }
+
+  // 12. Vidu (Vidu 官方图标)
+  if (lower.includes('vidu') || vLower.includes('vidu')) {
+    return 'https://cos.lingkeai.vip/vidu-icon.svg'
+  }
+
+  // 13. PixVerse (PixVerse 官方图标)
+  if (lower.includes('pixverse') || vLower.includes('pixverse')) {
+    return 'https://cos.lingkeai.vip/PixVerse.svg'
+  }
+
+  // 14. MidJourney
+  if (lower.includes('mj_') || lower.includes('midjourney')) {
+    return 'https://cos.lingkeai.vip/Mj.svg'
+  }
+
+  // 15. Suno (Suno 音乐官方图标)
+  if (lower.includes('suno') || lower.includes('music')) {
+    return 'https://cos.lingkeai.vip/suno.svg'
+  }
+
+  // 16. Banana / Nano-Banana
+  if (lower.includes('banana')) {
+    return 'https://cos.lingkeai.vip/banana.svg'
+  }
+
+  // 17. Xiaomi Mimo
+  if (lower.includes('mimo')) {
+    return 'https://cos.lingkeai.vip/mimo_bai.svg'
+  }
+
+  // 18. Grok / xAI
+  if (lower.includes('grok') || vLower.includes('xai')) {
+    return 'https://cos.lingkeai.vip/op.svg'
+  }
+
+  if (fallbackIcon && fallbackIcon.startsWith('http')) return fallbackIcon
+  return 'https://cos.lingkeai.vip/op.svg'
 }
 
 /**
  * Heuristic model classification by name, in priority order:
  * video -> image -> audio -> chat.
- * A pattern only matches at a token boundary (start or right after a
- * non-alphanumeric character) so e.g. "wanx1.3" is not treated as the
- * "wan" video family.
  */
 const CATEGORY_PATTERNS: Array<{
   category: Exclude<PlazaCategory, 'all'>
@@ -106,6 +203,7 @@ const CATEGORY_PATTERNS: Array<{
     category: 'image',
     patterns: [
       'gpt-image',
+      'banana',
       'flux',
       'dall',
       'seedream',
@@ -138,8 +236,7 @@ export function classifyPlazaModel(name: string): PlazaCategory {
 
 /**
  * Badge percentage: model ratio expressed as a percentage of the base
- * rate (ratio 1.0 = 100%). When no pricing data is available the badge
- * is left undefined and the UI renders a neutral "100%".
+ * rate (ratio 1.0 = 100%).
  */
 export function computeBadgePercent(
   modelRatio?: number
@@ -164,18 +261,25 @@ export function buildPlazaModel(
   name: string,
   pricing?: PricingModel
 ): PlazaModel {
-  const official = LK888_MODELS_MAP.get(name.toLowerCase())
-  const badgePercent = computeBadgePercent(pricing?.model_ratio)
+  const official = ALL_MODELS_MAP.get(name.toLowerCase())
+  const effectiveMultiplier = official?.group_multiplier ?? pricing?.model_ratio ?? 1.0
+  const badgePercent = computeBadgePercent(effectiveMultiplier)
   const tone = badgePercent != null ? badgeToneFor(badgePercent) : 'cyan'
 
   const category = (official?.model_type as PlazaCategory) || classifyPlazaModel(name)
   const officialLogo = getOfficialLogo(name, official?.vendor, official?.icon || pricing?.icon)
 
+  const tags = official?.tags || (
+    effectiveMultiplier < 0.5
+      ? ['特惠福利', `倍率 ${effectiveMultiplier}x`, '大厂直供']
+      : ['官方直供', `倍率 ${effectiveMultiplier}x`, '高可用']
+  )
+
   return {
     name,
     displayName: official?.display_name || name,
     category,
-    description: official?.intro || pricing?.description,
+    description: official?.intro || pricing?.description || `${official?.vendor || '官方直供'} 核心大模型，支持高速多轮对话与流式调用。`,
     icon: officialLogo,
     vendorName: official?.vendor || pricing?.vendor_name || '大厂直供',
     modelType: (official?.model_type as PlazaModel['modelType']) || 'chat',
@@ -183,12 +287,12 @@ export function buildPlazaModel(
     priceMin: official?.price_min,
     outputPriceMin: official?.output_price_min,
     priceMax: official?.price_max,
-    tags: official?.tags || (category === 'chat' ? ['多轮对话', '极速'] : ['创意生成']),
+    tags,
     successRate: official?.composite_success_rate ?? 100,
     fastestSeconds: official?.fastest_seconds,
     onlineLines: official?.online_lines ?? 5,
     protocols: official?.protocols,
-    modelRatio: pricing?.model_ratio,
+    modelRatio: effectiveMultiplier,
     completionRatio: pricing?.completion_ratio,
     modelPrice: pricing?.model_price,
     quotaType: pricing?.quota_type,

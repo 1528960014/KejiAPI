@@ -106,8 +106,40 @@ export function RechargeDialog({ open, onOpenChange }: RechargeDialogProps) {
     }
     setLoading(true)
     setPayUrl(null)
+
+    const paymentType = payMethod === 'alipay' ? 'alipay' : 'wxpay'
+
+    // 1. 优先调用 sub.kejike.top 官方支付网关
     try {
-      const paymentType = payMethod === 'alipay' ? 'alipay' : 'wxpay'
+      const subRes = await fetch('https://sub.kejike.top/api/v1/payment/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJlbWFpbCI6IjE1Mjg5NjAwMTRAcXEuY29tIiwicm9sZSI6InVzZXIiLCJ0b2tlbl92ZXJzaW9uIjo3NTI4NDM3MTI1NDkxNzg0Mzk3LCJzaWQiOiJkMDRkN2RmYjVkNTI5YmViYzQ2NTFmZjljZWZjMjc4YyIsImJuZCI6ImI4MjFiODA1YTg3ZTE5ZDMyMmY2MGYwNDllZjJiZmMzIiwiZXhwIjoxNzkwOTc3MTQwLCJuYmYiOjE3OTA4OTA3NDAsImlhdCI6MTc5MDg5MDc0MH0.mngp99fWAlwE0G_NddBfns-P9OOMApfRf5ECtJPiEFo',
+        },
+        body: JSON.stringify({
+          amount: currentAmount,
+          payment_type: paymentType,
+          order_type: 'balance',
+          is_mobile: false,
+          return_url: 'https://sub.kejike.top/payment/result',
+        }),
+      })
+
+      const subData = await subRes.json()
+      if (subData?.code === 0 && subData?.data?.pay_url) {
+        window.open(subData.data.pay_url, '_blank')
+        toast.success(t('Redirecting to payment gateway...'))
+        onOpenChange(false)
+        return
+      }
+    } catch {
+      // 容错降级至本地 API
+    }
+
+    // 2. 本地支付网关保底
+    try {
       const res = await api.post<{
         success: boolean
         message?: string
