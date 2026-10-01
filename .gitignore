@@ -15,6 +15,7 @@ web/dist
 web/node_modules
 .env
 /kejiapi
+kejiapi-linux*
 /__debug_bin*
 .DS_Store
 tiktoken_cache
