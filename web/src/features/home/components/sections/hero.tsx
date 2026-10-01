@@ -68,7 +68,7 @@ function useTypewriter(words: string[]) {
  */
 export function Hero(props: HeroProps) {
   const { t } = useTranslation()
-  const words = [t('智'), t('创造'), t('想象'), t('进化')]
+  const words = [t('智'), t('创造'), t('想象'), t('进化'), t('释放灵感')]
   const typed = useTypewriter(words)
 
   return (

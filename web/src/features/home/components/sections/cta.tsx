@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@kejiapi.com
 */
 import { Link } from '@tanstack/react-router'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Headphones } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { AnimateInView } from '@/components/animate-in-view'
@@ -31,54 +31,63 @@ interface CTAProps {
 export function CTA(props: CTAProps) {
   const { t } = useTranslation()
 
-  if (props.isAuthenticated) {
-    return null
-  }
-
   return (
-    <section className='relative z-10 overflow-hidden px-6 py-24 md:py-32'>
-      {/* Gradient mesh background */}
+    <section className='relative z-10 overflow-hidden bg-[#04070c] px-6 py-24 md:py-32'>
       <div
         aria-hidden
-        className='absolute inset-0 -z-10 opacity-20 dark:opacity-[0.08]'
+        className='pointer-events-none absolute inset-0'
         style={{
           background: [
-            'radial-gradient(ellipse 50% 50% at 30% 50%, oklch(0.7 0.15 250 / 70%) 0%, transparent 70%)',
-            'radial-gradient(ellipse 40% 40% at 70% 40%, oklch(0.65 0.12 200 / 50%) 0%, transparent 70%)',
+            'radial-gradient(ellipse 60% 50% at 50% 100%, oklch(0.35 0.12 190 / 30%) 0%, transparent 70%)',
+            'radial-gradient(ellipse 40% 40% at 20% 20%, oklch(0.3 0.1 220 / 18%) 0%, transparent 70%)',
           ].join(', '),
+        }}
+      />
+      <div
+        aria-hidden
+        className='pointer-events-none absolute inset-0 opacity-30'
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px)',
+          backgroundSize: '44px 44px',
         }}
       />
 
       <AnimateInView
-        className='mx-auto max-w-2xl text-center'
+        className='relative mx-auto max-w-2xl text-center'
         animation='scale-in'
       >
-        <h2 className='text-2xl leading-tight font-bold tracking-tight md:text-4xl'>
-          {t('Ready to simplify')}
+        <h2 className='text-3xl leading-tight font-black tracking-tight text-white md:text-5xl'>
+          {t('Start now')}
           <br />
-          <span className='bg-gradient-to-r from-blue-400 via-violet-400 to-purple-500 bg-clip-text text-transparent'>
-            {t('your AI integration?')}
+          <span className='bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent'>
+            {t('your AI creation journey')}
           </span>
         </h2>
-        <p className='text-muted-foreground/80 mx-auto mt-5 max-w-md text-sm leading-relaxed md:text-base'>
+        <p className='mx-auto mt-6 max-w-md text-sm text-slate-400 md:text-base'>
           {t(
-            'Sign in to create an API key and call 500+ models through one Base URL.'
+            '30+ top models / AI agents / inspiration plaza — all in one stop'
           )}
         </p>
-        <div className='mt-8 flex items-center justify-center gap-3'>
+        <div className='mt-9 flex flex-wrap items-center justify-center gap-4'>
           <Button
-            className='group rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg'
-            render={<Link to='/sign-up' />}
+            size='lg'
+            className='group h-12 rounded-full bg-gradient-to-r from-cyan-400 to-teal-400 px-8 text-sm font-bold text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.35)] transition-all hover:from-cyan-300 hover:to-teal-300'
+            render={<Link to={props.isAuthenticated ? '/home' : '/sign-up'} />}
           >
-            {t('Go to Console')}
-            <ArrowRight className='ml-1 size-3.5 transition-transform duration-200 group-hover:translate-x-0.5' />
+            {props.isAuthenticated
+              ? t('Get Started Now')
+              : t('Sign Up Now')}
+            <ArrowRight className='ml-2 size-4 transition-transform duration-200 group-hover:translate-x-0.5' />
           </Button>
           <Button
+            size='lg'
             variant='outline'
-            className='border-border/50 hover:border-border hover:bg-muted/50 rounded-lg'
-            render={<Link to='/pricing' />}
+            className='h-12 rounded-full border-white/15 bg-white/[0.04] px-7 text-sm font-medium text-slate-200 backdrop-blur-sm hover:border-white/30 hover:bg-white/[0.08]'
+            render={<a href='mailto:support@kejiapi.com' />}
           >
-            {t('View Models & Pricing')}
+            <Headphones className='mr-2 size-4 text-slate-400' />
+            {t('Contact Support')}
           </Button>
         </div>
       </AnimateInView>

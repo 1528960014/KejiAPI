@@ -16,8 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@kejiapi.com
 */
+export { AgentShowcase } from './sections/agent-showcase'
 export { CTA } from './sections/cta'
-export { Features } from './sections/features'
 export { Hero } from './sections/hero'
-export { HowItWorks } from './sections/how-it-works'
+export { InspirationGallery } from './sections/inspiration-gallery'
+export { PlatformCore } from './sections/platform-core'
 export { Stats } from './sections/stats'
