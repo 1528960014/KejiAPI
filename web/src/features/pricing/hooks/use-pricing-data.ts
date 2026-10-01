@@ -96,14 +96,12 @@ export function usePricingData(enabled = true) {
     }
 
     const list: PricingModel[] = []
-    const seen = new Set<string>()
 
-    // 1. Process backend models if present
+    // Only process actual models returned from backend
     if (Array.isArray(data?.data)) {
       for (const m of data.data) {
         if (!m?.model_name) continue
         const lower = m.model_name.toLowerCase()
-        seen.add(lower)
         const vendor = m.vendor_id ? vendorMap.get(m.vendor_id) : undefined
         const official = ALL_MODELS_MAP.get(lower)
         const vName = vendor?.name || official?.vendor || '大厂直供'
@@ -120,54 +118,6 @@ export function usePricingData(enabled = true) {
           group_ratio: data?.group_ratio,
         })
       }
-    }
-
-    // 2. Synthesize official catalog models (151 sub.kejike + 174 LK888)
-    let nextSyntheticId = 10000
-    for (const official of ALL_OFFICIAL_MODELS) {
-      const lower = official.model_name.toLowerCase()
-      if (seen.has(lower)) continue
-      seen.add(lower)
-
-      const vName = official.vendor || '大厂直供'
-      const matchedVendor = vendorByName.get(vName.toLowerCase())
-      const officialIcon = getOfficialLogo(official.model_name, vName, official.icon)
-      const groupName = official.group_name || 'default'
-      const multiplier = official.group_multiplier ?? 1.0
-
-      if (groupName && !mergedGroupRatio[groupName]) {
-        mergedGroupRatio[groupName] = multiplier
-        mergedUsableGroup[groupName] = {
-          desc: `${groupName} (倍率 ${multiplier}x)`,
-          ratio: multiplier,
-        }
-      }
-
-      const isPerRequest = official.billing_mode === '按次'
-      const modelPrice = isPerRequest ? (official.price_min ?? 0.1) : 0
-      const completionRatio =
-        official.output_price_min && official.price_min && official.price_min > 0
-          ? Number((official.output_price_min / official.price_min).toFixed(3))
-          : 2.0
-
-      list.push({
-        id: nextSyntheticId++,
-        key: official.model_name,
-        model_name: official.model_name,
-        description: official.intro || `${vName} 官方核心模型，支持高速多轮对话与流式调用。`,
-        icon: officialIcon,
-        vendor_id: matchedVendor?.id,
-        vendor_name: vName,
-        vendor_icon: officialIcon,
-        vendor_description: matchedVendor?.description,
-        quota_type: isPerRequest ? 1 : 0,
-        model_ratio: multiplier,
-        completion_ratio: completionRatio,
-        model_price: modelPrice,
-        enable_groups: [groupName],
-        tags: (official.tags || []).join(','),
-        group_ratio: mergedGroupRatio,
-      })
     }
 
     return {

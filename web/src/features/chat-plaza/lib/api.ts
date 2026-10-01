@@ -68,12 +68,7 @@ export async function fetchPlazaModels(): Promise<PlazaModel[]> {
     }
   }
 
-  const sourceNames = [
-    ...SUB_KEJIKE_MODELS.map((m) => m.model_name),
-    ...userModels,
-    ...pricingByName.keys(),
-    ...ALL_OFFICIAL_MODELS.map((m) => m.model_name),
-  ]
+  const sourceNames = userModels.length > 0 ? userModels : Array.from(pricingByName.keys())
 
   const seen = new Set<string>()
   const models: PlazaModel[] = []

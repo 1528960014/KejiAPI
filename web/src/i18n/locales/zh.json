@@ -1,5 +1,15 @@
 {
   "translation": {
+    "AI Open Platform": "AI 开放平台",
+    "One Base URL to access 500+ models: OpenAI / Anthropic / Gemini protocol compatible, async image · video · audio generation, and Skills that let AI read the docs by itself.": "一个 Base URL 访问 500+ 模型：兼容 OpenAI / Anthropic / Gemini 协议，支持图片、视频、音频异步生成，赋能智能体自主阅读文档。",
+    "Sign in to create an API key and call 500+ models through one Base URL.": "登录创建 API 密钥，通过一个 Base URL 访问 500+ 模型。",
+    "Create a key in the console and pick a channel strategy": "在控制台创建密钥并配置渠道策略",
+    "Top up any time; the balance is shared with the main site": "随时充值，余额即时生效",
+    "Switch the base_url and call with the OpenAI / Anthropic / Gemini protocol": "切换 base_url，使用标准协议轻松调用",
+    "Compatible Protocols": "兼容协议",
+    "Uptime SLA": "平台可用性",
+    "Go to Console": "进入控制台",
+    "View Models & Pricing": "查看模型与定价",
     "360": "360",
     "1000": "1000",
     "10000": "10000",

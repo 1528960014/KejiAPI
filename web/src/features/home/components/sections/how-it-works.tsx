@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@kejiapi.com
 */
-import { Settings, Zap, BarChart3 } from 'lucide-react'
+import { KeyRound, Wallet, Code2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { AnimateInView } from '@/components/animate-in-view'
@@ -27,25 +27,23 @@ export function HowItWorks() {
   const steps = [
     {
       num: '1',
-      title: t('Configure'),
-      desc: t(
-        'Add your API keys, set up channels and configure access permissions'
-      ),
-      icon: <Settings className='size-6' strokeWidth={1.5} />,
+      title: t('Create an API Key'),
+      desc: t('Create a key in the console and pick a channel strategy'),
+      icon: <KeyRound className='size-6 text-blue-400' strokeWidth={1.5} />,
     },
     {
       num: '2',
-      title: t('Connect'),
-      desc: t(
-        'Connect through OpenAI, Claude, Gemini, and other compatible API routes'
-      ),
-      icon: <Zap className='size-6' strokeWidth={1.5} />,
+      title: t('Add Credits'),
+      desc: t('Top up any time; the balance is shared with the main site'),
+      icon: <Wallet className='size-6 text-emerald-400' strokeWidth={1.5} />,
     },
     {
       num: '3',
-      title: t('Monitor'),
-      desc: t('Track usage, costs and performance with real-time analytics'),
-      icon: <BarChart3 className='size-6' strokeWidth={1.5} />,
+      title: t('Integrate the API'),
+      desc: t(
+        'Switch the base_url and call with the OpenAI / Anthropic / Gemini protocol'
+      ),
+      icon: <Code2 className='size-6 text-purple-400' strokeWidth={1.5} />,
     },
   ]
 
