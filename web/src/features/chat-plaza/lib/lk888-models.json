@@ -1,0 +1,4997 @@
+[
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GEM 3.5 flash",
+    "fastest_seconds": 6.63,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3.5 闪电版已正式发布（GA），是同代最智能的轻量高速模型。性能稳定，可大规模用于生产环境，在智能体执行、代码编写和长期任务处理方面表现领先。",
+    "model_id": 114,
+    "model_name": "gem-3.5-flash",
+    "model_type": "chat",
+    "online_lines": 5,
+    "output_price_min": 15.309,
+    "price_available": true,
+    "price_max": 17.496,
+    "price_min": 2.5596,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 1000,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速",
+      "哈基米"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-5.6 luna",
+    "fastest_seconds": 4,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-5.6 luna 是新一代旗舰模型，全面提升对话流畅度、多模态理解与代码能力，适合高质量多轮对话与专业场景。",
+    "model_id": 151,
+    "model_name": "tt-5.6-luna",
+    "model_type": "chat",
+    "online_lines": 17,
+    "output_price_min": 4.374,
+    "price_available": true,
+    "price_max": 10.0278,
+    "price_min": 0.729,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 997,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 96.32,
+    "display_name": "SN-5.5",
+    "fastest_seconds": 3,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "SN-5.5 是大厂直供新一代均衡旗舰，编码与代理能力全面升级，逻辑严谨、输出可靠，专为编码、代理和企业工作流打造。",
+    "model_id": 990000349,
+    "model_name": "sn-5-5",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 21.0114,
+    "price_available": true,
+    "price_max": 16.6698,
+    "price_min": 4.1958,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 996,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 98.85,
+    "display_name": "SD 2.5 满血版 按秒",
+    "fastest_seconds": 323.13,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "SD 2.5 满血版的按秒计费版：能力、素材、画质与按 token 版完全一致，价格按「时长秒数 × 档位单价」下单即扣清、不多退少补，预算一目了然。需明确选择视频时长（4～30 秒）。上传真人照片、真人视频无需人像认证。",
+    "model_id": 203,
+    "model_name": "seedance-2.5-guanfang-anmiao",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.7776,
+    "price_min": 0.5508,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 994,
+    "status": "normal",
+    "tags": [
+      "全形态一体",
+      "免人像认证",
+      "按秒计费",
+      "30秒长视频",
+      "首尾帧",
+      "参考生视频",
+      "视频编辑",
+      "视频延长",
+      "有声视频"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "TT Image 2",
+    "fastest_seconds": 34.76,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "新一代旗舰图像模型，发布即登顶全球盲测榜双第一（文生图与图片编辑）。语义理解、文字渲染与复杂排版全面升级：图表、信息图、漫画、高文字密度海报一次成型；图像输入默认高保真处理，人脸、Logo与产品细节在多轮编辑中稳定不走样。支持多图参考合成、提示词引导的局部编辑与自定义分辨率（最高可至2K以上），官方推荐用于客户可见的生产级素材，是追求首轮成功率的不二之选。",
+    "model_id": 93,
+    "model_name": "tt-image-2",
+    "model_type": "image",
+    "online_lines": 14,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1782,
+    "price_min": 0.0324,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 991,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-6 astra",
+    "fastest_seconds": 12.38,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-6 astra 是新一代旗舰模型，推理、代码与多模态理解全面升级，支持超长上下文，适合专业开发与高质量多轮对话。",
+    "model_id": 209,
+    "model_name": "tt-6-astra",
+    "model_type": "chat",
+    "online_lines": 12,
+    "output_price_min": 26.892,
+    "price_available": true,
+    "price_max": 119.07,
+    "price_min": 5.67,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 988,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 100,
+    "display_name": "GK-video-3.5",
+    "fastest_seconds": 48,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "GK-video-3.5 视频模型，专注图生视频：上传一张首帧参考图即可生成 1~15 秒高质量短视频，自带音频，画面比例与时长灵活可控。响应快、成本低，适合用一张图快速生成有声短视频。",
+    "model_id": 119,
+    "model_name": "gk-video-3.5",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.162,
+    "price_min": 0.1277,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 985,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首帧参考图",
+      "自带音频",
+      "1~15秒",
+      "高清"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT Image 2 官转",
+    "fastest_seconds": 23.75,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT Image 2 官方直连通道，按token精准计费、多退少补。能力与TT Image 2完全一致：全球盲测文生图与图片编辑双榜第一，复杂排版、文字渲染、多图参考合成与高保真编辑全面领先，人脸与品牌细节多轮编辑不走样，官方链路稳定性更高，适合对画质与稳定性要求苛刻的生产场景。",
+    "model_id": 96,
+    "model_name": "tt-image-2-token",
+    "model_type": "image",
+    "online_lines": 12,
+    "output_price_min": 119.07,
+    "price_available": true,
+    "price_max": 97.2,
+    "price_min": 19.845,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 982,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-5.6 sol",
+    "fastest_seconds": 3,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-5.6 sol 是新一代旗舰模型，全面提升对话流畅度、多模态理解与代码能力，适合高质量多轮对话与专业场景。",
+    "model_id": 150,
+    "model_name": "tt-5.6-sol",
+    "model_type": "chat",
+    "online_lines": 24,
+    "output_price_min": 11.34,
+    "price_available": true,
+    "price_max": 59.535,
+    "price_min": 1.944,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 979,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.92,
+    "display_name": "SD 2.5 满血版",
+    "fastest_seconds": 185,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "Seedance 2.5 全形态一体：文生 / 首尾帧 / 参考生（最多 30 图 / 10 视频 / 10 音频，支持仅传音频）一个模型全包，上传真人照片、真人视频无需人像认证。支持 4～30 秒长视频、口述编辑 / 延长视频、联网搜索，输出 480p～1080p，视频自带声音、无水印。开放 API 同时支持本站格式与火山方舟官方格式。",
+    "model_id": 201,
+    "model_name": "seedance-2.5-guanfang",
+    "model_type": "video",
+    "online_lines": 4,
+    "output_price_min": 54.432,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 976,
+    "status": "normal",
+    "tags": [
+      "全形态一体",
+      "免人像认证",
+      "30秒长视频",
+      "首尾帧",
+      "参考生视频",
+      "视频编辑",
+      "视频延长",
+      "联网搜索",
+      "有声视频"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "Kimi K3",
+    "fastest_seconds": 5.2,
+    "icon": "https://cos.lingkeai.vip/kimi.svg",
+    "intro": "月之暗面（Moonshot AI）新一代旗舰思考大模型，1M 超长上下文，始终开启深度思考，原生支持图片与视频理解，代码编写、复杂推理与智能体（Agent）能力全面升级。",
+    "model_id": 159,
+    "model_name": "kimi-k3",
+    "model_type": "chat",
+    "online_lines": 3,
+    "output_price_min": 121.5,
+    "price_available": true,
+    "price_max": 32.4,
+    "price_min": 24.3,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 973,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "月之暗面"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 94.87,
+    "display_name": "Suno 音乐生成 4.5",
+    "fastest_seconds": 100.5,
+    "icon": "https://cos.lingkeai.vip/uploads/2026.07/23/20260723022627_afed8e9e83001476.svg",
+    "intro": "Suno V4.5（chirp-auk）音乐生成模型，输入歌词与风格描述即可生成完整人声歌曲，支持纯音乐、续写、卡拉OK 字幕。最长 4 分钟、最快 80 秒成曲。",
+    "model_id": 115,
+    "model_name": "suno-v4.5",
+    "model_type": "audio",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.5508,
+    "price_min": 0.5508,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 970,
+    "status": "normal",
+    "tags": [
+      "音乐生成",
+      "AI作曲",
+      "歌词续写",
+      "卡拉OK字幕",
+      "Suno V4.5"
+    ],
+    "vendor": "Suno"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "TT Image 2.5",
+    "fastest_seconds": 35.75,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "新一代图像模型 2.5 代，按次计费。标准版 / 增强版两档可选，比例与分辨率分开控制（1K/2K/4K，最高 3840×2160），画质新增超高与极致两档，支持透明背景输出、多图参考融合与提示词引导的局部编辑。文字渲染、复杂排版与人物细节一致性全面升级，适合海报、电商主图、社媒配图等生产级素材。",
+    "model_id": 213,
+    "model_name": "tt-image-2.5",
+    "model_type": "image",
+    "online_lines": 11,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.0256,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 967,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "透明背景"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "SD 2.0 参考生",
+    "fastest_seconds": 251,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦团队推出的旗舰级视频生成模型 Seedance 2.0，支持多图参考生视频，上传 1~9 张参考图，模型智能融合风格、元素和构图生成新视频。自动生成有声视频，4~15秒灵活时长，标准/快速双版本可选。按官方 Token 计费。",
+    "model_id": 75,
+    "model_name": "kwvideo-v2-ref",
+    "model_type": "video",
+    "online_lines": 4,
+    "output_price_min": 32.967,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 964,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "有声视频",
+      "参考生视频",
+      "即梦",
+      "720p",
+      "高清"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 100,
+    "display_name": "MiniMax H3",
+    "fastest_seconds": 249,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 全形态一体：文生 / 首尾帧 / 参考生 / 全能参考（图+视频+音频）一个模型全包，直出 2K 有声视频，4～15 秒灵活时长。按秒计费、下单即扣清。",
+    "model_id": 206,
+    "model_name": "minimax-h3",
+    "model_type": "video",
+    "online_lines": 6,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.81,
+    "price_min": 0.0292,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 958,
+    "status": "normal",
+    "tags": [
+      "全形态一体",
+      "文生视频",
+      "首尾帧",
+      "参考生视频",
+      "多模态参考",
+      "2K高清",
+      "有声视频"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "纳米香蕉 2",
+    "fastest_seconds": 20.5,
+    "icon": "https://cos.lingkeai.vip/banana.svg",
+    "intro": "高速图像模型，纳米香蕉 Pro 的高效版本，画质接近旗舰而速度与成本大幅优化，官方盲测中综合偏好与视觉质量甚至反超Pro。支持最高4K输出、最多14张参考图、512px快速预览，新增1:4/4:1/1:8/8:1超宽比例，独家支持图片搜索接地与联网搜索生图，适合电商素材、社媒图片等大批量快速出图场景。",
+    "model_id": 43,
+    "model_name": "banana-2",
+    "model_type": "image",
+    "online_lines": 25,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.666,
+    "price_min": 0.0851,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 955,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "4k",
+      "高清",
+      "香蕉"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GEM 3.1 Pro",
+    "fastest_seconds": 8,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3.1 是迄今为止最智能的模型系列，以先进的推理能力为基础，最适合需要广泛世界知识和跨模态的高级推理的复杂任务。",
+    "model_id": 39,
+    "model_name": "gem-3.1-pro",
+    "model_type": "chat",
+    "online_lines": 5,
+    "output_price_min": 9.72,
+    "price_available": true,
+    "price_max": 22.1616,
+    "price_min": 1.62,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 952,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "哈基米"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.94,
+    "display_name": "SD 2.0 满血版 按秒",
+    "fastest_seconds": 318.75,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "SD 2.0 满血版的按秒计费版：能力、素材、画质与按 token 版完全一致，价格按「时长秒数 × 档位单价」下单即扣清、不多退少补，预算一目了然。需明确选择视频时长（4～15 秒）。上传真人照片、真人视频无需人像认证。",
+    "model_id": 202,
+    "model_name": "seedance-2.0-guanfang-anmiao",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.243,
+    "price_min": 0.162,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 949,
+    "status": "normal",
+    "tags": [
+      "全形态一体",
+      "免人像认证",
+      "按秒计费",
+      "首尾帧",
+      "参考生视频",
+      "多模态参考",
+      "4K",
+      "有声视频"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "纳米香蕉 Pro",
+    "fastest_seconds": 36,
+    "icon": "https://cos.lingkeai.vip/banana.svg",
+    "intro": "旗舰级专业图像模型，公认当前图像内文字渲染最强，多语言海报、Logo、信息图与复杂排版一次成型。原生最高4K输出，10种画面比例，单次最多14张参考图（人物最多5张、物体最多6张），人物与品牌一致性保持出色。支持对话式多轮编辑（换背景、调光影、改镜头与景深、局部重绘）、思考模式与联网搜索实时信息生图，适合专业海报、包装设计、单反高清真人写真、产品Mockup与高精度商业交付。",
+    "model_id": 6,
+    "model_name": "banana-pro",
+    "model_type": "image",
+    "online_lines": 24,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 4.05,
+    "price_min": 0.1361,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 946,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "4k",
+      "高清",
+      "香蕉"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GEM 3.7 flash",
+    "fastest_seconds": 5.67,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3.7 闪电版已正式发布（GA），是同代最智能的轻量高速模型。性能稳定，可大规模用于生产环境，在智能体执行、代码编写和长期任务处理方面表现领先。",
+    "model_id": 176,
+    "model_name": "gem-3.7-flash",
+    "model_type": "chat",
+    "online_lines": 7,
+    "output_price_min": 2.0088,
+    "price_available": true,
+    "price_max": 8.9424,
+    "price_min": 0.405,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 943,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速",
+      "哈基米"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.5,
+    "display_name": "Omni Flash 10秒",
+    "fastest_seconds": 113,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "Omni Flash 由多模态大模型驱动，一句话即可生成 10 秒 720P 视频，还能上传最多 7 张参考图锁定人物、物体与场景。成片自带音效、画面流畅、理解精准，轻松快速产出短视频、广告与创意内容。",
+    "model_id": 123,
+    "model_name": "omni_flash-10s",
+    "model_type": "video",
+    "online_lines": 6,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 2.3652,
+    "price_min": 0.8262,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 940,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "参考生视频",
+      "多图参考",
+      "有音视频",
+      "10秒",
+      "720P"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-5.5",
+    "fastest_seconds": 3,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-5.5 是新一代旗舰模型，全面提升对话流畅度、多模态理解与代码能力，适合高质量多轮对话与专业场景。",
+    "model_id": 99,
+    "model_name": "tt-5.5",
+    "model_type": "chat",
+    "online_lines": 32,
+    "output_price_min": 11.34,
+    "price_available": true,
+    "price_max": 62.37,
+    "price_min": 1.863,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 937,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.33,
+    "display_name": "海螺 语音克隆 2.8",
+    "fastest_seconds": 4,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺语音克隆模型，支持上传音频复刻你的专属音色，首次激活后永久有效。提供 HD 高清和 Turbo 极速两种合成质量，支持语速、语调、情绪、音效等精细调节，适用于有声读物、配音、播客等场景。",
+    "model_id": 45,
+    "model_name": "speech-2.8",
+    "model_type": "audio",
+    "online_lines": 1,
+    "output_price_min": 0,
+    "price_available": true,
+    "price_max": 421.2,
+    "price_min": 421.2,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 934,
+    "status": "normal",
+    "tags": [
+      "语音克隆",
+      "文字转语音",
+      "音色复刻",
+      "多语言"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "即梦 5.0 Pro",
+    "fastest_seconds": 58.1,
+    "icon": "https://cos.lingkeai.vip/jimeng.svg",
+    "intro": "字节跳动即梦 5.0 Pro（Seedream 5.0 Pro）旗舰图像模型，画质与细节全面升级：更强的空间关系理解与创作意图还原，支持最多10张参考图的多图融合、精准局部编辑与风格迁移，提供 1K/2K 双档分辨率输出，适合电商海报、品牌视觉与高品质人像等对画质要求高的场景。",
+    "model_id": 160,
+    "model_name": "doubao-seedream-5-0-pro-260628",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.2916,
+    "price_min": 0.2916,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 931,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "多图融合",
+      "2K高清",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 100,
+    "display_name": "海螺 H3 参考生",
+    "fastest_seconds": 245.5,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 参考生视频：上传 1~9 张参考图，模型智能融合主体、风格与构图生成 2K 有声视频。前 5 张图片免费、超出按张计费；必须上传至少 1 张参考图，不支持纯文字生成。",
+    "model_id": 165,
+    "model_name": "hailuo-h3-cankaosheng",
+    "model_type": "video",
+    "online_lines": 6,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.729,
+    "price_min": 0.0292,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 928,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "有声视频",
+      "2K",
+      "高清"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "FB-5",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "大厂直供全新一代旗舰 FB-5，自适应思考始终在线、随任务自动调配深度，复杂推理、长程任务与创意写作全面再进一步。",
+    "model_id": 124,
+    "model_name": "fb-5",
+    "model_type": "chat",
+    "online_lines": 14,
+    "output_price_min": 105.3,
+    "price_available": true,
+    "price_max": 187.11,
+    "price_min": 21.06,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 925,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "SD 2.0 满血版",
+    "fastest_seconds": 347.75,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "Seedance 2.0 全形态一体：文生 / 首尾帧 / 参考生（图、视频、音频参考）一个模型全包，上传真人照片、真人视频无需人像认证。标准 / 快速 / Mini 三档速度版本，输出 480p～4K，视频自带声音、无水印。开放 API 同时支持本站格式与火山方舟官方格式。",
+    "model_id": 200,
+    "model_name": "seedance-2.0-guanfang",
+    "model_type": "video",
+    "online_lines": 4,
+    "output_price_min": 35.64,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 922,
+    "status": "normal",
+    "tags": [
+      "全形态一体",
+      "免人像认证",
+      "文生视频",
+      "首尾帧",
+      "参考生视频",
+      "多模态参考",
+      "4K",
+      "有声视频"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT Image 2.5 官转",
+    "fastest_seconds": 30.5,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT Image 2.5 官方直连通道，按 token 精准计费、多退少补。能力与 TT Image 2.5 完全一致：标准版 / 增强版两档，比例与分辨率分开控制（最高 4K），画质新增超高与极致两档，支持透明背景、多图参考与局部编辑。官方链路稳定性更高、分辨率与比例命中更精准，适合对画质与可控性要求苛刻的生产场景。",
+    "model_id": 214,
+    "model_name": "tt-image-2.5-token",
+    "model_type": "image",
+    "online_lines": 12,
+    "output_price_min": 22.518,
+    "price_available": true,
+    "price_max": 68.5028,
+    "price_min": 3.7584,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 919,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "透明背景"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 82.67,
+    "display_name": "OP-5.5",
+    "fastest_seconds": 15.97,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "大厂直供最新旗舰 OP-5.5，具备同系列最强档的深度推理、复杂编码与长程任务能力，输出细腻可靠，适合高难度专业工作。",
+    "model_id": 217,
+    "model_name": "op-5-5",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 44.0207,
+    "price_available": true,
+    "price_max": 8.8053,
+    "price_min": 8.8053,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 916,
+    "status": "degraded",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 87.88,
+    "display_name": "omni-flash",
+    "fastest_seconds": 141.31,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "Omni Flash 是多模态 AI 视频大模型，支持文生视频与多图参考生视频，能精准理解真实世界物理规律，生成带音效的高清短视频。不上传图片则走文生视频，上传 1–3 张参考图可指定人物/物体/场景风格，支持 16:9 / 9:16 两种画面比例与 4/6/8/10 秒多档时长。",
+    "model_id": 116,
+    "model_name": "omni-flash",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.3888,
+    "price_min": 0.3888,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 913,
+    "status": "degraded",
+    "tags": [
+      "文生视频",
+      "参考生视频",
+      "多图参考",
+      "有音视频",
+      "4/6/8/10秒"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "GK Image 2.0",
+    "fastest_seconds": 18.17,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "大厂直供新一代高画质图像模型，写实质感、人物一致性与光影层次都比上一代明显提升，指令遵循更稳。支持文生图与最多 3 张参考图的图生图编辑，可选 1K / 2K 两档输出和 5 种画面比例，适合人像、产品与社媒视觉的快速创作。",
+    "model_id": 182,
+    "model_name": "gk-image-2.0",
+    "model_type": "image",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.405,
+    "price_min": 0.3726,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 910,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-6 sol",
+    "fastest_seconds": 13.4,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-6 sol 是新一代旗舰模型，推理、代码与多模态理解全面升级，支持超长上下文，适合专业开发与高质量多轮对话。",
+    "model_id": 218,
+    "model_name": "tt-6-sol",
+    "model_type": "chat",
+    "online_lines": 7,
+    "output_price_min": 4.5867,
+    "price_available": true,
+    "price_max": 22.68,
+    "price_min": 0.9174,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 907,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "SD 2.5 参考生",
+    "fastest_seconds": 208.67,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦团队新一代旗舰视频生成模型 Seedance 2.5 参考生模式：上传 1~30 张参考图，模型智能融合角色、风格、元素与构图生成新视频，支持 4~30 秒有声视频，画面质感接近实拍影视级。按官方 Token 计费。",
+    "model_id": 170,
+    "model_name": "doubao-seedance-2-5-cankaosheng",
+    "model_type": "video",
+    "online_lines": 5,
+    "output_price_min": 54.432,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 904,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "参考生视频",
+      "有声视频",
+      "30秒长视频",
+      "即梦",
+      "高清"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GEM 3.8 flash",
+    "fastest_seconds": 10,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3.8 闪电版，新一代最智能的轻量高速模型：智能体执行、代码编写与长期任务处理再升级，性能稳定，适合大规模生产环境。",
+    "model_id": 208,
+    "model_name": "gem-3.8-flash",
+    "model_type": "chat",
+    "online_lines": 10,
+    "output_price_min": 2.0088,
+    "price_available": true,
+    "price_max": 17.496,
+    "price_min": 0.405,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 901,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速",
+      "哈基米"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 91.51,
+    "display_name": "海螺 音乐生成 2.5+",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺音乐生成增强模型，支持歌曲生成和纯音乐生成两种模式。歌曲模式下输入歌词和风格描述生成完整歌曲；纯音乐模式下仅需风格描述即可生成无人声的纯器乐音乐。支持 AI 歌词创作、14+ 曲式结构标签精准控制、多风格混合，带来专业级编曲混音。",
+    "model_id": 61,
+    "model_name": "music-2.5+",
+    "model_type": "audio",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 1.62,
+    "price_min": 1.62,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 898,
+    "status": "normal",
+    "tags": [
+      "音乐生成",
+      "歌词生成",
+      "AI作曲",
+      "纯音乐"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "纳米香蕉 Pro Token版",
+    "fastest_seconds": 31.5,
+    "icon": "https://cos.lingkeai.vip/banana.svg",
+    "intro": "纳米香蕉 Pro 官方直连通道，旗舰级专业图像模型，图像内文字渲染公认全球最强。原生最高4K输出，最多14张参考图（人物5张、物体6张），人物与品牌一致性保持出色；支持对话式多轮编辑、光影镜头景深控制、思考模式与联网搜索实时信息生图。官转链路直连稳定、响应更快，适合专业海报、包装、Logo与高精度商业设计交付。",
+    "model_id": 125,
+    "model_name": "banana-pro-token",
+    "model_type": "image",
+    "online_lines": 13,
+    "output_price_min": 452.841,
+    "price_available": true,
+    "price_max": 24.3,
+    "price_min": 7.5474,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 895,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "4k",
+      "高清",
+      "香蕉",
+      "官转直连"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.82,
+    "display_name": "可灵-Omni 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "可灵 V3 Omni 参考生模式，支持纯文生视频或上传1-7张参考图片，AI参考图片风格/内容智能分镜生成有声视频，标准/高品质双模式，5-15秒。",
+    "model_id": 68,
+    "model_name": "kling-v3-omni-cankao",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 3.888,
+    "price_min": 3.2384,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 892,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "有声视频",
+      "参考生视频",
+      "高清"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-5.4",
+    "fastest_seconds": 33.67,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-5.4 是用于复杂专业工作的前沿模型，具备强大的深度推理、多模态理解和工具调用能力，适用于高难度分析、代码开发与创意写作。",
+    "model_id": 58,
+    "model_name": "tt-5.4",
+    "model_type": "chat",
+    "online_lines": 15,
+    "output_price_min": 19.278,
+    "price_available": true,
+    "price_max": 38.556,
+    "price_min": 3.24,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 889,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 96.78,
+    "display_name": "万相3.0 全能参考",
+    "fastest_seconds": 645.5,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相3.0全能参考模型：图片、视频、音频与文字任意组合参考，角色/物品/场景/声音随意抽取复刻，生成最长30秒的1080P有声视频（成片+参考视频合计≤30秒）。",
+    "model_id": 187,
+    "model_name": "wan3.0-video-quannengcankao",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.486,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 886,
+    "status": "normal",
+    "tags": [
+      "多模态参考",
+      "参考视频",
+      "参考音频",
+      "有声视频",
+      "30秒长视频",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "纳米香蕉 2 Token版",
+    "fastest_seconds": 24,
+    "icon": "https://cos.lingkeai.vip/banana.svg",
+    "intro": "纳米香蕉 2 官方直连通道，高速图像模型，画质接近旗舰而速度与价格减半，官方盲测综合偏好甚至反超Pro。支持最高4K输出、最多14张参考图、512px秒级预览与1:4/8:1等超宽比例，独家支持联网搜索/图片搜索接地与思考等级控制。官转链路稳定直连、秒级出图，适合电商、社媒素材大批量快速生产。",
+    "model_id": 126,
+    "model_name": "banana-2-token",
+    "model_type": "image",
+    "online_lines": 14,
+    "output_price_min": 167.0798,
+    "price_available": true,
+    "price_max": 8.1,
+    "price_min": 1.5422,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 883,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "4k",
+      "高清",
+      "香蕉",
+      "官转直连",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GEM 3.6 flash",
+    "fastest_seconds": 6,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3.6 闪电版已正式发布（GA），是同代最智能的轻量高速模型。性能稳定，可大规模用于生产环境，在智能体执行、代码编写和长期任务处理方面表现领先。",
+    "model_id": 990000106,
+    "model_name": "gem-3.6-flash",
+    "model_type": "chat",
+    "online_lines": 14,
+    "output_price_min": 2.0088,
+    "price_available": true,
+    "price_max": 17.496,
+    "price_min": 0.405,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 880,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速",
+      "哈基米"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "GK-video-3",
+    "fastest_seconds": 108.29,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "GK 系列首帧参考图视频模型，专注于高效的图生视频体验。支持生成 6 秒及 10 秒时长的 720P 分辨率视频，具备极快的响应速度。它能将静态图像瞬间转化为流畅的动态影像，是短视频创作者快速验证灵感与获取素材的便捷工具。",
+    "model_id": 31,
+    "model_name": "gk-video-3",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.648,
+    "price_min": 0.648,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 877,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "首帧参考图",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 83.33,
+    "display_name": "Midjourney",
+    "fastest_seconds": 112.5,
+    "icon": "https://cos.lingkeai.vip/Mj.svg",
+    "intro": "全球最具艺术性的AI图像生成平台，最新V8.1版本速度较早期提升4~5倍，支持原生2K高清输出。以电影级审美著称，光影、构图与色彩浑然一体，擅长概念艺术、游戏美术、角色设计、时尚视觉与奇幻场景。支持任意自定义画面比例（最宽14:1）、风格参考sref（提取参考图色彩材质氛围）与全能参考oref（人物/物体跨图一致），是海报、插画与氛围图创作的首选。",
+    "model_id": 22,
+    "model_name": "mj_imagine",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.4536,
+    "price_min": 0.4536,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 874,
+    "status": "degraded",
+    "tags": [
+      "文生图",
+      "图生图"
+    ],
+    "vendor": "MidJourney"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "DS-V4-Pro",
+    "fastest_seconds": 3,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "intro": "DeepSeek V4 系列高性能旗舰开源大模型，具备顶尖推理与 Agent 能力，支持超长上下文，适配国产昂腾芯片，性价比极高。",
+    "model_id": 98,
+    "model_name": "deepseek-v4-pro",
+    "model_type": "chat",
+    "online_lines": 7,
+    "output_price_min": 10.692,
+    "price_available": true,
+    "price_max": 21.06,
+    "price_min": 4.374,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 871,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "DeepSeek"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 95.19,
+    "display_name": "SD 2.5 全能参考 按秒",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦新一代旗舰 Seedance 2.5 多模态参考的按秒计费分支：单次最多 50 个参考素材（30 图 + 10 视频 + 10 音频，至少 1 个），30 秒连贯直出。按秒计费价格透明，参考视频按其实际时长的 50% 单价另计。生成失败自动退款。",
+    "model_id": 195,
+    "model_name": "seedance-2.5-anmiao-quannengcankao",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.7776,
+    "price_min": 0.5508,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 868,
+    "status": "normal",
+    "tags": [
+      "多模态参考",
+      "视频参考",
+      "音频参考",
+      "30秒长视频",
+      "按秒计费",
+      "1080p",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.97,
+    "display_name": "FB-5.1",
+    "fastest_seconds": 8,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "大厂直供旗舰 FB-5.1，FB-5 的全面升级版：自适应思考始终在线、随任务自动调配深度，复杂推理、长程任务与创意写作更进一步。",
+    "model_id": 207,
+    "model_name": "fb-5-1",
+    "model_type": "chat",
+    "online_lines": 8,
+    "output_price_min": 105.3,
+    "price_available": true,
+    "price_max": 187.11,
+    "price_min": 21.06,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 865,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 77.78,
+    "display_name": "豆包 语音合成 2.0",
+    "fastest_seconds": 10,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "火山引擎豆包语音合成2.0，支持上百种精品音色，支持多情感、多语种、长文本合成（最大10万字符），音质自然流畅。",
+    "model_id": 80,
+    "model_name": "doubao-tts-2.0",
+    "model_type": "audio",
+    "online_lines": 1,
+    "output_price_min": 0,
+    "price_available": true,
+    "price_max": 486,
+    "price_min": 486,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 862,
+    "status": "degraded",
+    "tags": [
+      "文字转语音",
+      "多音色",
+      "多情感",
+      "多语言"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "VIDU Iamge 2",
+    "fastest_seconds": 55.6,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "生数科技Vidu官方图像模型，主打多图参考与主体一致性：最多7张参考图，人物、服装、道具、场景跨图保持一致，天生适合IP角色连续创作与系列化内容生产。支持文生图、参考生图与图片编辑（增删物体、换服装、调光照构图）三种模式，1K/2K/3K画质可选，多种画幅自由调节，是电商产品图、广告素材与角色IP批量生产的得力干将。",
+    "model_id": 111,
+    "model_name": "vidu-image-2",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.2734,
+    "price_min": 0.2734,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 859,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "多图参考",
+      "图片编辑",
+      "1K/2K/3K",
+      "Vidu官方"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 100,
+    "display_name": "海螺 H3 文生视频",
+    "fastest_seconds": 368,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3（MiniMax-H3）新一代视频生成模型，纯文字描述直出 2K 有声视频，动作自然、物理真实。支持 4~15 秒灵活时长与六种画面比例，按秒计费；建议先出 768P 试稿，满意后在成片上一键升级 2K（仅补差价）。",
+    "model_id": 163,
+    "model_name": "hailuo-h3",
+    "model_type": "video",
+    "online_lines": 6,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.729,
+    "price_min": 0.0292,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 856,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "有声视频",
+      "2K",
+      "高清"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "DS-V4.1-Flash",
+    "fastest_seconds": 16.33,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "intro": "DeepSeek V4.1 系列的轻量化版本，在保持高性价比与高吞吐效率的同时支持图文输入，兼顾百万Token长上下文与工具调用，适合日常对话、看图理解和轻量文本任务。",
+    "model_id": 215,
+    "model_name": "deepseek-v4.1-flash",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 6.48,
+    "price_available": true,
+    "price_max": 2.592,
+    "price_min": 1.62,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 853,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "DeepSeek"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 100,
+    "display_name": "海螺 H3 全能参考",
+    "fastest_seconds": 322.23,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 多模态全能参考：文本+图片+视频+音频任意组合参考生成 2K 有声视频（至少需 1 张图片或 1 个参考视频，不支持纯文字/纯音频）。参考视频按其时长额外按秒计费、音频免费、图片前 5 张免费超出按张计费。",
+    "model_id": 166,
+    "model_name": "hailuo-h3-quannengcankao",
+    "model_type": "video",
+    "online_lines": 5,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.729,
+    "price_min": 0.0292,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 850,
+    "status": "normal",
+    "tags": [
+      "多模态参考",
+      "图参视参音参",
+      "有声视频",
+      "2K",
+      "高清"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 97.86,
+    "display_name": "万相 2.7 图像",
+    "fastest_seconds": 23.5,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里通义万相2.7图像模型，生成与编辑一体的全能选手：文生图、图像编辑、多图参考（最多9张）、文生组图/图生组图（连续输出最多12张）全部打通，Pro档文生图最高支持4K。文字渲染大幅升级，支持约12种语言、长段落、表格与数学公式的印刷级排版；内置思考增强模式提升复杂指令理解，还支持框选交互编辑与品牌色控制，官方盲测文字渲染与写实度接近Nano Banana Pro，适合海报、电商与角色一致性故事板等专业设计流程。",
+    "model_id": 86,
+    "model_name": "wan2.7-image",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.162,
+    "price_min": 0.162,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 847,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "豆包 Seed 2.1 Pro",
+    "fastest_seconds": 13.44,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动豆包 Seed 2.1 Pro 旗舰大模型，支持超长上下文、深度思考与联网搜索，具备图片 / 视频 / PDF 等多模态理解能力，可同时分析多种类型文件，适合复杂推理、长文档解析与专业问答。",
+    "model_id": 143,
+    "model_name": "doubao-seed-2-1-pro-260628",
+    "model_type": "chat",
+    "online_lines": 3,
+    "output_price_min": 41.2938,
+    "price_available": true,
+    "price_max": 16.524,
+    "price_min": 8.262,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 844,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.96,
+    "display_name": "SD 2.0 全能参考",
+    "fastest_seconds": 357,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦团队推出的旗舰级多模态参考视频生成模型 Seedance 2.0，支持文本+图片+视频+音频任意组合参考输入（至少需 1 图或 1 视），智能融合多种素材生成高质量有声视频。输出支持 480p / 720p / 1080p，按官方 Token 按输出分辨率与是否含参考视频分档计费。",
+    "model_id": 76,
+    "model_name": "kwvideo-v2-quannengcankao",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": 52.164,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 841,
+    "status": "normal",
+    "tags": [
+      "多模态参考",
+      "图参视参音参",
+      "即梦",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.93,
+    "display_name": "即梦 5.0",
+    "fastest_seconds": 38,
+    "icon": "https://cos.lingkeai.vip/jimeng.svg",
+    "intro": "字节跳动新一代即梦图像模型（Seedream 5.0），核心升级是“深度思考”与“联网搜索生图”：能理解复杂空间关系与创作意图，可实时检索天气、票房、金价等信息直接生成数据海报与信息图。支持最高3K输出与多图融合，模糊指令下也能精准局部编辑、主体替换与风格迁移，编辑区域外画面保持不变，适合热点海报、信息可视化与复杂图文设计。",
+    "model_id": 42,
+    "model_name": "doubao-seedream-5-0-260128",
+    "model_type": "image",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.3564,
+    "price_min": 0.3564,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 838,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "多图融合",
+      "联网搜索生图",
+      "3k",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "OP-4.8",
+    "fastest_seconds": 61.25,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "同系列最新一代旗舰模型，在复杂逻辑推理、数学证明及创意写作的细腻度上再进一步，文采斐然且极难被检测出是AI。",
+    "model_id": 120,
+    "model_name": "op-4-8",
+    "model_type": "chat",
+    "online_lines": 39,
+    "output_price_min": 4.5522,
+    "price_available": true,
+    "price_max": 93.555,
+    "price_min": 0.9234,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 835,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 95.6,
+    "display_name": "万相 3.0",
+    "fastest_seconds": 91.75,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相 3.0 全形态一体：文生 / 首尾帧 / 参考生（图、PPT/PDF/Word 文档、网页链接）/ 全能参考（图+视频+音频）一个模型全包。标准 / 高速双版本，最长 30 秒、最高 1080P，视频自带声音。按秒计费，下单即扣清。",
+    "model_id": 205,
+    "model_name": "wan3.0",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.486,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 832,
+    "status": "normal",
+    "tags": [
+      "全形态一体",
+      "文生视频",
+      "首尾帧",
+      "参考生视频",
+      "文档生视频",
+      "网页生视频",
+      "多模态参考",
+      "30秒长视频",
+      "有声视频"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "OP-5",
+    "fastest_seconds": 2.83,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "大厂直供最新旗舰 OP-5，具备同系列最强档的深度推理、复杂编码与长程任务能力，输出细腻可靠，适合高难度专业工作。",
+    "model_id": 990000107,
+    "model_name": "op-5",
+    "model_type": "chat",
+    "online_lines": 25,
+    "output_price_min": 4.5522,
+    "price_available": true,
+    "price_max": 93.555,
+    "price_min": 0.9234,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 829,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.82,
+    "display_name": "GEM-3.1-TTS",
+    "fastest_seconds": 22,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM-3.1 原生文字转语音模型，支持30种预置音色和24种语言，支持双人对话，支持自然语言描述语气，速度更快、价格更优。\n\n支持各种长文本朗读，有声小说，多人对话，爽得飞起。",
+    "model_id": 104,
+    "model_name": "gem-3.1-tts",
+    "model_type": "audio",
+    "online_lines": 2,
+    "output_price_min": 66.0474,
+    "price_available": true,
+    "price_max": 5.508,
+    "price_min": 3.3048,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 826,
+    "status": "normal",
+    "tags": [
+      "文字转语音",
+      "多音色",
+      "多语言"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "即梦 4.5",
+    "fastest_seconds": 32.05,
+    "icon": "https://cos.lingkeai.vip/jimeng.svg",
+    "intro": "字节跳动即梦图像模型（Seedream 4.5），支持最高4K超清输出。强项是高密度文字渲染与排版设计，中文海报、品牌KV、Logo与小字号说明文字表现出色；多图编辑的主体识别与一致性大幅提升，参考图细节保留精准，人像肤色与面部细节自然。支持文生图、单图/多图编辑与组图连续输出，适合电商商品图、广告海报、人像精修等商业设计场景。",
+    "model_id": 24,
+    "model_name": "doubao-seedream-4-5-251128",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.405,
+    "price_min": 0.405,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 823,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.01,
+    "display_name": "SD 2.5 参考生 按秒",
+    "fastest_seconds": 161.6,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦新一代旗舰 Seedance 2.5 的按秒计费分支（参考生模式）：上传 1~30 张参考图，模型智能融合角色、风格、元素与构图生成新视频；按秒结算价格透明，4~30 秒灵活时长，30 秒长叙事一镜到底，480p / 720p / 1080p 三档分辨率，自动生成有声视频。生成失败自动退款。",
+    "model_id": 194,
+    "model_name": "seedance-2.5-anmiao",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.7776,
+    "price_min": 0.5508,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 820,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "参考生视频",
+      "30秒长视频",
+      "有声视频",
+      "按秒计费",
+      "1080p",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 87.43,
+    "display_name": "mimo-v2.6-pro",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/mimo_bai.svg",
+    "intro": "小米自研 MiMo-V2.6-Pro 旗舰大模型，支持文本对话与图片理解，具备深度思考与工具调用能力，适配复杂推理与长上下文场景。",
+    "model_id": 221,
+    "model_name": "mimo-v2.6-pro",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 9.72,
+    "price_available": true,
+    "price_max": 4.86,
+    "price_min": 4.86,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 817,
+    "status": "degraded",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "小米"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 100,
+    "display_name": "快乐马-参考生",
+    "fastest_seconds": 181,
+    "icon": "https://cos.lingkeai.vip/happyhorse.svg",
+    "intro": "阿里百炼 HappyHorse 参考生（R2V）：可把多张参考图中的角色/物件融合进同一段短片。支持 720P/1080P、约 3–15 秒、多种画面比例（如 16:9、9:16）。",
+    "model_id": 107,
+    "model_name": "happyhorse-r2v",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8748,
+    "price_min": 0.8456,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 814,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "多主体融合",
+      "character指代",
+      "角色一致",
+      "多宽高比",
+      "720P",
+      "1080P",
+      "阿里云百炼"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 100,
+    "display_name": "可灵-V3-Omni",
+    "fastest_seconds": 59.07,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "快手可灵第三代Omni旗舰图像模型，支持最高4K超清输出与“图片系列模式”——一次生成2~9张角色、场景、风格连贯的系列图，天生适合分镜与连续叙事。参考图与参考主体合计最多10个，多图融合与主体一致性表现强悍，画面质感、材质纹理与电影化构图突出，适合IP多场景创作、影视分镜、高清海报与品牌视觉资产的专业生产。",
+    "model_id": 65,
+    "model_name": "kling-v3-omni",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1944,
+    "price_min": 0.1944,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 811,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图",
+      "多图融合",
+      "4k",
+      "高清"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-5.6 terra",
+    "fastest_seconds": 12,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-5.6 terra 是新一代旗舰模型，全面提升对话流畅度、多模态理解与代码能力，适合高质量多轮对话与专业场景。",
+    "model_id": 149,
+    "model_name": "tt-5.6-terra",
+    "model_type": "chat",
+    "online_lines": 25,
+    "output_price_min": 4.86,
+    "price_available": true,
+    "price_max": 23.814,
+    "price_min": 0.81,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 808,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 100,
+    "display_name": "海螺 H3 首尾帧",
+    "fastest_seconds": 302.3,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 图生视频：上传首帧或首尾帧图片，配合描述词生成 2K 有声视频。比例自动贴合输入图片，4~15 秒灵活时长，按秒计费；必须上传至少 1 张图片，不支持纯文字生成。",
+    "model_id": 164,
+    "model_name": "hailuo-h3-shouweizhen",
+    "model_type": "video",
+    "online_lines": 5,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.729,
+    "price_min": 0.0292,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 805,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首尾帧",
+      "有声视频",
+      "2K",
+      "高清"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 84.86,
+    "display_name": "千问-image-max",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里千问图像模型（Qwen-Image），中文文字渲染是其最强王牌——多行段落、对联、店铺招牌、书法、PPT页面与图文混排均能精准生成，中文图内文字表现业界顶尖。支持文生图与图像编辑双模式：编辑模式最多3张参考图融合，可精确修改图内文字、增删移动物体、改变人物姿态、迁移风格，同时保持原图语义与外观一致，适合中文海报、广告宣传页与图片文字精修。",
+    "model_id": 51,
+    "model_name": "qwen-image",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.405,
+    "price_min": 0.405,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 802,
+    "status": "degraded",
+    "tags": [
+      "文生图",
+      "图像编辑",
+      "多图融合"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "千问 3.8 Max",
+    "fastest_seconds": 1,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问 3.8 Max，千问系列最新旗舰之作，在复杂推理、知识问答与专业写作上全面升级，支持超长上下文与联网搜索，具备文档理解能力，是追求最强效果的首选。",
+    "model_id": 178,
+    "model_name": "qwen3.8-max",
+    "model_type": "chat",
+    "online_lines": 5,
+    "output_price_min": 37.26,
+    "price_available": true,
+    "price_max": 21.4164,
+    "price_min": 12.636,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 799,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "长上下文",
+      "联网搜索",
+      "旗舰"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.97,
+    "display_name": "视频超分",
+    "fastest_seconds": 222.33,
+    "icon": "https://cos.lingkeai.vip/video-enhance.svg",
+    "intro": "通用视频超分与画质增强：上传任意视频（最高 2K 输入），一键提升到 720P～8K，可选智能插帧到 60/120fps，自动完成画面增强、锐化与色彩优化。按视频时长 × 所选档位计费，适合 AI 生成视频、短剧、UGC 短视频与老片修复。",
+    "model_id": 196,
+    "model_name": "video-enhance",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.0224,
+    "price_min": 0.0224,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 796,
+    "status": "normal",
+    "tags": [
+      "视频超分",
+      "智能插帧",
+      "画质增强",
+      "4K",
+      "老片修复"
+    ],
+    "vendor": "星河智云"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "OP-4.6",
+    "fastest_seconds": 4.19,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "同系列中最聪明的“逻辑怪兽”，在复杂逻辑推理、数学证明及创意写作的细腻度上排名第一，文采斐然且极难被检测出是AI。",
+    "model_id": 33,
+    "model_name": "op-4-6",
+    "model_type": "chat",
+    "online_lines": 15,
+    "output_price_min": 15.552,
+    "price_available": true,
+    "price_max": 46.98,
+    "price_min": 3.24,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 793,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 78.46,
+    "display_name": "海螺 音乐生成 2.5",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺音乐生成模型，输入歌词和风格描述即可生成完整歌曲。支持 AI 歌词创作、14+ 曲式结构标签精准控制、多风格混合（流行/摇滚/电子/古典/爵士等），带来高保真人声演唱和专业级编曲混音。",
+    "model_id": 46,
+    "model_name": "music-2.5",
+    "model_type": "audio",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 1.62,
+    "price_min": 1.62,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 790,
+    "status": "degraded",
+    "tags": [
+      "音乐生成",
+      "歌词生成",
+      "AI作曲"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 87.74,
+    "display_name": "可灵-V3",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "快手可灵第三代图像生成模型，支持文生图与单图参考图生图两种模式，1K标清/2K高清可选，单次最多输出9张，光影质感与细节表现力全面升级。定位快速出图与高性价比迭代，适合概念草图、普通海报、社媒图片与单主体商品图等日常创作场景。",
+    "model_id": 64,
+    "model_name": "kling-v3",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1944,
+    "price_min": 0.1944,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 787,
+    "status": "degraded",
+    "tags": [
+      "文生图",
+      "图生图",
+      "高清"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.96,
+    "display_name": "海螺 H3 Max 文生视频",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 Max（MiniMax-H3-Max）极速视频生成模型，出片速度大幅快于标准版 H3。纯文字描述直出 480P / 768P 有声视频，动作自然、物理真实。支持 5~15 秒灵活时长与六种画面比例，按秒计费；480P 单价最低，适合快速试稿与批量出片。",
+    "model_id": 191,
+    "model_name": "hailuo-h3-max",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.5346,
+    "price_min": 0.5346,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 784,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "有声视频",
+      "极速生成",
+      "高性价比"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GLM-5.3",
+    "fastest_seconds": 29.77,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "intro": "智谱最新旗舰模型 GLM-5.3，复杂软件工程与 Agent 任务能力全面进阶，编程能力较 GLM-5.2 大幅提升、公开编程基准达开源 SOTA；支持 1M 超长上下文与 128K 超长输出，深度思考恒开，具备顶尖代码能力与结构化工具调用，是国产编程与 Agent 工作流的首选。",
+    "model_id": 177,
+    "model_name": "glm-5.3",
+    "model_type": "chat",
+    "online_lines": 10,
+    "output_price_min": 25.677,
+    "price_available": true,
+    "price_max": 78.408,
+    "price_min": 7.3386,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 781,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "代码生成",
+      "工具调用",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "智谱AI"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 98.47,
+    "display_name": "SD 2.0 参考生 按秒",
+    "fastest_seconds": 108,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦 Seedance 2.0 的按秒计费分支（参考生模式）：上传 1~9 张参考图，模型智能融合风格、元素和构图生成新视频；按秒结算价格透明，Mini / 快速 / 标准 三档速度版本，480p / 720p / 1080p / 4K 四档分辨率（Mini、快速版仅 480p / 720p），4~15 秒灵活时长，自动生成有声视频。生成失败自动退款。",
+    "model_id": 197,
+    "model_name": "seedance-2.0-anmiao-cankaosheng",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1968,
+    "price_min": 0.162,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 778,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "参考生视频",
+      "有声视频",
+      "按秒计费",
+      "4K",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 92.48,
+    "display_name": "万相 2.6 图像",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里通义万相2.6图像模型，主打图像编辑与多图参考融合，中文语义理解业界领先。支持最多4张参考图，可实现“参考图1的风格+参考图2的背景”式自由组合；支持风格迁移、主体一致性生成、图内文字替换与框选区域编辑，编辑模式最高2K输出，还支持图文混排生成，适合商品图精修、人物风格化与保留主体特征的二次创作。",
+    "model_id": 29,
+    "model_name": "wan2.6-image",
+    "model_type": "image",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1134,
+    "price_min": 0.1134,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 775,
+    "status": "normal",
+    "tags": [
+      "文生图",
+      "图生图"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.85,
+    "display_name": "GEM 3 Pro",
+    "fastest_seconds": 7,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "顶级AI大脑，拥有无限上下文记忆能力，能瞬间吞噬并分析海量文档、整本小说或长视频，回答任意细节问题。",
+    "model_id": 5,
+    "model_name": "gem-3-pro",
+    "model_type": "chat",
+    "online_lines": 3,
+    "output_price_min": 10.0926,
+    "price_available": true,
+    "price_max": 21.87,
+    "price_min": 1.6686,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 772,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "哈基米"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 98.64,
+    "display_name": "SD 2.0 全能参考 按秒",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦 Seedance 2.0 多模态参考的按秒计费分支：文本 + 图片 + 视频 + 音频任意组合参考（至少 1 图或 1 视频，最多 9 图 + 3 视频 + 3 音频）。按秒计费价格透明，参考视频按其实际时长的 50% 单价另计。480p / 720p / 1080p 三档分辨率，生成失败自动退款。",
+    "model_id": 193,
+    "model_name": "seedance-2.0-anmiao-quannengcankao",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1944,
+    "price_min": 0.162,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 769,
+    "status": "normal",
+    "tags": [
+      "多模态参考",
+      "图参视参音参",
+      "有声视频",
+      "按秒计费",
+      "1080p",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "DS-V4-Flash",
+    "fastest_seconds": 9.5,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "intro": "DeepSeek V4 系列的轻量化版本，主打高性价比与高吞吐效率，适合通用对话和基础文本任务，同时支持百万Token长上下文和高效推理。",
+    "model_id": 97,
+    "model_name": "deepseek-v4-flash",
+    "model_type": "chat",
+    "online_lines": 10,
+    "output_price_min": 1.8468,
+    "price_available": true,
+    "price_max": 4.86,
+    "price_min": 0.9234,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 766,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "DeepSeek"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "SD 2.5 文生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦团队新一代旗舰视频生成模型 Seedance 2.5，纯文本直出 4~30 秒连贯有声视频，支持 30 秒长叙事一镜到底，原生支持 11 种语言提示词与配音，画面质感接近实拍影视级。按官方 Token 计费。",
+    "model_id": 168,
+    "model_name": "doubao-seedance-2-5-260628",
+    "model_type": "video",
+    "online_lines": 5,
+    "output_price_min": 54.432,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 763,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "有声视频",
+      "30秒长视频",
+      "多语言",
+      "联网搜索",
+      "即梦",
+      "高清"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.7,
+    "display_name": "GK-4.7",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "大厂直供新一代旗舰 GK-4.7，在长链路推理、代理工具调用与长上下文保持上进一步提升，保持低幻觉率与严格指令遵循，适合复杂推理、代码协作、策略分析与高实时性对话场景。",
+    "model_id": 220,
+    "model_name": "gk-4.7",
+    "model_type": "chat",
+    "online_lines": 5,
+    "output_price_min": 14.2884,
+    "price_available": true,
+    "price_max": 130.977,
+    "price_min": 4.7628,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 760,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 84.18,
+    "display_name": "GEM-2.5-TTS",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM-2.5 原生文字转语音模型，支持30种预置音色和24种语言，支持双人对话，支持自然语言描述语气，跟剪映的AI配音不是一个级别的东西。\r\n\r\n支持各种长文本朗读，有声小说，多人对话，爽得飞起。",
+    "model_id": 18,
+    "model_name": "gem-2.5-tts",
+    "model_type": "audio",
+    "online_lines": 2,
+    "output_price_min": 66.0474,
+    "price_available": true,
+    "price_max": 5.508,
+    "price_min": 3.3048,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 757,
+    "status": "degraded",
+    "tags": [
+      "文字转语音",
+      "多音色",
+      "多语言"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 76.97,
+    "display_name": "可灵-数字人",
+    "fastest_seconds": 262.67,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "可灵AI数字人模型，通过上传数字人参考图和音频文件，让图片中的人物开口说话。支持std标准模式和pro高品质模式，可定义数字人动作、情绪及运镜等。",
+    "model_id": 21,
+    "model_name": "kling-avatar-image2video",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.486,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 754,
+    "status": "degraded",
+    "tags": [
+      "数字人",
+      "视频生成"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GLM-5.3 Flash",
+    "fastest_seconds": 44.67,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "intro": "智谱 GLM-5.3 家族极速版，保留 1M 超长上下文与扎实的编程、推理底子，响应更快、成本更低；支持图片、视频、文档多模态输入与联网搜索，适合高频日常任务与轻量 Agent 工作流。",
+    "model_id": 188,
+    "model_name": "glm-5.3-flash",
+    "model_type": "chat",
+    "online_lines": 10,
+    "output_price_min": 3.7746,
+    "price_available": true,
+    "price_max": 7.8408,
+    "price_min": 1.1988,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 751,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "智谱AI"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.97,
+    "display_name": "SD 2.5 全能参考",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦团队新一代旗舰多模态参考视频生成模型 Seedance 2.5，单次最多 50 个参考素材（30 图 + 10 视频 + 10 音频），支持仅用音频生成视频，口述即可编辑/延长视频，30 秒连贯直出。按官方 Token 按是否含参考视频分档计费。",
+    "model_id": 171,
+    "model_name": "doubao-seedance-2-5-quannengcankao",
+    "model_type": "video",
+    "online_lines": 5,
+    "output_price_min": 54.432,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 748,
+    "status": "normal",
+    "tags": [
+      "多模态参考",
+      "视频编辑",
+      "视频延长",
+      "音频参考",
+      "30秒长视频",
+      "即梦",
+      "高清"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 95.35,
+    "display_name": "豆包 Seed 2.0 Pro",
+    "fastest_seconds": 3,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动豆包 Seed 2.0 Pro 旗舰模型，支持 256K 超长上下文、深度思考与联网搜索，具备图片/视频/PDF 多模态理解能力，在复杂推理、代码编程与多模态分析上表现卓越，是全能型智能助手。",
+    "model_id": 40,
+    "model_name": "doubao-seed-2-0-pro-260215",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 40.5,
+    "price_available": true,
+    "price_max": 8.1,
+    "price_min": 8.1,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 745,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 85.42,
+    "display_name": "Omni 1.1",
+    "fastest_seconds": 96.38,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "Omni 1.1 是多模态 AI 视频大模型的升级版本，支持文生视频与首帧图生视频，成片自带音效。相比上一代新增 1080P 与 4K 两档高清输出，时长可在 3-10 秒之间任意选择，首帧还原度高、画面连贯稳定。",
+    "model_id": 204,
+    "model_name": "omni-1.1",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.2916,
+    "price_min": 0.2916,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 742,
+    "status": "degraded",
+    "tags": [
+      "文生视频",
+      "首帧生视频",
+      "有音视频",
+      "3-10秒",
+      "1080P",
+      "4K"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.96,
+    "display_name": "DS-V4-Flash-Vision-Exp",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "intro": "深度求索 DeepSeek V4 Flash 的多模态实验版，在保持 Flash 级高性价比的同时新增图像理解能力，支持百万Token长上下文与工具调用，适合看图对话、长文档理解和多模态 Agent 任务。",
+    "model_id": 181,
+    "model_name": "deepseek-v4-flash-vision-exp",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 7.29,
+    "price_available": true,
+    "price_max": 2.6406,
+    "price_min": 2.43,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 739,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "DeepSeek"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.25,
+    "display_name": "Vidu Q3 Turbo 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu Q3 Turbo 参考生极速视频模型，上传 1-7 张参考图，AI 以图中主体为参考生成主体一致的有声视频；不传图则走文生兜底。音视频同步直出，支持 540P/720P/1080P 与 1-16 秒时长，按秒计费，又快又省、主体一致性优秀，特别适合漫剧与 IP 形象创作。",
+    "model_id": 128,
+    "model_name": "viduq3-turbo-cankaosheng",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.0972,
+    "price_min": 0.0972,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 736,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "文生视频",
+      "有声视频",
+      "1080p",
+      "多图参考",
+      "极速"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "SN-5",
+    "fastest_seconds": 1,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "SN-5 是大厂直供新一代均衡旗舰，编码与代理能力全面升级，逻辑严谨、输出可靠，专为编码、代理和企业工作流打造。",
+    "model_id": 147,
+    "model_name": "sn-5",
+    "model_type": "chat",
+    "online_lines": 29,
+    "output_price_min": 4.2768,
+    "price_available": true,
+    "price_max": 37.422,
+    "price_min": 0.8586,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 733,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.99,
+    "display_name": "Vidu Q3",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu 推出的 Q3 系列视频生成模型，支持文生视频、首帧图生视频、首尾帧过渡视频三种模式。内置音视频同步直出能力，生成的视频自带台词和音效。提供快速(turbo)和高质量(pro)两种版本，最长支持16秒视频生成。",
+    "model_id": 53,
+    "model_name": "viduq3",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.3232,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 730,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "首帧参考图",
+      "首尾帧",
+      "有声视频",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GK-4.6",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "大厂直供新一代旗舰 GK-4.6，在长链路推理、代理工具调用与长上下文保持上进一步提升，保持低幻觉率与严格指令遵循，适合复杂推理、代码协作、策略分析与高实时性对话场景。",
+    "model_id": 172,
+    "model_name": "gk-4.6",
+    "model_type": "chat",
+    "online_lines": 9,
+    "output_price_min": 2.2356,
+    "price_available": true,
+    "price_max": 25.7256,
+    "price_min": 0.7452,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 727,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.8,
+    "display_name": "可灵-V3-video",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "快手可灵第三代视频生成模型，支持文生视频和图生视频，支持首尾帧控制，标准/高品质双模式，5-15秒有声视频，画质和运动表现全面升级。",
+    "model_id": 66,
+    "model_name": "kling-v3-video",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 4.374,
+    "price_min": 3.6434,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 724,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "有声视频",
+      "首尾帧",
+      "高清"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 92.98,
+    "display_name": "GLM-5.3 FlashX",
+    "fastest_seconds": 86,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "intro": "智谱 GLM-5.3 家族 FlashX，保留扎实的编程、推理底子，响应更快；支持图片、视频、文档多模态输入与联网搜索，适合高频日常任务与轻量 Agent 工作流。",
+    "model_id": 216,
+    "model_name": "glm-5.3-flashx",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 11.34,
+    "price_available": true,
+    "price_max": 3.24,
+    "price_min": 3.24,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 721,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "智谱AI"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 95.26,
+    "display_name": "万相3.0 文生视频",
+    "fastest_seconds": 820.75,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相3.0文生视频模型，纯文字直出最长30秒的1080P有声视频，支持智能时长（模型按叙事自动定长）与2-30秒任意秒数，提供标准版与高速版双档位。",
+    "model_id": 184,
+    "model_name": "wan3.0-video",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.486,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 718,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "有声视频",
+      "30秒长视频",
+      "智能时长",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "OP-4.7",
+    "fastest_seconds": 4,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "同系列最新一代旗舰模型，在复杂逻辑推理、数学证明及创意写作的细腻度上进一步提升，文采斐然且极难被检测出是AI。",
+    "model_id": 90,
+    "model_name": "op-4-7",
+    "model_type": "chat",
+    "online_lines": 37,
+    "output_price_min": 15.552,
+    "price_available": true,
+    "price_max": 93.555,
+    "price_min": 3.24,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 715,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 97.3,
+    "display_name": "万相3.0 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相3.0参考生视频模型：文字直出，或用最多10张参考图定妝定景；还能上传PPT/PDF/Word文档或网页链接，一键把图文内容转成最长30秒的1080P有声讲解视频。",
+    "model_id": 186,
+    "model_name": "wan3.0-video-cankaosheng",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.486,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 712,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "参考生视频",
+      "文档生视频",
+      "网页生视频",
+      "有声视频",
+      "30秒长视频",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 93.69,
+    "display_name": "DS-V4-Pro-0813",
+    "fastest_seconds": 2.25,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "intro": "深度求索 DeepSeek V4 Pro 的 0813 版本快照，具备顶尖推理与 Agent 能力，支持超长上下文，适合复杂任务与深度分析。",
+    "model_id": 180,
+    "model_name": "deepseek-v4-pro-0813",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 45.36,
+    "price_available": true,
+    "price_max": 16.2,
+    "price_min": 16.2,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 709,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "DeepSeek"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "SD 2.0 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦团队推出的旗舰级视频生成模型 Seedance 2.0，全球第一梯队超级多模态视频生成。支持文生视频、首帧图生视频、首尾帧三种模式，自动生成有声视频，4~15秒灵活时长，标准/快速双版本可选。按官方 Token 计费。",
+    "model_id": 74,
+    "model_name": "kwvideo-v2",
+    "model_type": "video",
+    "online_lines": 4,
+    "output_price_min": 32.967,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 706,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "有声视频",
+      "首尾帧",
+      "即梦",
+      "高清"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 80,
+    "display_name": "TT-6 luna",
+    "fastest_seconds": 45.22,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-6 luna 是新一代旗舰模型，推理、代码与多模态理解全面升级，支持超长上下文，适合专业开发与高质量多轮对话。",
+    "model_id": 219,
+    "model_name": "tt-6-luna",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 1.7464,
+    "price_available": true,
+    "price_max": 0.3493,
+    "price_min": 0.3493,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 703,
+    "status": "degraded",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 97.37,
+    "display_name": "Vidu Q3 Drama",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu Q3 Drama 影视级剧情视频模型，专为精品短剧与 AI 漫剧打造。上传1-7张参考图片，AI 以图中主体为参考，生成主体一致、人物站位与对话精准、镜头叙事更强的有声剧情视频，音画同出。图片为必传。",
+    "model_id": 135,
+    "model_name": "viduq3-drama",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.7797,
+    "price_min": 0.7797,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 700,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "精品剧",
+      "多图参考",
+      "有声视频",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 82.37,
+    "display_name": "千问 3.8 Max 0902",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问 3.8 Max 0902 快照版，在 3.8 Max 基础上强化视觉理解（图片与视频）与深度思考，复杂推理、知识问答与专业写作全面在线，支持超长上下文。",
+    "model_id": 210,
+    "model_name": "qwen3.8-max-0902",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 82.62,
+    "price_available": true,
+    "price_max": 27.54,
+    "price_min": 27.54,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 697,
+    "status": "degraded",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "深度思考",
+      "长上下文",
+      "联网搜索",
+      "旗舰"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.07,
+    "display_name": "SD 2.0 首尾帧 按秒",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦 Seedance 2.0 的按秒计费分支，价格透明一眼见底、按秒结算不猜 token。支持文生视频、首帧图生视频、首尾帧三种模式，Mini / 快速 / 标准 三档速度版本，480p / 720p / 1080p / 4K 四档分辩率（Mini、快速版仅 480p / 720p），4~15 秒灵活时长，自动生成有声视频。生成失败自动退款。",
+    "model_id": 173,
+    "model_name": "seedance-2.0-anmiao",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1968,
+    "price_min": 0.1968,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 694,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "参考生视频",
+      "有声视频",
+      "按秒计费",
+      "1080p",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "千问 3.8 Flash",
+    "fastest_seconds": 13.2,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问 3.8 Flash，3.8 系列高性价比快速版，支持图片与文档输入、联网搜索，超长上下文，响应快、成本低，适合高频日常任务。",
+    "model_id": 189,
+    "model_name": "qwen3.8-flash",
+    "model_type": "chat",
+    "online_lines": 3,
+    "output_price_min": 0.9234,
+    "price_available": true,
+    "price_max": 1.458,
+    "price_min": 0.3078,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 691,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.29,
+    "display_name": "SD 2.5 首尾帧 按秒",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦新一代旗舰 Seedance 2.5 的按秒计费分支（首尾帧模式）：上传 1 张首帧或首尾 2 张图 + 描述词，生成 4~30 秒有声视频；按秒结算价格透明，480p / 720p / 1080p 三档分辨率，画面质感接近实拍影视级。生成失败自动退款。",
+    "model_id": 199,
+    "model_name": "seedance-2.5-anmiao-shouweizhen",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.729,
+    "price_min": 0.5508,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 688,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首帧参考图",
+      "首尾帧",
+      "30秒长视频",
+      "有声视频",
+      "按秒计费",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "SN-4.6",
+    "fastest_seconds": 62,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "SN-4.6 可大规模提供前沿智能，专为编码、代理和企业工作流而打造，均衡型全能选手，以安全拟人著称。",
+    "model_id": 38,
+    "model_name": "sn-4-6",
+    "model_type": "chat",
+    "online_lines": 6,
+    "output_price_min": 34.02,
+    "price_available": true,
+    "price_max": 28.35,
+    "price_min": 7.29,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 685,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.19,
+    "display_name": "快乐马-视频编辑",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/happyhorse.svg",
+    "intro": "阿里百炼 HappyHorse 视频编辑：以一段已有视频为主线，可选用参考图锚定物体或人物外形，再配合自然语言完成风格迁移、换装、局部改写等；支持 720P/1080P，成片时长与原片相关。⚠️ 特殊计费：按「输入视频时长 + 输出视频时长」合计扣费，例如输入6秒+输出8秒=按14秒计，与常规仅按输出时长计费的视频模型不同，下单前请留意。",
+    "model_id": 108,
+    "model_name": "happyhorse-video-edit",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8748,
+    "price_min": 0.8456,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 682,
+    "status": "normal",
+    "tags": [
+      "视频编辑",
+      "指令改片",
+      "换装",
+      "风格迁移",
+      "可选参考图",
+      "720P",
+      "1080P",
+      "阿里云百炼"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-4o",
+    "fastest_seconds": 2.5,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-4o 是一款全能多模态模型，原生支持文本与图像理解，响应快、性价比高，适合日常多轮对话、图文分析与代码处理。",
+    "model_id": 139,
+    "model_name": "tt-4o",
+    "model_type": "chat",
+    "online_lines": 6,
+    "output_price_min": 12.8466,
+    "price_available": true,
+    "price_max": 28.35,
+    "price_min": 3.2076,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 679,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.3,
+    "display_name": "Pix V6 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/PixVerse.svg",
+    "intro": "PixVerse V6 多模态视频生成，支持文生视频、图生视频、首尾帧三种模式。不传图=文生视频，1张图=首帧生视频，2张图=首尾帧，自动生成有声视频，支持360P-1080P分辨率，3-15秒。",
+    "model_id": 77,
+    "model_name": "pixverse-v6-shouweizhen",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.2722,
+    "price_min": 0.2159,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 676,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "有声视频",
+      "首尾帧",
+      "高清"
+    ],
+    "vendor": "PixVerse"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "Kimi K2.6",
+    "fastest_seconds": 2,
+    "icon": "https://cos.lingkeai.vip/kimi.svg",
+    "intro": "月之暗面（Moonshot AI）Kimi K2.6 通用思考大模型，具备更强更稳的长程代码编写能力，指令遵循与自我纠错显著提升，高质量完成对话与智能体任务。",
+    "model_id": 134,
+    "model_name": "kimi-k2.6",
+    "model_type": "chat",
+    "online_lines": 7,
+    "output_price_min": 18.144,
+    "price_available": true,
+    "price_max": 10.53,
+    "price_min": 5.022,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 673,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "月之暗面"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.47,
+    "display_name": "可灵-Omni 视频参考",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "可灵 V3 Omni 视频参考模式，上传参考视频 + 可选0-4张参考图，支持视频参考（参考运镜/风格生新视频）和视频编辑（指令修改原视频）两种玩法，按秒计费。",
+    "model_id": 69,
+    "model_name": "kling-v3-omni-videoref",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8748,
+    "price_min": 0.7274,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 670,
+    "status": "normal",
+    "tags": [
+      "视频参考",
+      "视频编辑",
+      "高清"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.59,
+    "display_name": "豆包 Seed 2.1 Turbo",
+    "fastest_seconds": 68.88,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动豆包 Seed 2.1 Turbo 高速模型，兼顾速度与质量，支持长上下文、深度思考与联网搜索，可分析图片、视频、PDF 文档等多模态内容。",
+    "model_id": 144,
+    "model_name": "doubao-seed-2-1-turbo-260628",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 18.792,
+    "price_available": true,
+    "price_max": 4.86,
+    "price_min": 3.726,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 667,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.95,
+    "display_name": "快乐马1.1-参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/happyhorse.svg",
+    "intro": "阿里百炼 HappyHorse 参考生（R2V）：可把多张参考图中的角色/物件融合进同一段短片。支持 720P/1080P、约 3–15 秒、多种画面比例（如 16:9、9:16）。",
+    "model_id": 137,
+    "model_name": "happyhorse-1.1-r2v",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8456,
+    "price_min": 0.81,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 664,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "多主体融合",
+      "character指代",
+      "角色一致",
+      "多宽高比",
+      "720P",
+      "1080P",
+      "阿里云百炼"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "TT-5.4 mini",
+    "fastest_seconds": 1,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-5.4 mini 将 TT-5.4 的优势融入到一个更快、更高效的模型中，专为高负载工作而设计。",
+    "model_id": 92,
+    "model_name": "tt-5.4-mini",
+    "model_type": "chat",
+    "online_lines": 13,
+    "output_price_min": 5.7996,
+    "price_available": true,
+    "price_max": 9.72,
+    "price_min": 0.9882,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 661,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.4,
+    "display_name": "Vidu Q3 Turbo",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu Q3 Turbo 极速有声视频模型，上传 1 张图走首帧图生视频、2 张图走首尾帧过渡，音视频同步直出、台词音效一键生成。支持 540P/720P/1080P 与 1-16 秒时长，按秒计费，又快又省，是批量出片与快速验证创意的首选。",
+    "model_id": 127,
+    "model_name": "viduq3-turbo",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.0972,
+    "price_min": 0.0972,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 658,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首尾帧",
+      "有声视频",
+      "1080p",
+      "高清",
+      "极速"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.99,
+    "display_name": "HK-4.5",
+    "fastest_seconds": 3,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "均衡型全能选手，以安全拟人著称，且具备强大的“计算机操作能力”，能模拟人类去点击鼠标、操作软件来帮你完成繁琐工作。",
+    "model_id": 10,
+    "model_name": "hk-4.5",
+    "model_type": "chat",
+    "online_lines": 5,
+    "output_price_min": 11.016,
+    "price_available": true,
+    "price_max": 11.016,
+    "price_min": 2.2032,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 655,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 93.64,
+    "display_name": "可灵-动作控制 V3",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "可灵AI动作控制V3模型，基于V3引擎升级，通过上传参考图像和动作视频，让图片中的人物按照视频中的动作运动。支持std标准模式和pro高品质模式，可选择保留视频原声，人物朝向可与图片或视频一致。",
+    "model_id": 70,
+    "model_name": "kling-motion-control-v3",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 1.1154,
+    "price_min": 0.7274,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 652,
+    "status": "normal",
+    "tags": [
+      "动作控制",
+      "视频生成",
+      "高清"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.94,
+    "display_name": "TT-5.2 Codex",
+    "fastest_seconds": 2,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "专为代码开发微调的工程级模型，拥有全栈架构师视野，能一次性读取并理解整个项目的代码库，进行系统级架构优化与Bug排查。",
+    "model_id": 7,
+    "model_name": "tt-5.2",
+    "model_type": "chat",
+    "online_lines": 4,
+    "output_price_min": 17.982,
+    "price_available": true,
+    "price_max": 12.5064,
+    "price_min": 2.2518,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 649,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 98.45,
+    "display_name": "MiniMax H3 Max",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 Max 极速版一体：文生 / 首尾帧一张卡全包，出片速度大幅快于标准版 H3，直出 480P / 768P 有声视频，5～15 秒灵活时长。按秒计费、下单即扣清；480P 单价最低，适合快速试稿与批量出片。",
+    "model_id": 212,
+    "model_name": "minimax-h3-max",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.5346,
+    "price_min": 0.5346,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 646,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "首尾帧",
+      "有声视频",
+      "极速生成",
+      "高性价比"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GLM-5.2",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "intro": "智谱 GLM-5 系列旗舰开源大模型，744B 参数 MoE 架构，支持真正可用的 1M 超长上下文与 128K 超长输出，主打 Agentic Coding 与长程工程任务，具备顶尖代码能力、长程任务规划与结构化工具调用，是国产编程与 Agent 工作流的首选。",
+    "model_id": 130,
+    "model_name": "glm-5.2",
+    "model_type": "chat",
+    "online_lines": 18,
+    "output_price_min": 18.144,
+    "price_available": true,
+    "price_max": 22.032,
+    "price_min": 5.832,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 643,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "代码生成",
+      "工具调用",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "智谱AI"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 63.12,
+    "display_name": "VO3.1",
+    "fastest_seconds": 187.5,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "VO3.1 主打高可控性，凭借独特的“首尾帧控制”技术（补全起始与结束画面）和精准运镜指令，能生成自带背景音乐的专业级视频。",
+    "model_id": 4,
+    "model_name": "vo3.1",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.648,
+    "price_min": 0.648,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 640,
+    "status": "unavailable",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "首帧参考图",
+      "首尾帧",
+      "高清"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GK-4.5",
+    "fastest_seconds": 10,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "大厂直供新一代旗舰 GK-4.5，在复杂推理、代理工具调用和实时资讯整合能力上进一步提升，兼顾低幻觉率与严格指令遵循，适合复杂推理、代码协作、策略分析与高实时性对话场景。",
+    "model_id": 152,
+    "model_name": "gk-4.5",
+    "model_type": "chat",
+    "online_lines": 8,
+    "output_price_min": 4.86,
+    "price_available": true,
+    "price_max": 22.032,
+    "price_min": 1.62,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 637,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 93.62,
+    "display_name": "万相-视频换人",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "万相2.2视频换人模型，上传一张人物图片和一段参考视频，AI将视频中的人物替换为图片中的人物，支持标准模式和专业模式。无需输入提示词。",
+    "model_id": 52,
+    "model_name": "wan2.2-animate-mix",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.3402,
+    "price_min": 0.3402,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 634,
+    "status": "normal",
+    "tags": [
+      "视频换人"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 94.16,
+    "display_name": "Step 3.7 Flash",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/step.svg",
+    "intro": "阶跃星辰（StepFun）Step 3.7 Flash 多模态大模型，主打极速响应与高性价比，具备视觉理解、逻辑推理与知识问答能力，支持长上下文，适合日常对话、文档理解与高频调用场景。",
+    "model_id": 131,
+    "model_name": "stepfun/step-3.7-flash",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 13.77,
+    "price_available": true,
+    "price_max": 2.43,
+    "price_min": 2.43,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 631,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "阶跃星辰"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.79,
+    "display_name": "可灵-Omni 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "可灵 V3 Omni 首尾帧模式，上传1张图作为首帧，或2张图作为首帧+尾帧，AI智能分镜生成有声视频，支持标准/高品质双模式，5-15秒。",
+    "model_id": 67,
+    "model_name": "kling-v3-omni-shouweizhen",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 3.888,
+    "price_min": 3.2384,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 628,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "有声视频",
+      "首尾帧",
+      "高清"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "千问 3.7 Max",
+    "fastest_seconds": 2,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问 3.7 Max，千问 3.7 系列旗舰之作，原生多模态大模型，支持 100 万 Token 超长上下文与联网搜索，具备图片/视频/文档理解能力，在复杂推理、知识问答与多模态任务上表现顶尖，是追求最强效果的首选。",
+    "model_id": 129,
+    "model_name": "qwen3.7-max",
+    "model_type": "chat",
+    "online_lines": 10,
+    "output_price_min": 32.076,
+    "price_available": true,
+    "price_max": 33.0156,
+    "price_min": 10.692,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 625,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "旗舰"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.21,
+    "display_name": "SD 2.5 文生 按秒",
+    "fastest_seconds": 145,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦新一代旗舰 Seedance 2.5 的按秒计费分支（文生模式）：纯文本直出 4~30 秒连贯有声视频，30 秒长叙事一镜到底；按秒结算价格透明，480p / 720p / 1080p 三档分辨率，画面质感接近实拍影视级。生成失败自动退款。",
+    "model_id": 198,
+    "model_name": "seedance-2.5-anmiao-wensheng",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.7776,
+    "price_min": 0.5508,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 622,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "30秒长视频",
+      "有声视频",
+      "按秒计费",
+      "1080p",
+      "即梦"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.66,
+    "display_name": "OP-4.5",
+    "fastest_seconds": 2,
+    "icon": "https://cos.lingkeai.vip/op.svg",
+    "intro": "同系列中最聪明的“逻辑怪兽”，在复杂逻辑推理、数学证明及创意写作的细腻度上排名第一，文采斐然且极难被检测出是AI。",
+    "model_id": 9,
+    "model_name": "op-4-5",
+    "model_type": "chat",
+    "online_lines": 6,
+    "output_price_min": 27.5076,
+    "price_available": true,
+    "price_max": 55.0314,
+    "price_min": 5.508,
+    "protocols": [
+      "anthropic"
+    ],
+    "sort_weight": 619,
+    "status": "normal",
+    "tags": [
+      "写代码",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 97.97,
+    "display_name": "可灵-动作控制",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kling.svg",
+    "intro": "可灵AI动作控制模型，通过上传参考图像和动作视频，让图片中的人物按照视频中的动作运动。支持std标准模式和pro高品质模式，可选择保留视频原声，人物朝向可与图片或视频一致。",
+    "model_id": 19,
+    "model_name": "kling-motion-control",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.7574,
+    "price_min": 0.648,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 616,
+    "status": "normal",
+    "tags": [
+      "动作控制",
+      "视频生成"
+    ],
+    "vendor": "快手"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.69,
+    "display_name": "MiniMax-M3",
+    "fastest_seconds": 1.5,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax-M3 是 MiniMax 最新旗舰 Agentic 模型，在代码生成、工具调用与 Agent 工作流上达到 SOTA，原生支持 1M 超长上下文与图片/视频多模态理解。",
+    "model_id": 121,
+    "model_name": "MiniMax-M3",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 23.1336,
+    "price_available": true,
+    "price_max": 13.608,
+    "price_min": 5.7996,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 613,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 80.47,
+    "display_name": "VIDU-音乐MV",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu 音乐MV：上传 1～7 张人物/风格参考图 + 1 个音频（首尾合成1～180秒）即可生成一条有叙事、有画面的 MV，支持 540p/720p/1080p 多画幅 + 可选对口型 + 自动字幕，按实际成片秒数计费。",
+    "model_id": 112,
+    "model_name": "vidu-mv",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.1674,
+    "price_min": 0.1674,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 610,
+    "status": "degraded",
+    "tags": [
+      "音乐MV",
+      "图生视频",
+      "音频驱动",
+      "对口型",
+      "自动字幕",
+      "540P/720P/1080P",
+      "多画幅",
+      "按秒计费"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 92.62,
+    "display_name": "豆包 Seed Evolving",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动豆包 Seed Evolving 持续进化旗舰模型，自动迭代至最新一代能力，支持超长上下文、深度思考与联网搜索，具备图片/视频/PDF 多模态理解，适合复杂推理、长文档分析与多模态问答。",
+    "model_id": 142,
+    "model_name": "doubao-seed-evolving",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 48.6,
+    "price_available": true,
+    "price_max": 9.72,
+    "price_min": 9.72,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 607,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 98.37,
+    "display_name": "万相3.0 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相3.0图生视频模型，上传1张图作首帧、2张图作首尾帧过渡，生成最长30秒的1080P有声视频；支持智能时长与2-30秒自定义，标准版/高速版可选。",
+    "model_id": 185,
+    "model_name": "wan3.0-video-shouweizhen",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.486,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 604,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首尾帧",
+      "有声视频",
+      "30秒长视频",
+      "智能时长",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 96.72,
+    "display_name": "Kimi K2.7 Code 高速版",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kimi.svg",
+    "intro": "月之暗面 Kimi K2.7 Code 高速版，在代码大模型能力基础上主打更快的响应速度与更高吞吐，适合对实时性要求高的编程与智能体场景。",
+    "model_id": 133,
+    "model_name": "kimi/kimi-k2.7-code-highspeed",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 87.48,
+    "price_available": true,
+    "price_max": 25.92,
+    "price_min": 21.06,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 601,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "月之暗面"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 96.33,
+    "display_name": "Omni Flash 首尾帧",
+    "fastest_seconds": 132.5,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "Omni Flash 首尾帧由多模态大模型驱动，上传首帧与尾帧两张图，模型自动补全中间的运镜与转场，生成 10 秒 720P 视频。成片自带音效、过渡自然，适合做转场特效、产品变形与创意衔接。",
+    "model_id": 190,
+    "model_name": "omni_flash-10s-fl",
+    "model_type": "video",
+    "online_lines": 4,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8262,
+    "price_min": 0.8262,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 598,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首尾帧",
+      "有音视频",
+      "10秒",
+      "720P"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GEM 3.1 flash",
+    "fastest_seconds": 1.89,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3.1 系列最具成本效益的多模态模型，可为高频轻量级任务提供最快的性能。最适合处理海量代理任务、简单的数据提取任务，以及预算和速度是主要限制因素的极低延迟应用。",
+    "model_id": 54,
+    "model_name": "gem-3.1-flash",
+    "model_type": "chat",
+    "online_lines": 16,
+    "output_price_min": 1.2636,
+    "price_available": true,
+    "price_max": 5.832,
+    "price_min": 0.2106,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 595,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.94,
+    "display_name": "快乐马1.1-文生视频",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/happyhorse.svg",
+    "intro": "阿里百炼 HappyHorse（文生视频）：纯文本描述即可生成运动连贯、光影自然的短视频；支持 720P/1080P、3–15 秒多档时长，5 种宽高比自由选择。",
+    "model_id": 138,
+    "model_name": "happyhorse-1.1-t2v",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8456,
+    "price_min": 0.81,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 592,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "物理真实",
+      "运镜连贯",
+      "720P",
+      "1080P",
+      "多比例",
+      "阿里云百炼"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "DS-V4-Flash-0731",
+    "fastest_seconds": 1.75,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "intro": "深度求索 DeepSeek V4 Flash 的 0731 版本快照，主打高性价比与高吞吐效率，适合通用对话和基础文本任务，同时支持百万Token长上下文和高效推理。",
+    "model_id": 179,
+    "model_name": "deepseek-v4-flash-0731",
+    "model_type": "chat",
+    "online_lines": 3,
+    "output_price_min": 4.374,
+    "price_available": true,
+    "price_max": 4.131,
+    "price_min": 1.539,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 589,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "DeepSeek"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 96.59,
+    "display_name": "万相 2.6 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "万相2.6官方版参考生视频模型，支持上传参考图片提取角色形象，生成单角色或多角色互动视频。提供快速和高质量两档画质，支持720P/1080P分辨率，最长可生成10秒视频。",
+    "model_id": 56,
+    "model_name": "wan2.6-cankaosheng",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.4423,
+    "price_min": 0.4423,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 586,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 94.9,
+    "display_name": "GK-4-20",
+    "fastest_seconds": 1,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "大厂直供旗舰新一代 GK-4-20，行业领先的速度 + 代理工具调用能力，结合极低幻觉率与严格指令依从，内置「深度思考」开关：关闭=快速对话，开启=先推理再回复，一个模型涵盖日常闲聊、代码调试、复杂决策两端场景。",
+    "model_id": 94,
+    "model_name": "gk-4-20",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 33.0156,
+    "price_available": true,
+    "price_max": 11.016,
+    "price_min": 11.016,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 583,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.85,
+    "display_name": "Vidu Q3 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu Q3 参考生视频模型，上传1-7张参考图片，AI以图中主体为参考生成主体一致的有声视频。当前版本为漫剧做了针对优化，支持音画同出，最高1080P分辨率，4-16秒时长可选。",
+    "model_id": 62,
+    "model_name": "viduq3-cankaosheng",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.6085,
+    "price_min": 0.5573,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 580,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "1080p",
+      "多图参考",
+      "有声视频",
+      "高清"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "Kimi K2.7 Code",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/kimi.svg",
+    "intro": "月之暗面（Moonshot AI）Kimi K2.7 Code 代码大模型，专为编程与智能体（Agent）场景优化，擅长代码生成、补全、重构与多步工具调用，支持超长上下文。",
+    "model_id": 132,
+    "model_name": "kimi/kimi-k2.7-code",
+    "model_type": "chat",
+    "online_lines": 14,
+    "output_price_min": 18.144,
+    "price_available": true,
+    "price_max": 17.8848,
+    "price_min": 5.022,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 577,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "月之暗面"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 97.4,
+    "display_name": "海螺 H3 Max 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 Max 图生视频极速版：上传首帧或首尾两帧图片，配合描述词快速生成 480P / 768P 有声视频。比例自动贴合输入图片，5~15 秒灵活时长，按秒计费；必须上传至少 1 张图片，不支持纯文字生成。",
+    "model_id": 192,
+    "model_name": "hailuo-h3-max-shouweizhen",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.5346,
+    "price_min": 0.5346,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 574,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首尾帧",
+      "有声视频",
+      "极速生成"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.8,
+    "display_name": "DS-V3.2",
+    "fastest_seconds": 3,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "intro": "深度求索（DeepSeek）的“硬核逻辑先锋”，基于独创 MoE 架构与“深度思考”模式，拥有 100 万 token 超长上下文窗口。它在数学竞赛、代码编程及高阶逻辑推导上展现出媲美人类的专家级智能，具备卓越的自我修正能力与极致性价比，是科研难题攻关与专业开发者的核心利器。",
+    "model_id": 15,
+    "model_name": "deepseek-v3.2",
+    "model_type": "chat",
+    "online_lines": 5,
+    "output_price_min": 2.7378,
+    "price_available": true,
+    "price_max": 5.508,
+    "price_min": 1.62,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 571,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "DeepSeek"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.97,
+    "display_name": "快乐马-文生视频",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/happyhorse.svg",
+    "intro": "阿里百炼 HappyHorse（文生视频）：纯文本描述即可生成运动连贯、光影自然的短视频；支持 720P/1080P、3–15 秒多档时长，5 种宽高比自由选择。",
+    "model_id": 110,
+    "model_name": "happyhorse-t2v",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8748,
+    "price_min": 0.8456,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 568,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "物理真实",
+      "运镜连贯",
+      "720P",
+      "1080P",
+      "多比例",
+      "阿里云百炼"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.98,
+    "display_name": "GEM 3.5 flash lite",
+    "fastest_seconds": 1,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3.5 Flash-Lite 是 GEM 3.5 系列中速度最快、成本最低的轻量模型，适合翻译、分类、客服等海量高频任务，支持多模态输入，响应极快。",
+    "model_id": 162,
+    "model_name": "gem-3.5-flash-lite",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 7.7112,
+    "price_available": true,
+    "price_max": 1.539,
+    "price_min": 1.053,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 565,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 97.36,
+    "display_name": "万相 2.7 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相2.7旗舰图生视频模型，支持首帧/首尾帧两种模式。上传1张图片自动走首帧生视频，上传2张图片自动走首尾帧生视频。支持720P/1080P分辨率，最长15秒视频生成。",
+    "model_id": 87,
+    "model_name": "wan2.7-shouweizhen",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 1.458,
+    "price_min": 1.458,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 562,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首尾帧",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GEM 3 flash",
+    "fastest_seconds": 6,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "intro": "GEM 3 的轻量化版本，主打极速低延迟响应和高性价比，非常适合处理大量数据提取任务或进行即时的语音对话。",
+    "model_id": 12,
+    "model_name": "gem-3-flash",
+    "model_type": "chat",
+    "online_lines": 17,
+    "output_price_min": 2.5272,
+    "price_available": true,
+    "price_max": 5.7672,
+    "price_min": 0.162,
+    "protocols": [
+      "gemini"
+    ],
+    "sort_weight": 559,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速",
+      "哈基米"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.99,
+    "display_name": "SD 2.5 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动即梦团队新一代旗舰视频生成模型 Seedance 2.5 首尾帧模式：上传 1 张首帧或首尾 2 张图 + 描述词，生成 4~30 秒有声视频，输出比例自动跟随首帧图，画面质感接近实拍影视级。按官方 Token 计费。",
+    "model_id": 169,
+    "model_name": "doubao-seedance-2-5-shouweizhen",
+    "model_type": "video",
+    "online_lines": 5,
+    "output_price_min": 54.432,
+    "price_available": true,
+    "price_max": 0,
+    "price_min": 0,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 556,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首帧参考图",
+      "首尾帧",
+      "有声视频",
+      "30秒长视频",
+      "即梦",
+      "高清"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.97,
+    "display_name": "千问 3.5 Plus",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问3.5 Plus，原生多模态旗舰模型，支持100万Token超长上下文、深度思考与联网搜索，具备图片/视频多模态理解能力，在复杂推理、代码编程与结构化输出上表现优异。",
+    "model_id": 49,
+    "model_name": "qwen3.5-plus",
+    "model_type": "chat",
+    "online_lines": 4,
+    "output_price_min": 4.4226,
+    "price_available": true,
+    "price_max": 3.24,
+    "price_min": 0.7452,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 553,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.8,
+    "display_name": "快乐马-首帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/happyhorse.svg",
+    "intro": "阿里百炼 HappyHorse（图生视频）：以单张图片作首帧与视觉锚点，结合提示词生成运动连贯、光影自然的短视频；仅支持带图生成。支持 720P/1080P、3–15 秒多档时长，画幅随首帧自适应。",
+    "model_id": 106,
+    "model_name": "happyhorse-i2v",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8748,
+    "price_min": 0.8456,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 550,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首帧驱动",
+      "物理真实",
+      "运镜连贯",
+      "720P",
+      "1080P",
+      "阿里云百炼"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "千问 3.7 Plus",
+    "fastest_seconds": 4,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问3.7 Plus，新一代原生多模态旗舰模型，支持100万Token超长上下文、深度思考与联网搜索，在复杂推理、代码编程与多模态理解上全面升级。",
+    "model_id": 122,
+    "model_name": "qwen3.7-plus",
+    "model_type": "chat",
+    "online_lines": 10,
+    "output_price_min": 7.128,
+    "price_available": true,
+    "price_max": 9.72,
+    "price_min": 1.782,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 547,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 97.33,
+    "display_name": "Pix C1 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/PixVerse.svg",
+    "intro": "PixVerse C1 视频生成模型，专为打斗、法术特效及高速运动等动态场景优化。支持首帧生视频和首尾帧两种模式，自动生成有声视频，支持360P-1080P分辨率，1-15秒。",
+    "model_id": 83,
+    "model_name": "pixverse-c1-shouweizhen",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.9336,
+    "price_min": 0.7392,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 544,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "有声视频",
+      "首尾帧",
+      "高清",
+      "动态场景"
+    ],
+    "vendor": "PixVerse"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "千问 3.6 Plus",
+    "fastest_seconds": 6,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问3.6 Plus，新一代原生多模态旗舰模型，支持100万Token超长上下文、深度思考与联网搜索，在复杂推理、代码编程与多模态理解上全面升级。",
+    "model_id": 85,
+    "model_name": "qwen3.6-plus",
+    "model_type": "chat",
+    "online_lines": 6,
+    "output_price_min": 11.016,
+    "price_available": true,
+    "price_max": 12.96,
+    "price_min": 1.8306,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 541,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 97.4,
+    "display_name": "Pix C1 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/PixVerse.svg",
+    "intro": "PixVerse C1 视频生成模型，专为打斗、法术特效及高速运动等动态场景优化。支持文生视频和参考生两种模式，不传图自动走文生，传图自动走参考生（最多7张），自动生成有声视频，支持360P-1080P分辨率，1-15秒。",
+    "model_id": 84,
+    "model_name": "pixverse-c1-cankaosheng",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.9336,
+    "price_min": 0.7392,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 538,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "参考生",
+      "有声视频",
+      "高清",
+      "动态场景"
+    ],
+    "vendor": "PixVerse"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 97.74,
+    "display_name": "mimo-v2.5-pro",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/mimo_bai.svg",
+    "intro": "小米自研 MiMo-V2.5-Pro 旗舰大模型，支持文本对话与文档理解，具备深度思考与工具调用能力，适配复杂推理与长上下文场景。",
+    "model_id": 118,
+    "model_name": "mimo-v2.5-pro",
+    "model_type": "chat",
+    "online_lines": 2,
+    "output_price_min": 9.72,
+    "price_available": true,
+    "price_max": 12.96,
+    "price_min": 4.86,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 535,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文"
+    ],
+    "vendor": "小米"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.64,
+    "display_name": "快乐马1.1-首帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/happyhorse.svg",
+    "intro": "阿里百炼 HappyHorse（图生视频）：以单张图片作首帧与视觉锚点，结合提示词生成运动连贯、光影自然的短视频；仅支持带图生成。支持 720P/1080P、3–15 秒多档时长，画幅随首帧自适应。",
+    "model_id": 136,
+    "model_name": "happyhorse-1.1-i2v",
+    "model_type": "video",
+    "online_lines": 2,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.8456,
+    "price_min": 0.81,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 532,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "首帧驱动",
+      "物理真实",
+      "运镜连贯",
+      "720P",
+      "1080P",
+      "阿里云百炼"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.66,
+    "display_name": "豆包·虚拟陪伴",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动豆包·虚拟陪伴（Seed Character）原生角色扮演模型，擅长人设保持、剧情演绎与多轮沉浸式互动，支持图片/视频/音频多模态输入与超长上下文。",
+    "model_id": 141,
+    "model_name": "doubao-seed-character-260628",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 9.72,
+    "price_available": true,
+    "price_max": 1.944,
+    "price_min": 1.944,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 529,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "角色扮演",
+      "虚拟陪伴",
+      "多模态",
+      "长上下文"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 99.05,
+    "display_name": "万相 2.6 首帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "万相2.6官方版图生视频模型，支持首帧图片驱动和纯文本生成两种模式，自动生成有声视频。提供快速和高质量两档画质，支持720P/1080P分辨率，最长可生成15秒电影级视频。",
+    "model_id": 55,
+    "model_name": "wan2.6-shouzheng",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.5103,
+    "price_min": 0.5103,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 526,
+    "status": "normal",
+    "tags": [
+      "图生视频",
+      "文生视频",
+      "有声视频",
+      "1080p",
+      "首帧参考图",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "MiniMax-M2.7",
+    "fastest_seconds": 2,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax-M2.7 是 MiniMax 最新旗舰推理模型，在编程、工具调用和搜索、办公等生产力场景都达到或刷新了行业的 SOTA，支持 204K 长上下文和深度思考。",
+    "model_id": 82,
+    "model_name": "MiniMax-M2.7",
+    "model_type": "chat",
+    "online_lines": 3,
+    "output_price_min": 13.608,
+    "price_available": true,
+    "price_max": 5.7996,
+    "price_min": 3.402,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 523,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "长上下文"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 95.7,
+    "display_name": "万相 2.7 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相2.7旗舰参考生视频模型，支持文本生视频和参考生视频两种模式。纯文本自动走文生视频(t2v)，上传参考图片或视频后自动切换为参考生视频(r2v)。支持720P/1080P分辨率，最长15秒视频生成。",
+    "model_id": 89,
+    "model_name": "wan2.7-cankaosheng",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 1.458,
+    "price_min": 1.458,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 520,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "参考生视频",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "",
+    "composite_success_rate": null,
+    "display_name": "千问 3.8 Flash Next",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "千问 3.8 Flash Next，采用新一代高效架构的快速模型，推理效率与性价比进一步提升，支持图片与文档输入、超长上下文，适合高频日常任务。",
+    "model_id": 211,
+    "model_name": "qwen3.8-flash-next",
+    "model_type": "chat",
+    "online_lines": 0,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": null,
+    "price_min": null,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 517,
+    "status": "unavailable",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 96.39,
+    "display_name": "Pix V5.6 首尾帧",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/PixVerse.svg",
+    "intro": "PixVerse V5.6 多模态视频生成，支持文生视频、图生视频、首尾帧三种模式。不传图=文生视频，1张图=首帧生视频，2张图=首尾帧，自动生成有声视频，支持360P-1080P分辨率，5-10秒。",
+    "model_id": 72,
+    "model_name": "pixverse-v5.6-shouweizhen",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.6091,
+    "price_min": 0.6091,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 514,
+    "status": "normal",
+    "tags": [
+      "文生视频",
+      "图生视频",
+      "有声视频",
+      "首尾帧",
+      "高清"
+    ],
+    "vendor": "PixVerse"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 99.9,
+    "display_name": "TT-5.4 nano",
+    "fastest_seconds": 2.65,
+    "icon": "https://cos.lingkeai.vip/tt.svg",
+    "intro": "TT-5.4 nano 是 TT-5.4 最轻量、最快速的版本，专为对速度和成本要求极高的任务而设计。",
+    "model_id": 91,
+    "model_name": "tt-5.4-nano",
+    "model_type": "chat",
+    "online_lines": 3,
+    "output_price_min": 3.2886,
+    "price_available": true,
+    "price_max": 2.2518,
+    "price_min": 0.5346,
+    "protocols": [
+      "openai",
+      "openai_responses"
+    ],
+    "sort_weight": 511,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 98.37,
+    "display_name": "Vidu Q2 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu Q2 参考生视频模型，上传1-7张参考图片，AI以图中主体为参考生成风格一致的高质量视频。提供标准版（细节丰富）和高质量（支持视频参考、视频编辑）两种模式，最高1080P分辨率，5-10秒时长可选。",
+    "model_id": 57,
+    "model_name": "viduq2-cankaosheng",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.9752,
+    "price_min": 0.9752,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 508,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "1080p",
+      "高清",
+      "有声视频"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 95.82,
+    "display_name": "千问 3.5 Flash",
+    "fastest_seconds": 13,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问3.5 Flash，极速多模态模型，支持100万Token超长上下文、深度思考与联网搜索，具备图片/视频多模态理解能力，响应速度快、成本低，适合日常高频使用。",
+    "model_id": 50,
+    "model_name": "qwen3.5-flash",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 9.72,
+    "price_available": true,
+    "price_max": 0.972,
+    "price_min": 0.972,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 505,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索",
+      "极速"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 84.45,
+    "display_name": "VIDU-解说漫",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/vidu-icon.svg",
+    "intro": "Vidu 官方「解说漫」：以剧本驱动的解说向漫剧视频模型，支持 3–10 个角色/场景/道具参考图与独立角色音色，自带中英 TTS 与对口型。720P/1080P 多画幅可选，按实际成片秒数计费；上游推理时间较长（最长约 10 小时），请耐心等待。",
+    "model_id": 109,
+    "model_name": "vidu-jieshuoman",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.557,
+    "price_min": 0.557,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 502,
+    "status": "degraded",
+    "tags": [
+      "解说漫剧",
+      "剧本驱动",
+      "多资产参考",
+      "角色独立音色",
+      "TTS+对口型",
+      "中英双语",
+      "720P/1080P",
+      "多画幅",
+      "按秒计费"
+    ],
+    "vendor": "vidu"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "GK-4.3",
+    "fastest_seconds": 2.5,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "大厂直供旗舰 GK-4.3，面向低幻觉率、代理工具调用和严格指令跟随能力优化，适合复杂推理、代码协作、策略分析与高实时性对话场景。",
+    "model_id": 113,
+    "model_name": "gk-4.3",
+    "model_type": "chat",
+    "online_lines": 8,
+    "output_price_min": 2.3004,
+    "price_available": true,
+    "price_max": 11.502,
+    "price_min": 1.1664,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 499,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  },
+  {
+    "billing_mode": "按次",
+    "composite_success_rate": 93.66,
+    "display_name": "万相 2.7 视频续写",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云万相2.7视频续写模型，支持首段视频续写和首段视频+尾帧续写两种模式。上传视频片段自动续写，可选添加尾帧图片引导视频方向。支持720P/1080P分辨率，最长15秒视频生成。",
+    "model_id": 88,
+    "model_name": "wan2.7-xuxie",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 1.458,
+    "price_min": 1.458,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 496,
+    "status": "normal",
+    "tags": [
+      "视频续写",
+      "视频转视频",
+      "1080p",
+      "高清"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 100,
+    "display_name": "千问 3.6 Flash",
+    "fastest_seconds": 2,
+    "icon": "https://cos.lingkeai.vip/qwen.svg",
+    "intro": "阿里云百炼千问3.6 Flash，3.6系列高性价比快速版，原生多模态、支持深度思考与联网搜索，响应快、成本低，适合高频日常任务。",
+    "model_id": 148,
+    "model_name": "qwen3.6-flash",
+    "model_type": "chat",
+    "online_lines": 4,
+    "output_price_min": 6.075,
+    "price_available": true,
+    "price_max": 7.776,
+    "price_min": 1.0692,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 493,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "阿里巴巴"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 96.11,
+    "display_name": "Pix V5.6 参考生",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/PixVerse.svg",
+    "intro": "PixVerse V5.6 参考生视频模型，支持上传1-7张参考图片，AI参考图片中的角色、风格、场景融合生成有声视频。支持360P至1080P分辨率，5-10秒时长可选。",
+    "model_id": 73,
+    "model_name": "pixverse-v5.6-r2v",
+    "model_type": "video",
+    "online_lines": 1,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.6091,
+    "price_min": 0.6091,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 490,
+    "status": "normal",
+    "tags": [
+      "参考生视频",
+      "多图参考",
+      "有声视频",
+      "图生视频",
+      "高清"
+    ],
+    "vendor": "PixVerse"
+  },
+  {
+    "billing_mode": "",
+    "composite_success_rate": null,
+    "display_name": "豆包 Seed 1.8",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/doubao.svg",
+    "intro": "字节跳动豆包 Seed 1.8 旗舰模型，支持 256K 超长上下文、深度思考与联网搜索，具备图片/视频/PDF 多模态理解能力，在复杂推理、代码编程与多模态分析上表现卓越，是全能型智能助手。",
+    "model_id": 37,
+    "model_name": "doubao-seed-1-8-251228",
+    "model_type": "chat",
+    "online_lines": 0,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": null,
+    "price_min": null,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 487,
+    "status": "unavailable",
+    "tags": [
+      "多轮对话",
+      "多模态",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "字节跳动"
+  },
+  {
+    "billing_mode": "按秒",
+    "composite_success_rate": 99.86,
+    "display_name": "海螺 H3 视频升2K",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/minimax.svg",
+    "intro": "MiniMax 海螺 H3 视频再生成：把海螺 H3 出的 768P 成片升级为 2K 超高清，按输出秒数计费。⚠️ 计价提示：本模型单价高于直接用「海螺 H3 参考生」出 2K，仅适用于 768P 成片已生成、不想重出而要升清晰度的场景；若一开始就要 2K，请直接用参考生指定 2K 更划算。仅支持海螺 H3 的 768P 成片，不支持任意视频超分。",
+    "model_id": 167,
+    "model_name": "hailuo-h3-zaishengcheng",
+    "model_type": "video",
+    "online_lines": 3,
+    "output_price_min": null,
+    "price_available": true,
+    "price_max": 0.486,
+    "price_min": 0.3726,
+    "protocols": [
+      "media"
+    ],
+    "sort_weight": 484,
+    "status": "normal",
+    "tags": [
+      "视频再生成",
+      "768P升2K",
+      "有声视频",
+      "2K"
+    ],
+    "vendor": "MiniMax"
+  },
+  {
+    "billing_mode": "按token",
+    "composite_success_rate": 95.16,
+    "display_name": "GK-build-0.1",
+    "fastest_seconds": null,
+    "icon": "https://cos.lingkeai.vip/gk.svg",
+    "intro": "GK 系列代码构建模型 GK-build-0.1，面向代理式编码、工具调用与多步任务执行优化，自适应推理，适合代码协作与自动化构建。",
+    "model_id": 145,
+    "model_name": "gk-build-0.1",
+    "model_type": "chat",
+    "online_lines": 1,
+    "output_price_min": 11.016,
+    "price_available": true,
+    "price_max": 5.508,
+    "price_min": 5.508,
+    "protocols": [
+      "openai"
+    ],
+    "sort_weight": 481,
+    "status": "normal",
+    "tags": [
+      "多轮对话",
+      "工具调用",
+      "代码协作",
+      "长上下文",
+      "联网搜索"
+    ],
+    "vendor": "大厂直供"
+  }
+]

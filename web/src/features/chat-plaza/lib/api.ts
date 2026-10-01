@@ -22,7 +22,7 @@ import { requireServerSuccess } from '@/lib/server-error-message'
 import type { PricingData } from '@/features/pricing/types'
 import type { TaskLog } from '@/features/usage-logs/types'
 
-import { buildPlazaModel } from './models'
+import { buildPlazaModel, LK888_OFFICIAL_MODELS } from './models'
 import type { PlazaModel } from '../types'
 
 interface UserModelsResponse {
@@ -64,10 +64,11 @@ export async function fetchPlazaModels(): Promise<PlazaModel[]> {
     }
   }
 
-  const sourceNames =
-    userModels.length > 0
-      ? userModels
-      : [...pricingByName.keys()]
+  const sourceNames = [
+    ...userModels,
+    ...pricingByName.keys(),
+    ...LK888_OFFICIAL_MODELS.map((m) => m.model_name),
+  ]
 
   const seen = new Set<string>()
   const models: PlazaModel[] = []

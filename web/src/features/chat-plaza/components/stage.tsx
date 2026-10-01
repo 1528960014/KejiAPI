@@ -114,21 +114,70 @@ export function Stage({ model, onOpenTaskList }: StageProps) {
             <img
               src={model.icon}
               alt={model.name}
-              className='relative size-[120px] rounded-2xl bg-white/[0.04] object-contain p-3 ring-1 ring-white/10'
+              className='relative size-[110px] rounded-3xl bg-[#0e121a] object-contain p-4 ring-1 ring-white/10 shadow-2xl'
             />
           ) : (
-            <div className='relative flex size-[120px] items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/25 via-[#10161f] to-violet-600/25 text-5xl font-bold text-cyan-200 ring-1 ring-white/10'>
+            <div className='relative flex size-[110px] items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-500/25 via-[#10161f] to-violet-600/25 text-5xl font-bold text-cyan-200 ring-1 ring-white/10'>
               {initial}
             </div>
           )}
         </div>
-        <h2 className='mb-3 text-lg font-semibold text-white'>
-          {model?.name ?? t('No models found')}
-        </h2>
-        <div className='w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3'>
-          <p className='text-gray-300 text-sm leading-6'>
+
+        <div className='flex items-center gap-2 mb-2'>
+          <h2 className='text-xl font-bold text-white tracking-tight'>
+            {model?.displayName || model?.name || t('No models found')}
+          </h2>
+          {model?.vendorName && (
+            <span className='rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 text-xs font-semibold text-cyan-300'>
+              {model.vendorName}
+            </span>
+          )}
+        </div>
+
+        {model?.tags && model.tags.length > 0 && (
+          <div className='flex flex-wrap items-center justify-center gap-1.5 mb-3'>
+            {model.tags.map((tag) => (
+              <span
+                key={tag}
+                className='rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[11px] text-gray-300'
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className='w-full rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-md shadow-xl'>
+          <p className='text-gray-300 text-xs leading-6 text-center'>
             {model?.description?.trim() || t('No description')}
           </p>
+
+          {/* Official Pricing Highlight */}
+          {typeof model?.priceMin === 'number' && (
+            <div className='mt-3 pt-3 border-t border-white/[0.08] flex items-center justify-around text-xs'>
+              {model.billingMode === '按token' ? (
+                <>
+                  <div className='text-center'>
+                    <span className='text-gray-400 block text-[10px]'>输入官方定价</span>
+                    <span className='font-bold text-cyan-300'>¥{model.priceMin.toFixed(4).replace(/\.?0+$/, '')} / M tokens</span>
+                  </div>
+                  {typeof model.outputPriceMin === 'number' && (
+                    <div className='text-center'>
+                      <span className='text-gray-400 block text-[10px]'>输出官方定价</span>
+                      <span className='font-bold text-amber-300'>¥{model.outputPriceMin.toFixed(4).replace(/\.?0+$/, '')} / M tokens</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className='text-center'>
+                  <span className='text-gray-400 block text-[10px]'>官方结算单价</span>
+                  <span className='font-bold text-emerald-400'>
+                    ¥{model.priceMin.toFixed(4).replace(/\.?0+$/, '')} / {model.billingMode === '按秒' ? '秒' : '次'}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

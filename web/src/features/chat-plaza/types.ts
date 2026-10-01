@@ -29,9 +29,20 @@ export type PlazaBadgeTone = 'green' | 'cyan' | 'orange'
 export interface PlazaModel {
   name: string
   category: PlazaCategory
+  displayName?: string
   description?: string
   icon?: string
   vendorName?: string
+  modelType?: 'chat' | 'image' | 'video' | 'audio'
+  billingMode?: '按token' | '按次' | '按秒' | string
+  priceMin?: number
+  outputPriceMin?: number
+  priceMax?: number
+  tags?: string[]
+  successRate?: number
+  fastestSeconds?: number
+  onlineLines?: number
+  protocols?: string[]
   modelRatio?: number
   completionRatio?: number
   modelPrice?: number

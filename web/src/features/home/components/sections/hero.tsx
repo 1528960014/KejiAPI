@@ -18,7 +18,7 @@ For commercial licensing, please contact support@kejiapi.com
 */
 import { CherryStudio } from '@lobehub/icons'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, BookOpen } from 'lucide-react'
+import { ArrowRight, BookOpen, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -137,25 +137,33 @@ export function Hero(props: HeroProps) {
             className='landing-animate-fade-up mt-8 flex flex-wrap items-center gap-3 opacity-0'
             style={{ animationDelay: '180ms' }}
           >
+            <Button
+              className='group h-11 rounded-lg px-5 text-sm font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-[0_0_20px_rgba(34,211,238,0.35)]'
+              render={<Link to='/home' />}
+            >
+              <Sparkles className='mr-1.5 size-4 text-cyan-200' />
+              <span>{t('AI Model Plaza')}</span>
+              <ArrowRight className='ml-1.5 size-4 transition-transform duration-200 group-hover:translate-x-0.5' />
+            </Button>
             {props.isAuthenticated ? (
               <>
                 <Button
-                  className='group h-11 rounded-lg px-5 text-sm font-medium'
+                  variant='outline'
+                  className='border-border/50 hover:border-border hover:bg-muted/50 h-11 rounded-lg px-5 text-sm font-medium'
                   render={<Link to='/dashboard' />}
                 >
                   {t('Go to Dashboard')}
-                  <ArrowRight className='ml-1.5 size-4 transition-transform duration-200 group-hover:translate-x-0.5' />
                 </Button>
                 {renderDocsButton()}
               </>
             ) : (
               <>
                 <Button
-                  className='group h-11 rounded-lg px-5 text-sm font-medium'
+                  variant='outline'
+                  className='border-border/50 hover:border-border hover:bg-muted/50 h-11 rounded-lg px-5 text-sm font-medium'
                   render={<Link to='/sign-up' />}
                 >
                   {t('Get Started')}
-                  <ArrowRight className='ml-1.5 size-4 transition-transform duration-200 group-hover:translate-x-0.5' />
                 </Button>
                 <Button
                   variant='outline'

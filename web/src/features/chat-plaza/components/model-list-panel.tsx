@@ -16,9 +16,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@kejiapi.com
 */
-import { useNavigate } from '@tanstack/react-router'
 import {
+  Activity,
+  Check,
   ChevronDown,
+  Coins,
   ImagePlus,
   Search,
   Sparkles,
@@ -26,17 +28,24 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatQuotaWithCurrency } from '@/lib/currency'
 import { getUserAvatarFallback, getUserAvatarStyle } from '@/lib/avatar'
+import { formatQuotaWithCurrency } from '@/lib/currency'
 import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/stores/auth-store'
 import { useUserDisplay } from '@/hooks/use-user-display'
+import { useAuthStore } from '@/stores/auth-store'
 
+import { RechargeDialog } from './recharge-dialog'
 import type { PlazaCategory, PlazaModel } from '../types'
 
 const CATEGORIES: Array<{ id: PlazaCategory; labelKey: string }> = [
@@ -47,11 +56,22 @@ const CATEGORIES: Array<{ id: PlazaCategory; labelKey: string }> = [
   { id: 'audio', labelKey: 'Audio' },
 ]
 
-const BADGE_TONE_CLASSES: Record<PlazaModel['badgeTone'], string> = {
-  green: 'bg-emerald-500/15 text-emerald-300 ring-emerald-400/30',
-  cyan: 'bg-cyan-500/15 text-cyan-300 ring-cyan-400/30',
-  orange: 'bg-orange-500/15 text-orange-300 ring-orange-400/30',
-}
+const VENDORS = [
+  'All Vendors',
+  '大厂直供',
+  '阿里巴巴',
+  'DeepSeek',
+  '快手',
+  '字节跳动',
+  '智谱AI',
+  '月之暗面',
+  'MiniMax',
+  '阶跃星辰',
+  '小米',
+  'vidu',
+  'MidJourney',
+  'Suno',
+]
 
 const CATEGORY_ICON_CLASSES: Record<PlazaCategory, string> = {
   all: 'from-slate-500/40 to-slate-700/40',
@@ -90,52 +110,132 @@ interface ModelCardProps {
 
 function ModelCard({ model, selected, onSelect }: ModelCardProps) {
   const { t } = useTranslation()
-  const badge = model.badgePercent ?? 100
+  const title = model.displayName || model.name
+
+  // 格式化官方定价展示
+  const renderPricing = () => {
+    if (model.billingMode === '按次' && typeof model.priceMin === 'number') {
+      return (
+        <span className='inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400'>
+          <Coins className='size-3' />
+          ¥{model.priceMin.toFixed(4).replace(/\.?0+$/, '')} / 次
+        </span>
+      )
+    }
+    if (model.billingMode === '按秒' && typeof model.priceMin === 'number') {
+      return (
+        <span className='inline-flex items-center gap-1 text-[11px] font-medium text-purple-400'>
+          <Coins className='size-3' />
+          ¥{model.priceMin.toFixed(4).replace(/\.?0+$/, '')} / 秒
+        </span>
+      )
+    }
+    if (typeof model.priceMin === 'number') {
+      return (
+        <div className='flex items-center gap-2 text-[10px] text-gray-400'>
+          <span className='text-cyan-300 font-medium'>
+            入 ¥{model.priceMin.toFixed(4).replace(/\.?0+$/, '')}/M
+          </span>
+          {typeof model.outputPriceMin === 'number' && (
+            <span className='text-amber-300 font-medium'>
+              出 ¥{model.outputPriceMin.toFixed(4).replace(/\.?0+$/, '')}/M
+            </span>
+          )}
+        </div>
+      )
+    }
+    return (
+      <span className='text-[10px] text-gray-500 font-mono'>
+        {model.modelRatio != null ? `倍率 ${(model.modelRatio).toFixed(2)}x` : '官方标准费率'}
+      </span>
+    )
+  }
 
   return (
     <button
       type='button'
       onClick={onSelect}
       className={cn(
-        'group relative w-full rounded-xl border p-3 text-left transition-all',
+        'group relative w-full rounded-2xl border p-3.5 text-left transition-all backdrop-blur-sm',
         selected
-          ? 'border-cyan-400/60 bg-cyan-400/[0.06] shadow-[0_0_0_1px_rgba(34,211,238,0.35),0_0_20px_rgba(34,211,238,0.18)]'
-          : 'border-white/[0.07] bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.05]'
+          ? 'border-cyan-400/80 bg-cyan-500/[0.08] shadow-[0_0_20px_rgba(34,211,238,0.22)] ring-1 ring-cyan-400/50'
+          : 'border-white/[0.07] bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05]'
       )}
     >
-      <span
-        className={cn(
-          'absolute top-2.5 right-2.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium ring-1',
-          BADGE_TONE_CLASSES[model.badgeTone]
+      {/* Top right badges: success rate + status */}
+      <div className='absolute top-3 right-3 flex items-center gap-1.5'>
+        {model.successRate != null && (
+          <span className='inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400'>
+            <Activity className='size-2.5' />
+            {model.successRate}%
+          </span>
         )}
-      >
-        {badge}%
-      </span>
-      <div className='flex items-start gap-3 pr-12'>
+        <span className='size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' />
+      </div>
+
+      <div className='flex items-start gap-3.5 pr-14'>
+        {/* Official SVG Logo */}
         {model.icon ? (
-          <img
-            src={model.icon}
-            alt=''
-            className='size-12 shrink-0 rounded-lg bg-[#0d1118] object-contain p-1 ring-1 ring-white/10'
-          />
+          <div className='relative size-12 shrink-0 rounded-xl bg-[#090b10] p-1.5 ring-1 ring-white/10 flex items-center justify-center shadow-inner'>
+            <img
+              src={model.icon}
+              alt={model.name}
+              className='size-full object-contain'
+              loading='lazy'
+            />
+          </div>
         ) : (
           <span
             className={cn(
-              'flex size-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ring-1 ring-white/10',
+              'flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ring-1 ring-white/10',
               CATEGORY_ICON_CLASSES[model.category]
             )}
           >
             <CategoryIcon category={model.category} />
           </span>
         )}
-        <span className='min-w-0 flex-1'>
-          <span className='block truncate text-sm font-semibold text-white'>
+
+        {/* Info */}
+        <div className='min-w-0 flex-1'>
+          <div className='flex items-center gap-1.5'>
+            <span className='truncate text-sm font-bold text-white group-hover:text-cyan-300 transition-colors'>
+              {title}
+            </span>
+            {model.vendorName && (
+              <span className='shrink-0 rounded bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-medium text-gray-300'>
+                {model.vendorName}
+              </span>
+            )}
+          </div>
+
+          <span className='block truncate text-[11px] font-mono text-gray-500 mt-0.5'>
             {model.name}
           </span>
-          <span className='text-gray-400 mt-1 line-clamp-2 block text-xs leading-5'>
-            {model.description?.trim() || t('No description')}
-          </span>
-        </span>
+
+          {/* Tags */}
+          {model.tags && model.tags.length > 0 && (
+            <div className='flex flex-wrap gap-1 mt-1.5'>
+              {model.tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className='rounded bg-cyan-950/40 border border-cyan-800/30 px-1.5 py-0.5 text-[9px] text-cyan-300/90'
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Pricing bar */}
+          <div className='mt-2 pt-2 border-t border-white/[0.05] flex items-center justify-between'>
+            {renderPricing()}
+            {model.onlineLines != null && model.onlineLines > 0 && (
+              <span className='text-[10px] text-gray-500 font-medium'>
+                {model.onlineLines} 线路
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </button>
   )
@@ -163,7 +263,6 @@ export function ModelListPanel({
   onSelectModel,
 }: ModelListPanelProps) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const user = useAuthStore((state) => state.auth.user)
   const { displayName } = useUserDisplay(user)
   const avatarName = user?.username || displayName
@@ -173,26 +272,34 @@ export function ModelListPanel({
     [avatarName]
   )
 
+  const [selectedVendor, setSelectedVendor] = useState<string>('All Vendors')
+  const [rechargeOpen, setRechargeOpen] = useState<boolean>(false)
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
     return models.filter((model) => {
       if (category !== 'all' && model.category !== category) return false
+      if (selectedVendor !== 'All Vendors' && model.vendorName !== selectedVendor) {
+        return false
+      }
       if (!query) return true
       return (
         model.name.toLowerCase().includes(query) ||
-        (model.description ?? '').toLowerCase().includes(query)
+        (model.displayName ?? '').toLowerCase().includes(query) ||
+        (model.description ?? '').toLowerCase().includes(query) ||
+        (model.vendorName ?? '').toLowerCase().includes(query)
       )
     })
-  }, [models, category, search])
+  }, [models, category, search, selectedVendor])
 
   const renderListBody = () => {
     if (isLoading) {
       return (
-        <div className='space-y-2 pt-1'>
+        <div className='space-y-2.5 pt-1'>
           {MODEL_SKELETONS.map((skeleton) => (
             <Skeleton
               key={skeleton.id}
-              className='h-[74px] w-full rounded-xl bg-white/[0.05]'
+              className='h-[92px] w-full rounded-2xl bg-white/[0.04]'
             />
           ))}
         </div>
@@ -200,13 +307,13 @@ export function ModelListPanel({
     }
     if (filtered.length === 0) {
       return (
-        <p className='text-gray-500 px-2 pt-8 text-center text-xs'>
+        <p className='text-gray-500 px-2 pt-12 text-center text-xs'>
           {t('No models found')}
         </p>
       )
     }
     return (
-      <div className='space-y-2'>
+      <div className='space-y-2.5'>
         {filtered.map((model) => (
           <ModelCard
             key={model.name}
@@ -220,80 +327,105 @@ export function ModelListPanel({
   }
 
   return (
-    <aside className='flex h-full w-[340px] shrink-0 flex-col border-r border-white/[0.07] bg-[#0d1118]'>
-      {/* Category tabs */}
-      <div className='flex gap-1.5 px-3 pt-3 pb-2'>
-        {CATEGORIES.map((item) => (
+    <>
+      <aside className='flex h-full w-[380px] shrink-0 flex-col border-r border-white/[0.08] bg-[#0c0e14]'>
+        {/* Category tabs */}
+        <div className='flex gap-1.5 px-3.5 pt-3.5 pb-2.5'>
+          {CATEGORIES.map((item) => (
+            <button
+              key={item.id}
+              type='button'
+              onClick={() => onCategoryChange(item.id)}
+              className={cn(
+                'h-7 flex-1 rounded-lg text-xs font-semibold transition-all',
+                category === item.id
+                  ? 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(34,211,238,0.4)]'
+                  : 'text-gray-400 hover:bg-white/[0.06] hover:text-gray-200'
+              )}
+            >
+              {t(item.labelKey)}
+            </button>
+          ))}
+        </div>
+
+        {/* Vendor selector + search */}
+        <div className='flex items-center gap-2 px-3.5 pb-3'>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type='button'
+                className='flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 text-xs font-medium text-gray-200 transition-colors hover:border-cyan-400/40 hover:text-white'
+              >
+                {selectedVendor === 'All Vendors' ? t('All Vendors') : selectedVendor}
+                <ChevronDown className='text-gray-400 size-3' />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align='start'
+              className='max-h-60 overflow-y-auto bg-[#131620] border-white/10 text-white shadow-2xl rounded-xl p-1'
+            >
+              {VENDORS.map((v) => (
+                <DropdownMenuItem
+                  key={v}
+                  onClick={() => setSelectedVendor(v)}
+                  className='flex items-center justify-between text-xs cursor-pointer py-1.5 px-2.5 rounded-lg hover:bg-white/10'
+                >
+                  <span>{v === 'All Vendors' ? t('All Vendors') : v}</span>
+                  {selectedVendor === v && <Check className='size-3 text-cyan-400' />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className='relative min-w-0 flex-1'>
+            <Search className='pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-gray-500' />
+            <input
+              type='text'
+              value={search}
+              onChange={(event) => onSearchChange(event.target.value)}
+              placeholder={t('Search models, vendors, tags...')}
+              className='h-8 w-full rounded-xl border border-white/10 bg-white/[0.04] pr-2.5 pl-8 text-xs text-white placeholder:text-gray-500 focus:border-cyan-400/50 focus:bg-white/[0.06] focus:outline-none transition-all'
+            />
+          </div>
+        </div>
+
+        {/* Model cards list */}
+        <div className='min-h-0 flex-1 overflow-y-auto px-3.5 pb-3.5 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.15)_transparent]'>
+          {renderListBody()}
+        </div>
+
+        {/* User profile + Quick Recharge button */}
+        <div className='flex items-center gap-3 border-t border-white/[0.08] bg-[#090b10] px-3.5 py-3'>
+          <Avatar className='size-9 shrink-0 ring-1 ring-white/10'>
+            <AvatarFallback
+              className='text-xs font-semibold text-white'
+              style={avatarStyle}
+            >
+              {avatarFallback}
+            </AvatarFallback>
+          </Avatar>
+          <div className='min-w-0 flex-1'>
+            <p className='truncate text-sm font-semibold text-white'>
+              {displayName}
+            </p>
+            <p className='flex items-center gap-1 text-xs text-gray-400 mt-0.5'>
+              <Zap className='text-amber-300 size-3' />
+              {formatQuotaWithCurrency(user?.quota ?? 0)}
+            </p>
+          </div>
           <button
-            key={item.id}
             type='button'
-            onClick={() => onCategoryChange(item.id)}
-            className={cn(
-              'h-7 flex-1 rounded-md text-xs font-medium transition-colors',
-              category === item.id
-                ? 'bg-cyan-500 text-white shadow-[0_0_14px_rgba(34,211,238,0.35)]'
-                : 'text-gray-400 hover:bg-white/[0.06] hover:text-gray-200'
-            )}
+            onClick={() => setRechargeOpen(true)}
+            className='flex h-8 shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-3 text-xs font-bold text-amber-950 shadow-[0_0_15px_rgba(251,191,36,0.35)] transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]'
           >
-            {t(item.labelKey)}
+            <Wallet className='size-3.5' />
+            {t('Recharge')}
           </button>
-        ))}
-      </div>
-
-      {/* Vendor selector + search */}
-      <div className='flex items-center gap-2 px-3 pb-3'>
-        <button
-          type='button'
-          className='flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 text-xs text-gray-300 transition-colors hover:border-cyan-400/40 hover:text-white'
-        >
-          {t('All Vendors')}
-          <ChevronDown className='text-gray-500 size-3' />
-        </button>
-        <div className='relative min-w-0 flex-1'>
-          <Search className='pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-gray-500' />
-          <input
-            type='text'
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder={t('Search models or features...')}
-            className='h-8 w-full rounded-lg border border-white/10 bg-white/[0.04] pr-2 pl-8 text-xs text-white placeholder:text-gray-500 focus:border-cyan-400/50 focus:outline-none'
-          />
         </div>
-      </div>
+      </aside>
 
-      {/* Model cards */}
-      <div className='min-h-0 flex-1 overflow-y-auto px-3 pb-3 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.15)_transparent]'>
-        {renderListBody()}
-      </div>
-
-      {/* User card + recharge */}
-      <div className='flex items-center gap-2.5 border-t border-white/[0.07] px-3 py-3'>
-        <Avatar className='size-9 shrink-0'>
-          <AvatarFallback
-            className='text-xs font-semibold text-white'
-            style={avatarStyle}
-          >
-            {avatarFallback}
-          </AvatarFallback>
-        </Avatar>
-        <div className='min-w-0 flex-1'>
-          <p className='truncate text-sm font-medium text-white'>
-            {displayName}
-          </p>
-          <p className='flex items-center gap-1 text-xs text-gray-400'>
-            <Zap className='text-amber-300 size-3' />
-            {formatQuotaWithCurrency(user?.quota ?? 0)}
-          </p>
-        </div>
-        <button
-          type='button'
-          onClick={() => navigate({ to: '/wallet' })}
-          className='flex h-7 shrink-0 items-center gap-1 rounded-lg bg-gradient-to-r from-amber-300 to-yellow-400 px-2.5 text-xs font-semibold text-amber-950 shadow-[0_0_14px_rgba(251,191,36,0.35)] transition-opacity hover:opacity-90'
-        >
-          <Wallet className='size-3.5' />
-          {t('Recharge')}
-        </button>
-      </div>
-    </aside>
+      {/* Recharge Modal */}
+      <RechargeDialog open={rechargeOpen} onOpenChange={setRechargeOpen} />
+    </>
   )
 }
