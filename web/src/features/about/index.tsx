@@ -50,22 +50,22 @@ function EmptyAboutState() {
           <p>
             {t('KejiAPI Project Repository:')}{' '}
             <a
-              href='https://kejiapi'
+              href='https://github.com/1528960014/KejiAPI'
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:underline'
             >
-              {t('https://kejiapi')}
+              https://github.com/1528960014/KejiAPI
             </a>
           </p>
           <p className='text-muted-foreground'>
             <a
-              href='https://kejiapi'
+              href='https://github.com/1528960014/KejiAPI'
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:underline'
             >
-              {t('NewAPI')}
+              KejiAPI
             </a>{' '}
             © {currentYear}{' '}
             <a
@@ -75,30 +75,12 @@ function EmptyAboutState() {
               className='text-primary hover:underline'
             >
               {t('1528960014')}
-            </a>{' '}
-            {t('| Based on')}{' '}
-            <a
-              href='https://github.com/songquanpeng/kejiapi'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-primary hover:underline'
-            >
-              {t('One API')}
-            </a>{' '}
-            © 2023{' '}
-            <a
-              href='https://github.com/songquanpeng'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-primary hover:underline'
-            >
-              {t('JustSong')}
             </a>
           </p>
           <p className='text-muted-foreground'>
             {t('This project must be used in compliance with the')}{' '}
             <a
-              href='https://kejiapi/blob/main/LICENSE'
+              href='https://github.com/1528960014/KejiAPI/blob/main/LICENSE'
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:underline'

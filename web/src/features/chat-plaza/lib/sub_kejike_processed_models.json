@@ -2,3095 +2,3685 @@
   {
     "model_name": "GPT-6 Sol",
     "display_name": "GPT-6 Sol",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "GPT-6-Astra",
     "display_name": "GPT-6-Astra",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "codex-auto-review",
     "display_name": "codex-auto-review",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.2,
     "output_price_min": 1.2,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex",
     "display_name": "gpt-5.3-codex",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex-spark",
     "display_name": "gpt-5.3-codex-spark",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4",
     "display_name": "gpt-5.4",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.5,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4-mini",
     "display_name": "gpt-5.4-mini",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.75,
     "output_price_min": 4.5,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.5",
     "display_name": "gpt-5.5",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-sol",
     "display_name": "gpt-5.6-sol",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-terra",
     "display_name": "gpt-5.6-terra",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 12.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-image-2",
     "display_name": "gpt-image-2",
+    "intro": "OpenAI ???????? 【狂欢福利】 GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 53,
     "group_name": "【狂欢福利】 GPT ",
-    "group_multiplier": 0.058,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.058x",
-      "????"
+      "【狂欢福利】 GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "nana-banana-2",
     "display_name": "nana-banana-2",
+    "intro": "Google ???????? 【外接生图】Nano-Banana???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 30,
     "group_name": "【外接生图】Nano-Banana",
-    "group_multiplier": 0.1,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "??",
-    "price_min": null,
+    "price_min": 0.1,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.1x",
-      "????"
+      "【外接生图】Nano"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "nana-banana-pro",
     "display_name": "nana-banana-pro",
+    "intro": "Google ???????? 【外接生图】Nano-Banana???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 30,
     "group_name": "【外接生图】Nano-Banana",
-    "group_multiplier": 0.1,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "??",
-    "price_min": null,
+    "price_min": 0.1,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.1x",
-      "????"
+      "【外接生图】Nano"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-image-2",
     "display_name": "gpt-image-2",
+    "intro": "OpenAI ???????? 【官方生图】GPT Image???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 22,
     "group_name": "【官方生图】GPT Image",
-    "group_multiplier": 0.1,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "??",
     "price_min": 0.4,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.1x",
-      "????"
+      "【官方生图】GPT "
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "image-2.5-flare",
     "display_name": "image-2.5-flare",
+    "intro": "OpenAI ???????? 【官方生图】GPT Image???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 22,
     "group_name": "【官方生图】GPT Image",
-    "group_multiplier": 0.1,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "??",
     "price_min": 1,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.1x",
-      "????"
+      "【官方生图】GPT "
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "image-2.5-sunburst",
     "display_name": "image-2.5-sunburst",
+    "intro": "OpenAI ???????? 【官方生图】GPT Image???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 22,
     "group_name": "【官方生图】GPT Image",
-    "group_multiplier": 0.1,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "??",
     "price_min": 1,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.1x",
-      "????"
+      "【官方生图】GPT "
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "grok-4.3",
     "display_name": "grok-4.3",
+    "intro": "xAI ???????? 【特价】Grok xAi (仅支持4.5)???????????????",
     "vendor": "xAI",
     "platform": "grok",
-    "group_id": 29,
     "group_name": "【特价】Grok xAi (仅支持4.5)",
-    "group_multiplier": 0.18,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.25,
     "output_price_min": 2.5,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.18x",
-      "????"
+      "【特价】Grok x"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "grok-4.5",
     "display_name": "grok-4.5",
+    "intro": "xAI ???????? 【特价】Grok xAi (仅支持4.5)???????????????",
     "vendor": "xAI",
     "platform": "grok",
-    "group_id": 29,
     "group_name": "【特价】Grok xAi (仅支持4.5)",
-    "group_multiplier": 0.18,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 6.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.18x",
-      "????"
+      "【特价】Grok x"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "grok-imagine-image",
     "display_name": "grok-imagine-image",
+    "intro": "xAI ???????? 【特价】Grok xAi (仅支持4.5)???????????????",
     "vendor": "xAI",
     "platform": "grok",
-    "group_id": 29,
     "group_name": "【特价】Grok xAi (仅支持4.5)",
-    "group_multiplier": 0.18,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "??",
     "price_min": 0.6,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.18x",
-      "????"
+      "【特价】Grok x"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "grok-imagine-image-quality",
     "display_name": "grok-imagine-image-quality",
+    "intro": "xAI ???????? 【特价】Grok xAi (仅支持4.5)???????????????",
     "vendor": "xAI",
     "platform": "grok",
-    "group_id": 29,
     "group_name": "【特价】Grok xAi (仅支持4.5)",
-    "group_multiplier": 0.18,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "??",
     "price_min": 0.6,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.18x",
-      "????"
+      "【特价】Grok x"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "grok-imagine-video",
     "display_name": "grok-imagine-video",
+    "intro": "xAI ???????? 【特价】Grok xAi (仅支持4.5)???????????????",
     "vendor": "xAI",
     "platform": "grok",
-    "group_id": 29,
     "group_name": "【特价】Grok xAi (仅支持4.5)",
-    "group_multiplier": 0.18,
-    "billing_mode": "??",
-    "price_min": 3,
-    "output_price_min": null,
+    "group_multiplier": 1.0,
+    "model_type": "video",
+    "billing_mode": "?token",
+    "price_min": 1.6,
+    "output_price_min": 1.6,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.18x",
-      "????"
+      "【特价】Grok x"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "grok-imagine-video-1.5",
     "display_name": "grok-imagine-video-1.5",
+    "intro": "xAI ???????? 【特价】Grok xAi (仅支持4.5)???????????????",
     "vendor": "xAI",
     "platform": "grok",
-    "group_id": 29,
     "group_name": "【特价】Grok xAi (仅支持4.5)",
-    "group_multiplier": 0.18,
-    "billing_mode": "??",
-    "price_min": 3,
+    "group_multiplier": 1.0,
+    "model_type": "video",
+    "billing_mode": "?token",
+    "price_min": null,
     "output_price_min": null,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.18x",
-      "????"
+      "【特价】Grok x"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "claude-fable-5",
     "display_name": "claude-fable-5",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-fable-5-1",
     "display_name": "claude-fable-5-1",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5",
     "display_name": "claude-haiku-4-5",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5-20251001",
     "display_name": "claude-haiku-4-5-20251001",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-5-20251101",
     "display_name": "claude-opus-4-5-20251101",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-6",
     "display_name": "claude-opus-4-6",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-7",
     "display_name": "claude-opus-4-7",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-8",
     "display_name": "claude-opus-4-8",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4.5",
     "display_name": "claude-opus-4.5",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5",
     "display_name": "claude-opus-5",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5-5",
     "display_name": "claude-opus-5-5",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 4.0,
     "output_price_min": 20.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5",
     "display_name": "claude-sonnet-4-5",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5-20250929",
     "display_name": "claude-sonnet-4-5-20250929",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-6",
     "display_name": "claude-sonnet-4-6",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-5",
     "display_name": "claude-sonnet-5",
+    "intro": "Anthropic ???????? 【特价】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 23,
     "group_name": "【特价】Claude Kiro",
-    "group_multiplier": 0.19,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.19x",
-      "????"
+      "【特价】Claude"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "GPT-6 Sol",
     "display_name": "GPT-6 Sol",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "GPT-6-Astra",
     "display_name": "GPT-6-Astra",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "codex-auto-review",
     "display_name": "codex-auto-review",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.2,
     "output_price_min": 1.2,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex",
     "display_name": "gpt-5.3-codex",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex-spark",
     "display_name": "gpt-5.3-codex-spark",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4",
     "display_name": "gpt-5.4",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.5,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4-mini",
     "display_name": "gpt-5.4-mini",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.75,
     "output_price_min": 4.5,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.5",
     "display_name": "gpt-5.5",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-sol",
     "display_name": "gpt-5.6-sol",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-terra",
     "display_name": "gpt-5.6-terra",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 12.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-image-2",
     "display_name": "gpt-image-2",
+    "intro": "OpenAI ???????? 【首选推荐】pro???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 32,
     "group_name": "【首选推荐】pro",
-    "group_multiplier": 0.24,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.24x",
-      "????"
+      "【首选推荐】pro"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "deepseek-v4-flash",
     "display_name": "deepseek-v4-flash",
+    "intro": "DeepSeek ???????? 【上新】DeepSeek (仅支持 deepseek-v4.1-flash)???????????????",
     "vendor": "DeepSeek",
     "platform": "deepseek",
-    "group_id": 70,
     "group_name": "【上新】DeepSeek (仅支持 deepseek-v4.1-flash)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 1.0,
-    "output_price_min": 2.0,
-    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.15,
+    "output_price_min": 0.6,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【上新】DeepSe"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "deepseek-v4-pro",
     "display_name": "deepseek-v4-pro",
+    "intro": "DeepSeek ???????? 【上新】DeepSeek (仅支持 deepseek-v4.1-flash)???????????????",
     "vendor": "DeepSeek",
     "platform": "deepseek",
-    "group_id": 70,
     "group_name": "【上新】DeepSeek (仅支持 deepseek-v4.1-flash)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 3.0,
-    "output_price_min": 6.0,
-    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.15,
+    "output_price_min": 0.6,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【上新】DeepSe"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "deepseek-v4.1-flash",
     "display_name": "deepseek-v4.1-flash",
+    "intro": "DeepSeek ???????? 【上新】DeepSeek (仅支持 deepseek-v4.1-flash)???????????????",
     "vendor": "DeepSeek",
     "platform": "deepseek",
-    "group_id": 70,
     "group_name": "【上新】DeepSeek (仅支持 deepseek-v4.1-flash)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 1.0,
-    "output_price_min": 4.0,
-    "icon": "https://cos.lingkeai.vip/deepseek.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.15,
+    "output_price_min": 0.6,
+    "icon": "https://cos.lingkeai.vip/deepseek.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【上新】DeepSe"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "kimi-k2.6",
     "display_name": "kimi-k2.6",
+    "intro": "???? ???????? 【前端之神】Kimi-K3 ???????????????",
     "vendor": "????",
     "platform": "kimi",
-    "group_id": 43,
     "group_name": "【前端之神】Kimi-K3 ",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 6.5,
-    "output_price_min": 27.0,
-    "icon": "https://cos.lingkeai.vip/kimi.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.954,
+    "output_price_min": 3.961,
+    "icon": "https://cos.lingkeai.vip/kimi.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【前端之神】Kimi"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "kimi-k2.7-code",
     "display_name": "kimi-k2.7-code",
+    "intro": "???? ???????? 【前端之神】Kimi-K3 ???????????????",
     "vendor": "????",
     "platform": "kimi",
-    "group_id": 43,
     "group_name": "【前端之神】Kimi-K3 ",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 6.5,
-    "output_price_min": 27.0,
-    "icon": "https://cos.lingkeai.vip/kimi.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.9581,
+    "output_price_min": 3.9799,
+    "icon": "https://cos.lingkeai.vip/kimi.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【前端之神】Kimi"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "kimi-k3",
     "display_name": "kimi-k3",
+    "intro": "???? ???????? 【前端之神】Kimi-K3 ???????????????",
     "vendor": "????",
     "platform": "kimi",
-    "group_id": 43,
     "group_name": "【前端之神】Kimi-K3 ",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 20.0,
-    "output_price_min": 100.0,
-    "icon": "https://cos.lingkeai.vip/kimi.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 2.9481,
+    "output_price_min": 14.7403,
+    "icon": "https://cos.lingkeai.vip/kimi.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【前端之神】Kimi"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "glm-5",
     "display_name": "glm-5",
+    "intro": "??AI ???????? 【国产之光】智谱 GLM (支持 5.3)???????????????",
     "vendor": "??AI",
     "platform": "zhipu",
-    "group_id": 44,
     "group_name": "【国产之光】智谱 GLM (支持 5.3)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 4.0,
-    "output_price_min": 16.0,
-    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.5896,
+    "output_price_min": 2.6533,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【国产之光】智谱 G"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "glm-5-turbo",
     "display_name": "glm-5-turbo",
+    "intro": "??AI ???????? 【国产之光】智谱 GLM (支持 5.3)???????????????",
     "vendor": "??AI",
     "platform": "zhipu",
-    "group_id": 44,
     "group_name": "【国产之光】智谱 GLM (支持 5.3)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 5.0,
-    "output_price_min": 20.0,
-    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.737,
+    "output_price_min": 3.2429,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【国产之光】智谱 G"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "glm-5.1",
     "display_name": "glm-5.1",
+    "intro": "??AI ???????? 【国产之光】智谱 GLM (支持 5.3)???????????????",
     "vendor": "??AI",
     "platform": "zhipu",
-    "group_id": 44,
     "group_name": "【国产之光】智谱 GLM (支持 5.3)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 6.0,
-    "output_price_min": 24.0,
-    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 1.4,
+    "output_price_min": 4.4,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【国产之光】智谱 G"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "glm-5.2",
     "display_name": "glm-5.2",
+    "intro": "??AI ???????? 【国产之光】智谱 GLM (支持 5.3)???????????????",
     "vendor": "??AI",
     "platform": "zhipu",
-    "group_id": 44,
     "group_name": "【国产之光】智谱 GLM (支持 5.3)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 8.0,
-    "output_price_min": 28.0,
-    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 1.1792,
+    "output_price_min": 4.1273,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【国产之光】智谱 G"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "glm-5.3",
     "display_name": "glm-5.3",
+    "intro": "??AI ???????? 【国产之光】智谱 GLM (支持 5.3)???????????????",
     "vendor": "??AI",
     "platform": "zhipu",
-    "group_id": 44,
     "group_name": "【国产之光】智谱 GLM (支持 5.3)",
-    "group_multiplier": 0.38,
-    "billing_mode": "?token",
-    "price_min": 8.0,
-    "output_price_min": 28.0,
-    "icon": "https://cos.lingkeai.vip/glm.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 1.4,
+    "output_price_min": 4.4,
+    "icon": "https://cos.lingkeai.vip/glm.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【国产之光】智谱 G"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "claude-fable-5",
     "display_name": "claude-fable-5",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-fable-5-1",
     "display_name": "claude-fable-5-1",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5",
     "display_name": "claude-haiku-4-5",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5-20251001",
     "display_name": "claude-haiku-4-5-20251001",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-5-20251101",
     "display_name": "claude-opus-4-5-20251101",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-6",
     "display_name": "claude-opus-4-6",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-7",
     "display_name": "claude-opus-4-7",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-8",
     "display_name": "claude-opus-4-8",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4.5",
     "display_name": "claude-opus-4.5",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5",
     "display_name": "claude-opus-5",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5-5",
     "display_name": "claude-opus-5-5",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 4.0,
     "output_price_min": 20.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5",
     "display_name": "claude-sonnet-4-5",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5-20250929",
     "display_name": "claude-sonnet-4-5-20250929",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-6",
     "display_name": "claude-sonnet-4-6",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-5",
     "display_name": "claude-sonnet-5",
+    "intro": "Anthropic ???????? 【极速响应】Claude Kiro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 24,
     "group_name": "【极速响应】Claude Kiro",
-    "group_multiplier": 0.38,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "?? 0.38x",
-      "????"
+      "【极速响应】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "gemini-2.5-flash",
     "display_name": "gemini-2.5-flash",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.3,
     "output_price_min": 2.5,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-2.5-pro",
     "display_name": "gemini-2.5-pro",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.25,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3-flash-preview",
     "display_name": "gemini-3-flash-preview",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.5,
     "output_price_min": 3.0,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.1-flash-image",
     "display_name": "gemini-3.1-flash-image",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
-    "billing_mode": "??",
-    "price_min": 0.05,
-    "output_price_min": null,
-    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "group_multiplier": 1.0,
     "model_type": "image",
+    "billing_mode": "?token",
+    "price_min": 0.5,
+    "output_price_min": 3.0,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.1-flash-lite",
     "display_name": "gemini-3.1-flash-lite",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.25,
     "output_price_min": 1.5,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.1-flash-lite-preview",
     "display_name": "gemini-3.1-flash-lite-preview",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.25,
     "output_price_min": 1.5,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.1-pro-high",
     "display_name": "gemini-3.1-pro-high",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
-    "output_price_min": 120.0,
+    "output_price_min": 12.0,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.1-pro-preview",
     "display_name": "gemini-3.1-pro-preview",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 12.0,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.5-flash",
     "display_name": "gemini-3.5-flash",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.5,
     "output_price_min": 9.0,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.5-flash-high",
     "display_name": "gemini-3.5-flash-high",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.5,
     "output_price_min": 9.0,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.5-flash-preview",
     "display_name": "gemini-3.5-flash-preview",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.5,
     "output_price_min": 9.0,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.6-flash",
     "display_name": "gemini-3.6-flash",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
-    "billing_mode": "?token",
-    "price_min": 1.5,
-    "output_price_min": 7.5,
-    "icon": "https://cos.lingkeai.vip/gem.svg",
+    "group_multiplier": 1.0,
     "model_type": "chat",
+    "billing_mode": "?token",
+    "price_min": 0.75,
+    "output_price_min": 3.75,
+    "icon": "https://cos.lingkeai.vip/gem.svg",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.7-flash",
     "display_name": "gemini-3.7-flash",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.75,
     "output_price_min": 3.75,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gemini-3.8-flash",
     "display_name": "gemini-3.8-flash",
+    "intro": "Google ???????? 【酒馆专属】Google Gemini ???????????????",
     "vendor": "Google",
     "platform": "gemini",
-    "group_id": 13,
     "group_name": "【酒馆专属】Google Gemini ",
-    "group_multiplier": 0.6,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.75,
     "output_price_min": 3.75,
     "icon": "https://cos.lingkeai.vip/gem.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【酒馆专属】Goog"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "GPT-6 Sol",
     "display_name": "GPT-6 Sol",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "GPT-6-Astra",
     "display_name": "GPT-6-Astra",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "codex-auto-review",
     "display_name": "codex-auto-review",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.2,
     "output_price_min": 1.2,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex",
     "display_name": "gpt-5.3-codex",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex-spark",
     "display_name": "gpt-5.3-codex-spark",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4",
     "display_name": "gpt-5.4",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.5,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4-mini",
     "display_name": "gpt-5.4-mini",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.75,
     "output_price_min": 4.5,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.5",
     "display_name": "gpt-5.5",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-sol",
     "display_name": "gpt-5.6-sol",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-terra",
     "display_name": "gpt-5.6-terra",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 12.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-image-2",
     "display_name": "gpt-image-2",
+    "intro": "OpenAI ???????? 【企业级稳定】GPT ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 18,
     "group_name": "【企业级稳定】GPT ",
-    "group_multiplier": 0.68,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】GPT"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "GPT-6 Sol",
     "display_name": "GPT-6 Sol",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "GPT-6-Astra",
     "display_name": "GPT-6-Astra",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "codex-auto-review",
     "display_name": "codex-auto-review",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.2,
     "output_price_min": 1.2,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex",
     "display_name": "gpt-5.3-codex",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex-spark",
     "display_name": "gpt-5.3-codex-spark",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4",
     "display_name": "gpt-5.4",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.5,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4-mini",
     "display_name": "gpt-5.4-mini",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.75,
     "output_price_min": 4.5,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.5",
     "display_name": "gpt-5.5",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-sol",
     "display_name": "gpt-5.6-sol",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-terra",
     "display_name": "gpt-5.6-terra",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 12.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-image-2",
     "display_name": "gpt-image-2",
+    "intro": "OpenAI ???????? 【官方直链】OpenAI ???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 71,
     "group_name": "【官方直链】OpenAI ",
-    "group_multiplier": 0.7,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【官方直链】Open"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "claude-fable-5",
     "display_name": "claude-fable-5",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-fable-5-1",
     "display_name": "claude-fable-5-1",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5",
     "display_name": "claude-haiku-4-5",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5-20251001",
     "display_name": "claude-haiku-4-5-20251001",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-5-20251101",
     "display_name": "claude-opus-4-5-20251101",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-6",
     "display_name": "claude-opus-4-6",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-7",
     "display_name": "claude-opus-4-7",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-8",
     "display_name": "claude-opus-4-8",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4.5",
     "display_name": "claude-opus-4.5",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5",
     "display_name": "claude-opus-5",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5-5",
     "display_name": "claude-opus-5-5",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 4.0,
     "output_price_min": 20.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5",
     "display_name": "claude-sonnet-4-5",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5-20250929",
     "display_name": "claude-sonnet-4-5-20250929",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-6",
     "display_name": "claude-sonnet-4-6",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-5",
     "display_name": "claude-sonnet-5",
+    "intro": "Anthropic ???????? 【主力推荐】Claude Pro???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 25,
     "group_name": "【主力推荐】Claude Pro",
-    "group_multiplier": 0.88,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【主力推荐】Clau"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "GPT-6 Sol",
     "display_name": "GPT-6 Sol",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "GPT-6-Astra",
     "display_name": "GPT-6-Astra",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "codex-auto-review",
     "display_name": "codex-auto-review",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.2,
     "output_price_min": 1.2,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex",
     "display_name": "gpt-5.3-codex",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.3-codex-spark",
     "display_name": "gpt-5.3-codex-spark",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.75,
     "output_price_min": 14.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4",
     "display_name": "gpt-5.4",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.5,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.4-mini",
     "display_name": "gpt-5.4-mini",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 0.75,
     "output_price_min": 4.5,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.5",
     "display_name": "gpt-5.5",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-sol",
     "display_name": "gpt-5.6-sol",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 30.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-5.6-terra",
     "display_name": "gpt-5.6-terra",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 12.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "gpt-image-2",
     "display_name": "gpt-image-2",
+    "intro": "OpenAI ???????? 【AZ-GPT】OpenAI 高缓存命中???????????????",
     "vendor": "OpenAI",
     "platform": "openai",
-    "group_id": 67,
     "group_name": "【AZ-GPT】OpenAI 高缓存命中",
-    "group_multiplier": 0.99,
+    "group_multiplier": 1.0,
+    "model_type": "image",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/op.svg",
-    "model_type": "image",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【AZ-GPT】Op"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI"
+    ]
   },
   {
     "model_name": "claude-fable-5",
     "display_name": "claude-fable-5",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-fable-5-1",
     "display_name": "claude-fable-5-1",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 10.0,
     "output_price_min": 50.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5",
     "display_name": "claude-haiku-4-5",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-haiku-4-5-20251001",
     "display_name": "claude-haiku-4-5-20251001",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 1.0,
     "output_price_min": 5.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-5-20251101",
     "display_name": "claude-opus-4-5-20251101",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-6",
     "display_name": "claude-opus-4-6",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-7",
     "display_name": "claude-opus-4-7",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4-8",
     "display_name": "claude-opus-4-8",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-4.5",
     "display_name": "claude-opus-4.5",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5",
     "display_name": "claude-opus-5",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 5.0,
     "output_price_min": 25.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-opus-5-5",
     "display_name": "claude-opus-5-5",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 4.0,
     "output_price_min": 20.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5",
     "display_name": "claude-sonnet-4-5",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-5-20250929",
     "display_name": "claude-sonnet-4-5-20250929",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-4-6",
     "display_name": "claude-sonnet-4-6",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 3.0,
     "output_price_min": 15.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   },
   {
     "model_name": "claude-sonnet-5",
     "display_name": "claude-sonnet-5",
+    "intro": "Anthropic ???????? 【企业级稳定】Claude Max???????????????",
     "vendor": "Anthropic",
     "platform": "anthropic",
-    "group_id": 28,
     "group_name": "【企业级稳定】Claude Max",
-    "group_multiplier": 1.98,
+    "group_multiplier": 1.0,
+    "model_type": "chat",
     "billing_mode": "?token",
     "price_min": 2.0,
     "output_price_min": 10.0,
     "icon": "https://cos.lingkeai.vip/claude.svg",
-    "model_type": "chat",
     "tags": [
+      "?? 1.0x",
       "????",
-      "????"
+      "【企业级稳定】Cla"
     ],
     "composite_success_rate": 100,
-    "online_lines": 5
+    "online_lines": 5,
+    "protocols": [
+      "OpenAI",
+      "Anthropic"
+    ]
   }
 ]

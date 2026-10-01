@@ -23,8 +23,10 @@ For commercial licensing, please contact support@kejiapi.com
 
 export const CHANNEL_TYPE_OLLAMA = 4
 
+export const CHANNEL_TYPE_AGGREGATE = 59
 export const CHANNEL_TYPE_SUB2API = 59
 
+export const CHANNEL_TYPE_KEJI_API = 60
 export const CHANNEL_TYPE_NEW_API = 60
 
 export const CHANNEL_TYPE_TASK_PLUGIN = 61
@@ -89,7 +91,7 @@ export const CHANNEL_TYPES = {
   56: 'Replicate',
   57: 'ChatGPT Subscription (Codex)',
   58: 'Advanced Custom',
-  59: 'Sub2API',
+  59: 'Aggregate Gateway',
   60: 'KejiAPI',
   61: 'Task Plugin',
   62: 'vLLM',

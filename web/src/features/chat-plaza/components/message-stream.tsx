@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next'
 import { Markdown } from '@/components/ui/markdown'
 import { cn } from '@/lib/utils'
 
+import { formatModelDisplayName, getOfficialLogo } from '../lib/models'
 import type { PlazaMessage } from '../types'
 
 interface MessageStreamProps {
@@ -43,6 +44,8 @@ export function MessageStream({
 }: MessageStreamProps) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const resolvedLogo = modelIcon || getOfficialLogo(modelName || 'gpt-4o')
+  const resolvedDisplayName = formatModelDisplayName(modelName || 'AI')
 
   useEffect(() => {
     const el = scrollRef.current
@@ -60,29 +63,23 @@ export function MessageStream({
       <div className='space-y-3 pb-1'>
         {messages.map((message) =>
           message.role === 'user' ? (
-            <div
-              key={message.id}
-              className='bg-cyan-400/10 border-cyan-400/25 flex justify-end'
-            >
-              <div className='max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md border px-3.5 py-2.5 text-sm text-white'>
+            <div key={message.id} className='flex justify-end'>
+              <div className='max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md border border-cyan-400/30 bg-cyan-500/15 px-3.5 py-2.5 text-sm text-cyan-50 shadow-[0_0_15px_rgba(34,211,238,0.12)]'>
                 {message.content}
               </div>
             </div>
           ) : (
             <div key={message.id} className='flex items-start gap-2.5'>
-              <div className='flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/[0.06] ring-1 ring-white/10'>
-                {modelIcon ? (
+              <div className='flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#0e121a] ring-1 ring-white/10 p-0.5 shadow-sm'>
+                {resolvedLogo ? (
                   <img
-                    src={modelIcon}
-                    alt=''
-                    className='size-7 object-contain'
+                    src={resolvedLogo}
+                    alt={resolvedDisplayName}
+                    className='size-full object-contain'
                   />
                 ) : (
                   <span className='text-cyan-300 text-[10px] font-bold'>
-                    {(modelName ?? 'AI')
-                      .trim()
-                      .charAt(0)
-                      .toUpperCase()}
+                    {resolvedDisplayName.charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>

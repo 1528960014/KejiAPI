@@ -62,6 +62,49 @@ for (const m of ALL_OFFICIAL_MODELS) {
 }
 
 /**
+ * 规范化格式化模型展示名称 (去除杂乱日期后缀或内部代码，呈现官方名称)
+ */
+export function formatModelDisplayName(rawName: string, existingDisplay?: string): string {
+  if (existingDisplay && existingDisplay !== rawName && !existingDisplay.includes('????')) {
+    return existingDisplay
+  }
+  const lower = rawName.toLowerCase()
+  if (lower.includes('claude-3-7-sonnet') || lower.includes('claude-3.7-sonnet')) return 'Claude 3.7 Sonnet'
+  if (lower.includes('claude-3-5-sonnet') || lower.includes('claude-3.5-sonnet')) return 'Claude 3.5 Sonnet'
+  if (lower.includes('claude-3-5-haiku') || lower.includes('claude-3.5-haiku')) return 'Claude 3.5 Haiku'
+  if (lower.includes('claude-3-opus') || lower.includes('claude-3.0-opus')) return 'Claude 3 Opus'
+  if (lower.includes('claude-3-haiku') || lower.includes('claude-3.0-haiku')) return 'Claude 3 Haiku'
+  if (lower.includes('claude-fable-5-1')) return 'Claude Fable 5.1'
+  if (lower.includes('claude-fable-5')) return 'Claude Fable 5'
+  if (lower === 'gpt-4o' || lower.startsWith('gpt-4o-202')) return 'GPT-4o'
+  if (lower.includes('gpt-4o-mini')) return 'GPT-4o Mini'
+  if (lower.includes('gpt-4.5') || lower.includes('gpt-4-5')) return 'GPT-4.5 Preview'
+  if (lower.includes('chatgpt-4o-latest')) return 'ChatGPT-4o Latest'
+  if (lower.includes('o1-mini')) return 'OpenAI o1 Mini'
+  if (lower.includes('o1-preview') || lower === 'o1') return 'OpenAI o1'
+  if (lower.includes('o3-mini')) return 'OpenAI o3 Mini'
+  if (lower.includes('o3')) return 'OpenAI o3'
+  if (lower.includes('deepseek-r1') || lower.includes('deepseek-reasoner')) return 'DeepSeek R1'
+  if (lower.includes('deepseek-v3') || lower.includes('deepseek-chat')) return 'DeepSeek V3'
+  if (lower.includes('deepseek-v4')) return 'DeepSeek V4 Flash'
+  if (lower.includes('gemini-2.5-flash')) return 'Gemini 2.5 Flash'
+  if (lower.includes('gemini-2.5-pro')) return 'Gemini 2.5 Pro'
+  if (lower.includes('gemini-2.0-flash')) return 'Gemini 2.0 Flash'
+  if (lower.includes('gemini-1.5-pro')) return 'Gemini 1.5 Pro'
+  if (lower.includes('gemini-1.5-flash')) return 'Gemini 1.5 Flash'
+  if (lower.includes('qwen-max')) return '通义千问 Max'
+  if (lower.includes('qwen-plus')) return '通义千问 Plus'
+  if (lower.includes('qwen-turbo')) return '通义千问 Turbo'
+  if (lower.includes('kimi-k2.6') || lower.includes('kimi-k2')) return 'Kimi K2.6'
+  if (lower.includes('kimi-k3')) return 'Kimi K3'
+  if (lower.includes('glm-5')) return 'GLM-5'
+  if (lower.includes('glm-4')) return 'GLM-4'
+  if (lower.includes('grok-4.5')) return 'Grok 4.5'
+  if (lower.includes('grok-4.3')) return 'Grok 4.3'
+  return rawName
+}
+
+/**
  * 官方 Logo 智能映射字典 (100% 精确官方 SVG / 高清图标)
  */
 export function getOfficialLogo(name: string, vendor?: string, fallbackIcon?: string): string {
@@ -277,7 +320,7 @@ export function buildPlazaModel(
 
   return {
     name,
-    displayName: official?.display_name || name,
+    displayName: formatModelDisplayName(name, official?.display_name),
     category,
     description: official?.intro || pricing?.description || `${official?.vendor || '官方直供'} 核心大模型，支持高速多轮对话与流式调用。`,
     icon: officialLogo,

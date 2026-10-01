@@ -194,7 +194,7 @@ import {
 import {
   getChannelPluginExtensions,
   supportsChannelPluginExtensions,
-  supportsNewAPIUpstream,
+  supportsKejiAPIUpstream,
 } from '../../lib/channel-plugin-extensions'
 import { getChannelTypeConfig } from '../../lib/channel-type-config'
 import {
@@ -1331,7 +1331,7 @@ export function ChannelMutateDrawer({
   const taskPluginExtensionOptions = useMemo(
     () =>
       (taskPluginOptionsQuery.data ?? [])
-        .filter(supportsNewAPIUpstream)
+        .filter(supportsKejiAPIUpstream)
         .map((plugin) => ({
           value: plugin.key,
           label: plugin.name,

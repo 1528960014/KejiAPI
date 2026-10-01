@@ -70,11 +70,13 @@ export function readTaskExtendPluginKeys(
 // A KejiAPI channel proxies another gateway, which serves a plugin's wire
 // format only on the plugin's own native routes. Only drivers that declare
 // they address such a gateway can be bound there; the server rejects the rest.
-export function supportsNewAPIUpstream(
+export function supportsKejiAPIUpstream(
   plugin: Pick<TaskPluginOption, 'upstreams'>
 ): boolean {
   return plugin.upstreams?.includes('kejiapi') ?? false
 }
+
+export const supportsNewAPIUpstream = supportsKejiAPIUpstream
 
 export function getChannelPluginExtensions(
   channelType: number,
@@ -82,7 +84,7 @@ export function getChannelPluginExtensions(
   extendPluginKeys: readonly string[] = []
 ): TaskPluginOption[] {
   if (!supportsChannelPluginExtensions(channelType)) return []
-  if (channelType === CHANNEL_TYPE_NEW_API) {
+  if (channelType === CHANNEL_TYPE_NEW_API || channelType === 60) {
     return plugins.filter((plugin) => extendPluginKeys.includes(plugin.key))
   }
   return plugins.filter((plugin) => plugin.channelTypes?.includes(channelType))
