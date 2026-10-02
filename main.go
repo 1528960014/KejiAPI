@@ -138,6 +138,10 @@ func main() {
 	// Subscription quota reset task (daily/weekly/monthly/custom)
 	service.StartSubscriptionQuotaResetTask()
 
+	// Account pool cooldown recovery: re-enable auto-disabled subscription
+	// accounts whose timed cooldown has expired.
+	service.StartAccountPoolCooldownTask()
+
 	// Report this process as a system instance so the System Info page can show
 	// all currently alive nodes in multi-instance deployments.
 	service.StartSystemInstanceReporter()

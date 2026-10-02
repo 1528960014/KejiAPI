@@ -11,6 +11,7 @@ var filterEvalOrder = []dto.ChannelFilterKind{
 	dto.FilterRequestPath,
 	dto.FilterTaskPluginIdentity,
 	dto.FilterResponsesWebSocket,
+	dto.FilterPoolGuard,
 }
 
 // ChannelSatisfiesFilters reports whether ch passes every filter.
@@ -124,6 +125,12 @@ func channelMatchesFilter(ch *Channel, modelName string, filter dto.ChannelFilte
 		default:
 			return false
 		}
+	case dto.FilterPoolGuard:
+		// Per-account pacing applies only to pooled subscription accounts.
+		if !constant.IsSubscriptionPoolChannelType(ch.Type) {
+			return true
+		}
+		return PoolGuardAllows(ch.Id)
 	default:
 		return true
 	}

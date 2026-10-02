@@ -65,7 +65,7 @@ function EmptyAboutState() {
               rel='noopener noreferrer'
               className='text-primary hover:underline'
             >
-              KejiAPI
+              Kejike API
             </a>{' '}
             © {currentYear}{' '}
             <a

@@ -19,6 +19,7 @@ For commercial licensing, please contact support@kejiapi.com
 import {
   Activity,
   Box,
+  Boxes,
   ClipboardList,
   CreditCard,
   FileText,
@@ -142,6 +143,11 @@ export function useSidebarData(): SidebarData {
             title: t('Channels'),
             url: '/channels',
             icon: Radio,
+          },
+          {
+            title: t('Account Pool'),
+            url: '/account-pool',
+            icon: Boxes,
           },
           {
             title: t('Models'),

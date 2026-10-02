@@ -16,17 +16,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@kejiapi.com
 */
-/**
- * Application-wide constants
- */
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-// System Configuration Defaults
-export const DEFAULT_SYSTEM_NAME = 'Kejike API'
-export const DEFAULT_LOGO = '/logo.svg'
+import { AccountPool } from '@/features/account-pool'
+import { ROLE } from '@/lib/roles'
+import { useAuthStore } from '@/stores/auth-store'
 
-// LocalStorage Keys
-export const STORAGE_KEYS = {
-  SYSTEM_NAME: 'system_name',
-  LOGO: 'logo',
-  FOOTER_HTML: 'footer_html',
-} as const
+export const Route = createFileRoute('/_authenticated/account-pool/')({
+  beforeLoad: () => {
+    const { auth } = useAuthStore.getState()
+
+    if (!auth.user || auth.user.role < ROLE.ADMIN) {
+      throw redirect({
+        to: '/403',
+      })
+    }
+  },
+  component: AccountPool,
+})

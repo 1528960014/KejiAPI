@@ -92,7 +92,7 @@ export const CHANNEL_TYPES = {
   57: 'ChatGPT Subscription (Codex)',
   58: 'Advanced Custom',
   59: 'Aggregate Gateway',
-  60: 'KejiAPI',
+  60: 'Kejike API',
   61: 'Task Plugin',
   62: 'vLLM',
   63: 'SGLang',

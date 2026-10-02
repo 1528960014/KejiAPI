@@ -159,7 +159,7 @@ export function Footer(props: FooterProps) {
   } = useSystemConfig()
 
   const displayLogo = systemLogo || props.logo || '/logo.svg'
-  const displayName = systemName || props.name || 'KejiAPI'
+  const displayName = systemName || props.name || 'Kejike API'
   const isDemoSiteMode = Boolean(demoSiteEnabled)
   const currentYear = new Date().getFullYear()
 

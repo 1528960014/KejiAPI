@@ -119,7 +119,7 @@ func TestNewAPIChannelRegistration(t *testing.T) {
 
 	require.True(t, ok)
 	assert.Equal(t, constant.APITypeNewAPI, apiType)
-	assert.Equal(t, "KejiAPI", constant.GetChannelTypeName(constant.ChannelTypeNewAPI))
+	assert.Equal(t, "Kejike API", constant.GetChannelTypeName(constant.ChannelTypeNewAPI))
 	require.Greater(t, len(constant.ChannelBaseURLs), constant.ChannelTypeNewAPI)
 	assert.Empty(t, constant.ChannelBaseURLs[constant.ChannelTypeNewAPI])
 }
@@ -136,7 +136,7 @@ func TestResponsesCompactChannelSupport(t *testing.T) {
 		{name: "Codex", channelType: constant.ChannelTypeCodex, apiType: constant.APITypeCodex, want: true},
 		{name: "Advanced Custom", channelType: constant.ChannelTypeAdvancedCustom, apiType: constant.APITypeAdvancedCustom, want: true},
 		{name: "Sub2API", channelType: constant.ChannelTypeSub2API, apiType: constant.APITypeSub2API, want: true},
-		{name: "KejiAPI", channelType: constant.ChannelTypeNewAPI, apiType: constant.APITypeNewAPI, want: true},
+		{name: "Kejike API", channelType: constant.ChannelTypeNewAPI, apiType: constant.APITypeNewAPI, want: true},
 		{name: "Anthropic", channelType: constant.ChannelTypeAnthropic, apiType: constant.APITypeAnthropic, want: false},
 	}
 

@@ -44,6 +44,9 @@ func Distribute() func(c *gin.Context) {
 			Kind:        taskdto.FilterRequestPath,
 			RequestPath: c.Request.URL.Path,
 		})
+		// Account pool pacing: skip pooled subscription accounts that have
+		// reached their per-account request window (ban prevention).
+		constraints.AddFilter(taskdto.ChannelFilter{Kind: taskdto.FilterPoolGuard})
 		service.AppendTaskPluginIdentityFilter(c, c.GetString("expected_task_plugin_key"))
 		modelRequest, shouldSelectChannel, err := getModelRequest(c)
 		if err != nil {
@@ -126,6 +129,9 @@ func Distribute() func(c *gin.Context) {
 		c.Next()
 		if channel != nil && c.Writer != nil && c.Writer.Status() < http.StatusBadRequest {
 			service.RecordChannelAffinity(c, channel.Id)
+			if constant.IsSubscriptionPoolChannelType(channel.Type) {
+				model.PoolGuardRecord(channel.Id)
+			}
 		}
 	}
 }

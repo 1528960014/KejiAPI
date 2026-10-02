@@ -26,7 +26,7 @@ import {
 
 const defaultSiteSettings: SiteSettings = {
   Notice: '',
-  SystemName: 'KejiAPI',
+  SystemName: 'Kejike API',
   Logo: '',
   Footer: '',
   About: '',

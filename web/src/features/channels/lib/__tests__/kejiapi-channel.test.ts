@@ -60,7 +60,7 @@ describe('KejiAPI channel', () => {
 
     expect(option).toEqual({
       value: CHANNEL_TYPE_NEW_API,
-      label: 'KejiAPI',
+      label: 'Kejike API',
     })
     expect(
       CHANNEL_TYPE_OPTIONS.findIndex(

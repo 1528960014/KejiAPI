@@ -192,7 +192,7 @@ export function resolveChatUrl({
 
   if (url.includes('{aqbotConfig}')) {
     const query = [
-      `name=${encodeURIComponent('KejiAPI')}`,
+      `name=${encodeURIComponent('Kejike API')}`,
       `baseurl=${encodeURIComponent(safeServerAddress)}`,
       `apikey=${encodeURIComponent(safeApiKey)}`,
       'type=openai',
