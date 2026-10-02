@@ -68,7 +68,7 @@ import {
   refreshSubscriptionChannel,
   updateChannelStatus,
 } from '@/features/channels/api'
-import { CHANNEL_STATUS } from '@/features/channels/constants'
+import { CHANNEL_STATUS, CHANNEL_TYPES } from '@/features/channels/constants'
 import { formatTimestampToDate } from '@/lib/format'
 import { handleServerError } from '@/lib/handle-server-error'
 import { getServerErrorMessage } from '@/lib/server-error-message'
@@ -104,7 +104,11 @@ const POOL_TYPE_LABEL_FALLBACK: Record<number, string> = {
 const POOL_COLUMN_VISIBILITY_STORAGE_KEY = 'account-pool:column-visibility'
 
 function getPoolTypeLabel(type: number): string {
-  return POOL_TYPE_LABEL_FALLBACK[type] ?? 'Unknown'
+  return (
+    (CHANNEL_TYPES as Record<number, string>)[type] ??
+    POOL_TYPE_LABEL_FALLBACK[type] ??
+    'Unknown'
+  )
 }
 
 function formatRfc3339(value?: string): string {
@@ -273,7 +277,9 @@ export function PoolAccountsTable(props: PoolAccountsTableProps) {
     link.href = url
     link.download = `account-pool-${new Date().toISOString().slice(0, 10)}.json`
     link.click()
-    URL.revokeObjectURL(url)
+    // Keep the blob URL alive until the browser has started the download;
+    // revoking it synchronously truncates the file in some engines.
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000)
     toast.success(t('Accounts exported successfully'))
   }, [accounts, t])
 
