@@ -410,7 +410,7 @@ export async function resetCodexUsage(
 // Subscription Account Operations
 // ============================================================================
 
-export type SubscriptionProvider = 'claude' | 'gpt'
+export type SubscriptionProvider = 'claude' | 'gpt' | 'gemini' | 'antigravity'
 
 export type SubscriptionAuthUrlResponse = {
   success: boolean

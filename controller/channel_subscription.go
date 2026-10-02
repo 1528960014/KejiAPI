@@ -18,11 +18,16 @@ import (
 )
 
 const (
-	subscriptionProviderClaude = "claude"
-	subscriptionProviderGPT    = "gpt"
+	subscriptionProviderClaude      = "claude"
+	subscriptionProviderGPT         = "gpt"
+	subscriptionProviderGemini      = "gemini"
+	subscriptionProviderAntigravity = "antigravity"
 
 	defaultClaudeSubscriptionModels = "claude-sonnet-4-5,claude-opus-4-1,claude-haiku-4-5,claude-sonnet-4-0,claude-opus-4-0,claude-3-7-sonnet-latest,claude-3-5-sonnet-latest,claude-3-5-haiku-latest"
 	defaultGPTSubscriptionModels    = "gpt-5-codex,gpt-5-codex-mini,gpt-5.1-codex-max,gpt-5,gpt-5-mini,gpt-5-nano,gpt-4o,gpt-4o-mini"
+	defaultGeminiSubscriptionModels = "gemini-2.5-pro,gemini-2.5-flash,gemini-2.5-flash-lite,gemini-2.0-flash,gemini-2.0-flash-lite"
+
+	defaultAntigravitySubscriptionModels = "claude-sonnet-4-6,claude-opus-4-6-thinking,gemini-3-pro-high,gemini-3-pro-low,gpt-oss-120b-medium"
 )
 
 // GetChannelSubscriptionAuthURL returns the provider authorization URL the
@@ -57,6 +62,36 @@ func GetChannelSubscriptionAuthURL(c *gin.Context) {
 		})
 	case subscriptionProviderGPT:
 		res, err := service.GenerateGPTOAuthAuthURL()
+		if err != nil {
+			common.ApiError(c, err)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "",
+			"data": gin.H{
+				"provider":      provider,
+				"auth_url":      res.AuthURL,
+				"code_verifier": res.CodeVerifier,
+			},
+		})
+	case subscriptionProviderGemini:
+		res, err := service.GenerateGeminiOAuthAuthURL()
+		if err != nil {
+			common.ApiError(c, err)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "",
+			"data": gin.H{
+				"provider":      provider,
+				"auth_url":      res.AuthURL,
+				"code_verifier": res.CodeVerifier,
+			},
+		})
+	case subscriptionProviderAntigravity:
+		res, err := service.GenerateAntigravityOAuthAuthURL()
 		if err != nil {
 			common.ApiError(c, err)
 			return
@@ -140,6 +175,50 @@ func CreateSubscriptionChannel(c *gin.Context) {
 		cred, err := service.ExchangeGPTOAuthCode(ctx, req.Code, req.CodeVerifier, "")
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": "授权码兑换失败: " + err.Error()})
+			return
+		}
+		if b, err := common.Marshal(cred); err == nil {
+			keyJSON = string(b)
+		} else {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+		c.Set("subscription_email", cred.Email)
+	case subscriptionProviderGemini:
+		chType = constant.ChannelTypeGemini
+		defaultModels = defaultGeminiSubscriptionModels
+		providerLabel = "Gemini"
+
+		cred, err := service.ExchangeGeminiOAuthCode(ctx, req.Code, req.CodeVerifier, "")
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": "授权码兑换失败: " + err.Error()})
+			return
+		}
+		if b, err := common.Marshal(cred); err == nil {
+			keyJSON = string(b)
+		} else {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+		c.Set("subscription_email", cred.Email)
+	case subscriptionProviderAntigravity:
+		chType = constant.ChannelTypeAntigravity
+		defaultModels = defaultAntigravitySubscriptionModels
+		providerLabel = "Antigravity"
+
+		// Exchange may trigger a multi-step onboarding flow (project
+		// discovery), which can take up to a minute.
+		agyCtx, agyCancel := context.WithTimeout(c.Request.Context(), 90*time.Second)
+		cred, err := service.ExchangeAntigravityOAuthCode(agyCtx, req.Code, req.CodeVerifier, "")
+		if err == nil {
+			err = service.DiscoverAntigravityProject(agyCtx, cred, "")
+			if err == nil && strings.TrimSpace(cred.ProjectID) == "" {
+				err = errors.New("未能获取 Google Cloud 项目 ID，请确认账号已开通 AI 订阅")
+			}
+		}
+		agyCancel()
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": "授权码兑换或项目发现失败: " + err.Error()})
 			return
 		}
 		if b, err := common.Marshal(cred); err == nil {
@@ -275,6 +354,28 @@ func RefreshSubscriptionChannelCredential(c *gin.Context) {
 			"message": "",
 			"data":    subscriptionCredentialStatus(ch.Type, keyJSONValue(key.AccessToken, key.RefreshToken, key.Expired, key.LastRefresh, key.AccountID, key.Email)),
 		})
+	case constant.ChannelTypeGemini:
+		key, _, err := service.RefreshGeminiChannelCredential(ctx, id, service.GeminiCredentialRefreshOptions{ResetCaches: true})
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "",
+			"data":    subscriptionCredentialStatus(ch.Type, keyJSONValue(key.AccessToken, key.RefreshToken, key.Expired, key.LastRefresh, "", key.Email)),
+		})
+	case constant.ChannelTypeAntigravity:
+		key, _, err := service.RefreshAntigravityChannelCredential(ctx, id, service.AntigravityCredentialRefreshOptions{ResetCaches: true})
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "",
+			"data":    subscriptionCredentialStatus(ch.Type, keyJSONValue(key.AccessToken, key.RefreshToken, key.Expired, key.LastRefresh, "", key.Email)),
+		})
 	default:
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "该渠道类型不支持订阅凭据刷新"})
 	}
@@ -363,6 +464,30 @@ func subscriptionCredentialStatusFromKey(chType int, rawKey string) (gin.H, erro
 			accountID:    cred.AccountID,
 			email:        cred.Email,
 		}
+	} else if chType == constant.ChannelTypeGemini {
+		cred, err := service.ParseGeminiOAuthKeyForView(rawKey)
+		if err != nil {
+			return nil, err
+		}
+		v = subscriptionStatusView{
+			accessToken:  cred.AccessToken,
+			refreshToken: cred.RefreshToken,
+			expired:      cred.Expired,
+			lastRefresh:  cred.LastRefresh,
+			email:        cred.Email,
+		}
+	} else if chType == constant.ChannelTypeAntigravity {
+		cred, err := service.ParseAntigravityOAuthKeyForView(rawKey)
+		if err != nil {
+			return nil, err
+		}
+		v = subscriptionStatusView{
+			accessToken:  cred.AccessToken,
+			refreshToken: cred.RefreshToken,
+			expired:      cred.Expired,
+			lastRefresh:  cred.LastRefresh,
+			email:        cred.Email,
+		}
 	} else {
 		return nil, errors.New("该渠道类型不是订阅凭据渠道")
 	}
@@ -371,8 +496,13 @@ func subscriptionCredentialStatusFromKey(chType int, rawKey string) (gin.H, erro
 
 func buildSubscriptionStatusView(chType int, v *subscriptionStatusView) gin.H {
 	provider := subscriptionProviderClaude
-	if chType == constant.ChannelTypeCodex {
+	switch chType {
+	case constant.ChannelTypeCodex:
 		provider = subscriptionProviderGPT
+	case constant.ChannelTypeGemini:
+		provider = subscriptionProviderGemini
+	case constant.ChannelTypeAntigravity:
+		provider = subscriptionProviderAntigravity
 	}
 
 	valid := strings.TrimSpace(v.accessToken) != ""

@@ -10,6 +10,7 @@ import (
 	"kejiapi/relay/channel"
 	"kejiapi/relay/channel/advancedcustom"
 	"kejiapi/relay/channel/ali"
+	"kejiapi/relay/channel/antigravity"
 	"kejiapi/relay/channel/aws"
 	"kejiapi/relay/channel/baidu"
 	"kejiapi/relay/channel/baidu_v2"
@@ -123,6 +124,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &sub2api.Adaptor{}
 	case constant.APITypeNewAPI:
 		return &kejiapi.Adaptor{}
+	case constant.APITypeAntigravity:
+		return &antigravity.Adaptor{}
 	}
 	return nil
 }

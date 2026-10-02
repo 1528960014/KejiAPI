@@ -93,7 +93,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const isEnabled = isChannelEnabled(channel)
   const isMultiKey = isMultiKeyChannel(channel)
   const isSubscriptionChannel =
-    (channel.type === 14 || channel.type === 57) &&
+    (channel.type === 14 ||
+      channel.type === 57 ||
+      channel.type === 24 ||
+      channel.type === 64) &&
     (channel.key ?? '').trim().startsWith('{')
   const canEditSensitive = hasPermission(
     currentUser,

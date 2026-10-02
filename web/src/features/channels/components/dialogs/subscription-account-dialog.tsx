@@ -26,6 +26,8 @@ import {
   Feather,
   Loader2,
   Plus,
+  Rocket,
+  Sparkles,
 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -173,7 +175,9 @@ export function SubscriptionAccountDialog({
       const res = await createSubscriptionChannel({
         provider,
         code: code.trim(),
-        ...(provider === 'gpt' && codeVerifier ? { code_verifier: codeVerifier } : {}),
+        ...(provider !== 'claude' && codeVerifier
+          ? { code_verifier: codeVerifier }
+          : {}),
         ...(name.trim() ? { name: name.trim() } : {}),
         ...(group.trim() ? { group: group.trim() } : {}),
       })
@@ -245,6 +249,24 @@ export function SubscriptionAccountDialog({
                 )}
                 selected={provider === 'gpt'}
                 onSelect={() => handleSelectProvider('gpt')}
+              />
+              <ProviderCard
+                icon={<Sparkles />}
+                title={t('Gemini Subscription')}
+                description={t(
+                  'Sign in with your Gemini subscription account to create a channel.'
+                )}
+                selected={provider === 'gemini'}
+                onSelect={() => handleSelectProvider('gemini')}
+              />
+              <ProviderCard
+                icon={<Rocket />}
+                title={t('Antigravity Subscription')}
+                description={t(
+                  'Sign in with your Antigravity (Google AI) subscription account to create a channel.'
+                )}
+                selected={provider === 'antigravity'}
+                onSelect={() => handleSelectProvider('antigravity')}
               />
             </div>
           </div>

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"kejiapi/common"
 	"kejiapi/relay/channel"
 	relaycommon "kejiapi/relay/common"
 	"kejiapi/relay/constant"
@@ -163,7 +164,26 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
-	req.Set("x-goog-api-key", info.ApiKey)
+	key := strings.TrimSpace(info.ApiKey)
+	if strings.HasPrefix(key, "{") {
+		// Subscription OAuth credential: JSON object with access_token.
+		var oauthKey struct {
+			AccessToken string `json:"access_token"`
+		}
+		if err := common.Unmarshal([]byte(key), &oauthKey); err != nil {
+			return fmt.Errorf("gemini channel: invalid subscription credential json: %w", err)
+		}
+		accessToken := strings.TrimSpace(oauthKey.AccessToken)
+		if accessToken == "" {
+			return errors.New("gemini subscription channel: access_token is required")
+		}
+		req.Set("Authorization", "Bearer "+accessToken)
+		if req.Get("x-goog-api-key") != "" {
+			req.Del("x-goog-api-key")
+		}
+	} else {
+		req.Set("x-goog-api-key", key)
+	}
 	return nil
 }
 

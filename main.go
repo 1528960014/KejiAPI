@@ -132,6 +132,8 @@ func main() {
 	// Codex credential auto-refresh check every 10 minutes, refresh when expires within 1 day
 	service.StartCodexCredentialAutoRefreshTask()
 	service.StartClaudeCredentialAutoRefreshTask()
+	service.StartGeminiCredentialAutoRefreshTask()
+	service.StartAntigravityCredentialAutoRefreshTask()
 
 	// Subscription quota reset task (daily/weekly/monthly/custom)
 	service.StartSubscriptionQuotaResetTask()
