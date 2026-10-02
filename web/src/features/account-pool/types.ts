@@ -75,7 +75,26 @@ export type PoolAccount = {
   auto_pause: boolean
   /** Live scheduling runtime of this account */
   pool_runtime: PoolAccountRuntime
+  /** Scheduled health-check configuration and recent results */
+  health: PoolAccountHealth
   credential: PoolCredential | {}
+}
+
+/** One stored scheduled health-check outcome. */
+export type PoolHealthResult = {
+  at: number
+  ok: boolean
+  latency_ms: number
+  error: string
+}
+
+/** Scheduled health-check configuration and recent results of an account. */
+export type PoolAccountHealth = {
+  enabled: boolean
+  interval_minutes: number
+  model: string
+  last_at: number
+  results: PoolHealthResult[]
 }
 
 /** Live per-account runtime counters driving pool-aware scheduling. */
@@ -114,6 +133,10 @@ export type PoolSettings = {
   session_stickiness_enabled: boolean
   /** Healthiest pool accounts per weighted draw; 0 disables load ordering */
   selection_top_k: number
+  /** EWMA error rate at or above which stickiness escapes an account */
+  escape_error_rate: number
+  /** Default interval (minutes) of per-account scheduled health checks */
+  health_check_default_interval_minutes: number
 }
 
 export type AccountPoolData = {

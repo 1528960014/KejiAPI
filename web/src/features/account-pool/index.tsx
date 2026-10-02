@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   Download,
   ExternalLink,
+  HeartPulse,
   Loader2,
   Power,
   PowerOff,
@@ -86,6 +87,7 @@ import { truncateText } from '@/lib/utils'
 
 import {
   accountPoolQueryKeys,
+  triggerPoolHealthTest,
   useAccountPool,
   useUpdateAccountPoolSettings,
 } from './api'
@@ -224,10 +226,39 @@ function PoolAccountTable() {
   const isError = poolQuery.isError
   const [refreshingId, setRefreshingId] = useState<number | null>(null)
   const [togglingId, setTogglingId] = useState<number | null>(null)
+  const [testingId, setTestingId] = useState<number | null>(null)
 
   const invalidatePool = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: accountPoolQueryKeys.all })
   }, [queryClient])
+
+  const handleHealthTest = useCallback(
+    async (account: PoolAccount) => {
+      setTestingId(account.id)
+      try {
+        const response = await triggerPoolHealthTest({
+          channel_id: account.id,
+        })
+        if (response.success) {
+          toast.success(
+            response.data?.ok
+              ? t('Health check passed')
+              : t('Health check failed')
+          )
+          invalidatePool()
+        } else {
+          toast.error(
+            getServerErrorMessage(response, t('Health check failed'))
+          )
+        }
+      } catch (error) {
+        handleServerError(error, t('Health check failed'))
+      } finally {
+        setTestingId(null)
+      }
+    },
+    [t, invalidatePool]
+  )
 
   const handleRefreshCredential = useCallback(
     async (account: PoolAccount) => {
@@ -435,6 +466,28 @@ function PoolAccountTable() {
                   copyable={false}
                 />
               )}
+              {account.health?.enabled ? (
+                <StatusBadge
+                  label={
+                    account.health.results?.[0]
+                      ? account.health.results[0].ok
+                        ? t('Healthy')
+                        : t('Failing')
+                      : t('Health check every {{minutes}} min', {
+                          minutes: account.health.interval_minutes || '?',
+                        })
+                  }
+                  variant={
+                    account.health.results?.[0]
+                      ? account.health.results[0].ok
+                        ? 'success'
+                        : 'danger'
+                      : 'info'
+                  }
+                  size='sm'
+                  copyable={false}
+                />
+              ) : null}
               {account.status_reason ? (
                 <TooltipProvider delay={100}>
                   <Tooltip>
@@ -551,6 +604,26 @@ function PoolAccountTable() {
                     <Button
                       variant='ghost'
                       size='icon-sm'
+                      aria-label={t('Health Check')}
+                      disabled={testingId === account.id}
+                      onClick={() => void handleHealthTest(account)}
+                    />
+                  }
+                >
+                  {testingId === account.id ? (
+                    <Loader2 className='size-4 animate-spin' />
+                  ) : (
+                    <HeartPulse className='size-4' />
+                  )}
+                </TooltipTrigger>
+                <TooltipContent>{t('Health Check')}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant='ghost'
+                      size='icon-sm'
                       aria-label={t('Open Channels')}
                       render={<Link to='/channels' />}
                     />
@@ -565,7 +638,15 @@ function PoolAccountTable() {
         },
       },
     ],
-    [t, refreshingId, togglingId, handleRefreshCredential, handleToggleStatus]
+    [
+      t,
+      refreshingId,
+      togglingId,
+      testingId,
+      handleRefreshCredential,
+      handleToggleStatus,
+      handleHealthTest,
+    ]
   )
 
   if (isError) {
@@ -834,6 +915,70 @@ function PoolSettingsCard() {
               )
             }
           />
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <Label>{t('Error Escape Rate')}</Label>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t(
+                'Recent-error rate at which a sticky account stops being preferred and traffic moves to another pooled account.'
+              )}
+            </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Input
+              type='number'
+              min={0.1}
+              max={1}
+              step={0.05}
+              className='w-24'
+              value={form?.escape_error_rate ?? 0.5}
+              onChange={(event) =>
+                updateField(
+                  'escape_error_rate',
+                  Math.min(1, Math.max(0.1, Number(event.target.value) || 0.5))
+                )
+              }
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <Label>{t('Health Check Interval')}</Label>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t(
+                'Default interval of the per-account scheduled health checks. Enable them per account in channel settings.'
+              )}
+            </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Input
+              type='number'
+              min={5}
+              max={1440}
+              step={1}
+              className='w-20'
+              value={form?.health_check_default_interval_minutes ?? 60}
+              onChange={(event) =>
+                updateField(
+                  'health_check_default_interval_minutes',
+                  Math.min(
+                    1440,
+                    Math.max(5, Number(event.target.value) || 60)
+                  )
+                )
+              }
+            />
+            <span className='text-muted-foreground text-sm'>
+              {t('minutes')}
+            </span>
+          </div>
         </div>
 
         <Separator />

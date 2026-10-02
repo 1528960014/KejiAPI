@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"sync"
 	"time"
 
@@ -157,10 +158,15 @@ func PoolSnapshot(channelID int) PoolAccountStatsSnapshot {
 // PoolErrorRateEscapeThreshold is the EWMA error rate at or above which the
 // scheduler treats a pooled account as unhealthy and stops preferring it.
 // Three consecutive failures push the EWMA (alpha 0.25) to 0.58, so the
-// threshold sits just below that: a short burst of errors is enough to
-// escape a sticky account.
+// default 0.5 sits just below that: a short burst of errors is enough to
+// escape a sticky account. The threshold is configurable in the account
+// pool settings.
 func PoolErrorRateEscapeThreshold() float64 {
-	return 0.5
+	rate := operation_setting.GetAccountPoolSetting().EscapeErrorRate
+	if rate <= 0 || rate > 1 {
+		return 0.5
+	}
+	return rate
 }
 
 // PoolIsOverloaded reports whether the account's recent error rate is high
@@ -370,4 +376,32 @@ func PoolIsSaturated(channel *Channel) bool {
 		return false
 	}
 	return PoolSnapshot(channel.Id).ActiveRequests >= limit
+}
+
+// PoolEffectiveWeight returns the weight a pooled account contributes to
+// the weighted draw. The channel weight is scaled by the account load
+// factor from extra metadata ("pool_load_factor", default 1.0: 2.0 makes
+// the account serve roughly twice as much traffic). Non-pool channels
+// return their plain weight.
+func PoolEffectiveWeight(channel *Channel) int {
+	weight := channel.GetWeight()
+	if !constant.IsSubscriptionPoolChannelType(channel.Type) {
+		return weight
+	}
+	factor := 1.0
+	switch v := channel.GetOtherInfo()["pool_load_factor"].(type) {
+	case float64:
+		factor = v
+	case string:
+		if parsed, err := strconv.ParseFloat(v, 64); err == nil {
+			factor = parsed
+		}
+	}
+	if factor <= 0 || factor == 1 {
+		return weight
+	}
+	if factor > 100 {
+		factor = 100
+	}
+	return int(float64(weight) * factor)
 }

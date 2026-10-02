@@ -142,6 +142,10 @@ func main() {
 	// accounts whose timed cooldown has expired.
 	service.StartAccountPoolCooldownTask()
 
+	// Account pool scheduled health checks: test opted-in pool accounts on
+	// their interval, recover healthy ones, disable failing ones.
+	controller.StartAccountPoolHealthTask()
+
 	// Report this process as a system instance so the System Info page can show
 	// all currently alive nodes in multi-instance deployments.
 	service.StartSystemInstanceReporter()

@@ -70,6 +70,7 @@ var channelPermissionRoutes = []permissionRoute{
 	{method: http.MethodGet, path: "/pool", permission: authz.ChannelRead, handler: controller.GetChannelAccountPool},
 	{method: http.MethodPut, path: "/pool/settings", permission: authz.ChannelWrite, handler: controller.UpdateChannelAccountPoolSettings},
 	{method: http.MethodPost, path: "/pool/import", permission: authz.ChannelSensitiveWrite, handler: controller.ImportAccountPool},
+	{method: http.MethodPost, path: "/pool/health-test", permission: authz.ChannelOperate, handler: controller.PoolHealthTestChannel},
 	{method: http.MethodPost, path: "/subscription/auth-url", permission: authz.ChannelSensitiveWrite, handler: controller.GetChannelSubscriptionAuthURL},
 	{method: http.MethodPost, path: "/subscription/create", permission: authz.ChannelSensitiveWrite, handler: controller.CreateSubscriptionChannel},
 	{method: http.MethodPost, path: "/:id/subscription/refresh", permission: authz.ChannelSensitiveWrite, handler: controller.RefreshSubscriptionChannelCredential},

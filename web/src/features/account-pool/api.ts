@@ -75,6 +75,17 @@ export async function importAccountPool(params: {
 }
 
 /**
+ * Run one on-demand health check for a pool account.
+ */
+export async function triggerPoolHealthTest(params: {
+  channel_id: number
+  model?: string
+}): Promise<{ success: boolean; message?: string; data?: { ok: boolean; latency_ms: number; error: string } }> {
+  const res = await api.post('/api/channel/pool/health-test', params)
+  return requireServerSuccess(res.data)
+}
+
+/**
  * Account pool query. Refetches periodically so cooldown deadlines and
  * credential remaining time stay fresh.
  */

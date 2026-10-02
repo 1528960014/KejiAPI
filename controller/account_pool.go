@@ -105,6 +105,7 @@ func GetChannelAccountPool(c *gin.Context) {
 			"max_concurrency":   maxConcurrency,
 			"expires_at":        expiresAt,
 			"auto_pause":        autoPause,
+			"health":            poolHealthView(otherInfo),
 			"pool_runtime":      model.PoolSnapshot(ch.Id),
 			"credential":        credential,
 		})
@@ -126,6 +127,40 @@ func GetChannelAccountPool(c *gin.Context) {
 			"settings": operation_setting.GetAccountPoolSetting(),
 		},
 	})
+}
+
+// poolHealthView projects the scheduled health-check state of one account
+// from its channel extra metadata for the console.
+func poolHealthView(otherInfo map[string]any) gin.H {
+	view := gin.H{"enabled": false}
+	enabled, _ := otherInfo["pool_health_enabled"].(bool)
+	if !enabled {
+		if raw, ok := otherInfo["pool_health_enabled"].(string); ok {
+			enabled = raw == "true" || raw == "1"
+		}
+	}
+	view["enabled"] = enabled
+	interval := 0
+	switch v := otherInfo["pool_health_interval_minutes"].(type) {
+	case float64:
+		interval = int(v)
+	case int:
+		interval = v
+	}
+	view["interval_minutes"] = interval
+	model, _ := otherInfo["pool_health_model"].(string)
+	view["model"] = model
+	lastAt := int64(0)
+	switch v := otherInfo["pool_health_last_at"].(type) {
+	case float64:
+		lastAt = int64(v)
+	case int64:
+		lastAt = v
+	}
+	view["last_at"] = lastAt
+	results, _ := otherInfo["pool_health_results"].([]any)
+	view["results"] = results
+	return view
 }
 
 // UpdateChannelAccountPoolSettings updates the account pool ban-prevention
@@ -169,6 +204,18 @@ func UpdateChannelAccountPoolSettings(c *gin.Context) {
 	if s.SelectionTopK > 32 {
 		s.SelectionTopK = 32
 	}
+	if s.EscapeErrorRate < 0.1 {
+		s.EscapeErrorRate = 0.1
+	}
+	if s.EscapeErrorRate > 1 {
+		s.EscapeErrorRate = 1
+	}
+	if s.HealthCheckDefaultIntervalMinutes < 5 {
+		s.HealthCheckDefaultIntervalMinutes = 5
+	}
+	if s.HealthCheckDefaultIntervalMinutes > 24*60 {
+		s.HealthCheckDefaultIntervalMinutes = 24 * 60
+	}
 	if s.RateLimitWindowMinutes < 1 {
 		s.RateLimitWindowMinutes = 300
 	}
@@ -183,17 +230,19 @@ func UpdateChannelAccountPoolSettings(c *gin.Context) {
 	}
 
 	updates := map[string]string{
-		"account_pool_setting.cooldown_enabled":            common.Interface2String(s.CooldownEnabled),
-		"account_pool_setting.cooldown_minutes":            common.Interface2String(s.CooldownMinutes),
-		"account_pool_setting.rate_limit_cooldown_seconds": common.Interface2String(s.RateLimitCooldownSeconds),
-		"account_pool_setting.overload_cooldown_minutes":   common.Interface2String(s.OverloadCooldownMinutes),
-		"account_pool_setting.credential_cooldown_minutes": common.Interface2String(s.CredentialCooldownMinutes),
-		"account_pool_setting.ban_isolate_enabled":         common.Interface2String(s.BanIsolateEnabled),
-		"account_pool_setting.rate_limit_enabled":          common.Interface2String(s.RateLimitEnabled),
-		"account_pool_setting.rate_limit_requests":         common.Interface2String(s.RateLimitRequests),
-		"account_pool_setting.rate_limit_window_minutes":   common.Interface2String(s.RateLimitWindowMinutes),
-		"account_pool_setting.session_stickiness_enabled":  common.Interface2String(s.SessionStickinessEnabled),
-		"account_pool_setting.selection_top_k":             common.Interface2String(s.SelectionTopK),
+		"account_pool_setting.cooldown_enabled":                      common.Interface2String(s.CooldownEnabled),
+		"account_pool_setting.cooldown_minutes":                      common.Interface2String(s.CooldownMinutes),
+		"account_pool_setting.rate_limit_cooldown_seconds":           common.Interface2String(s.RateLimitCooldownSeconds),
+		"account_pool_setting.overload_cooldown_minutes":             common.Interface2String(s.OverloadCooldownMinutes),
+		"account_pool_setting.credential_cooldown_minutes":           common.Interface2String(s.CredentialCooldownMinutes),
+		"account_pool_setting.ban_isolate_enabled":                   common.Interface2String(s.BanIsolateEnabled),
+		"account_pool_setting.rate_limit_enabled":                    common.Interface2String(s.RateLimitEnabled),
+		"account_pool_setting.rate_limit_requests":                   common.Interface2String(s.RateLimitRequests),
+		"account_pool_setting.rate_limit_window_minutes":             common.Interface2String(s.RateLimitWindowMinutes),
+		"account_pool_setting.session_stickiness_enabled":            common.Interface2String(s.SessionStickinessEnabled),
+		"account_pool_setting.selection_top_k":                       common.Interface2String(s.SelectionTopK),
+		"account_pool_setting.escape_error_rate":                     common.Interface2String(s.EscapeErrorRate),
+		"account_pool_setting.health_check_default_interval_minutes": common.Interface2String(s.HealthCheckDefaultIntervalMinutes),
 	}
 	for key, value := range updates {
 		if err := model.UpdateOption(key, value); err != nil {

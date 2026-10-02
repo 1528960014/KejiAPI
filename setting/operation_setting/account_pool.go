@@ -45,20 +45,28 @@ type AccountPoolSetting struct {
 	// participate in each weighted draw. Lower values concentrate traffic
 	// on the healthiest accounts; 0 disables load-aware ordering.
 	SelectionTopK int `json:"selection_top_k"`
+	// EscapeErrorRate is the EWMA error rate at or above which session
+	// stickiness escapes a pooled account.
+	EscapeErrorRate float64 `json:"escape_error_rate"`
+	// HealthCheckDefaultIntervalMinutes is the default interval of the
+	// per-account scheduled health checks.
+	HealthCheckDefaultIntervalMinutes int `json:"health_check_default_interval_minutes"`
 }
 
 var accountPoolSetting = AccountPoolSetting{
-	CooldownEnabled:           true,
-	CooldownMinutes:           30,
-	RateLimitCooldownSeconds:  60,
-	OverloadCooldownMinutes:   10,
-	CredentialCooldownMinutes: 10,
-	BanIsolateEnabled:         true,
-	RateLimitEnabled:          true,
-	RateLimitRequests:         1200,
-	RateLimitWindowMinutes:    300,
-	SessionStickinessEnabled:  true,
-	SelectionTopK:             3,
+	CooldownEnabled:                   true,
+	CooldownMinutes:                   30,
+	RateLimitCooldownSeconds:          60,
+	OverloadCooldownMinutes:           10,
+	CredentialCooldownMinutes:         10,
+	BanIsolateEnabled:                 true,
+	RateLimitEnabled:                  true,
+	RateLimitRequests:                 1200,
+	RateLimitWindowMinutes:            300,
+	SessionStickinessEnabled:          true,
+	SelectionTopK:                     3,
+	EscapeErrorRate:                   0.5,
+	HealthCheckDefaultIntervalMinutes: 60,
 }
 
 func init() {
