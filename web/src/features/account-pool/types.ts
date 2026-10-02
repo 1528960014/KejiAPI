@@ -88,6 +88,7 @@ export type PoolSettings = {
   rate_limit_enabled: boolean
   rate_limit_requests: number
   rate_limit_window_minutes: number
+  session_stickiness_enabled: boolean
 }
 
 export type AccountPoolData = {

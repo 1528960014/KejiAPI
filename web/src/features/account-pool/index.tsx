@@ -636,11 +636,11 @@ function PoolSettingsCard() {
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
           <ShieldAlert className='text-muted-foreground size-4' />
-          {t('Anti-Ban Policy')}
+          {t('Account Pool Management')}
         </CardTitle>
         <CardDescription>
           {t(
-            'Protect pooled accounts from upstream bans with cooldowns, isolation and rate limiting.'
+            'Scheduling, session stickiness, cooldowns, isolation and rate limiting for pooled accounts.'
           )}
         </CardDescription>
       </CardHeader>
@@ -768,6 +768,27 @@ function PoolSettingsCard() {
               aria-label={t('Rate Limiting')}
             />
           </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <Label>{t('Session Stickiness')}</Label>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t(
+                'Keep each API key on the same pooled account per model and group, so multi-turn sessions stay on one account.'
+              )}
+            </p>
+          </div>
+          <Switch
+            checked={form?.session_stickiness_enabled ?? false}
+            onCheckedChange={(checked) =>
+              updateField('session_stickiness_enabled', checked === true)
+            }
+            disabled={!form}
+            aria-label={t('Session Stickiness')}
+          />
         </div>
       </CardContent>
       <CardFooter className='justify-end'>

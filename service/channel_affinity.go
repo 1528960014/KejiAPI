@@ -56,6 +56,7 @@ type channelAffinityMeta struct {
 	UsingGroup     string
 	ModelName      string
 	RequestPath    string
+	ChannelTypes   []int
 }
 
 type ChannelAffinityStatsContext struct {
@@ -563,6 +564,11 @@ func GetPreferredChannelByAffinity(c *gin.Context, modelName string, usingGroup 
 	}
 
 	for _, rule := range setting.Rules {
+		// Account pool management mode: pool session rules only apply while
+		// the pool settings have session stickiness enabled.
+		if rule.PoolSession && !operation_setting.GetAccountPoolSetting().SessionStickinessEnabled {
+			continue
+		}
 		if !matchAnyRegexCached(rule.ModelRegex, modelName) {
 			continue
 		}
@@ -610,6 +616,7 @@ func GetPreferredChannelByAffinity(c *gin.Context, modelName string, usingGroup 
 			UsingGroup:     usingGroup,
 			ModelName:      modelName,
 			RequestPath:    path,
+			ChannelTypes:   append([]int(nil), rule.ChannelTypes...),
 		})
 
 		state.AddEvent(PolicyEvent{Decision: PolicyDecision{Action: "match", Reason: "session_rule_matched", Source: "session_rule"}})
@@ -628,6 +635,32 @@ func GetPreferredChannelByAffinity(c *gin.Context, modelName string, usingGroup 
 		return 0, false
 	}
 	return 0, false
+}
+
+// ChannelAffinityAllowsChannelType reports whether the affinity rule that
+// matched for this request permits the given channel type. Rules without a
+// channel-type scope allow every type; a type-restricted rule (for example
+// the account pool session rule) must not pin channels outside its pool.
+func ChannelAffinityAllowsChannelType(c *gin.Context, channelType int) bool {
+	meta, ok := getChannelAffinityMeta(c)
+	if !ok || len(meta.ChannelTypes) == 0 {
+		return true
+	}
+	return ChannelAffinityTypeInList(meta.ChannelTypes, channelType)
+}
+
+// ChannelAffinityTypeInList reports whether channelType is contained in the
+// channel-type scope list. An empty list means unrestricted.
+func ChannelAffinityTypeInList(types []int, channelType int) bool {
+	if len(types) == 0 {
+		return true
+	}
+	for _, t := range types {
+		if t == channelType {
+			return true
+		}
+	}
+	return false
 }
 
 func ShouldSkipRetryAfterChannelAffinityFailure(c *gin.Context) bool {
@@ -743,6 +776,15 @@ func RecordChannelAffinity(c *gin.Context, channelID int) {
 	cacheKey, ttlSeconds, ok := getChannelAffinityContext(c)
 	if !ok {
 		return
+	}
+	// A type-restricted stickiness rule (account pool session) must only pin
+	// channels of its own types: if the first request happened to be served
+	// by a non-pool channel, recording it would shadow the whole pool.
+	if meta, metaOK := getChannelAffinityMeta(c); metaOK && len(meta.ChannelTypes) > 0 {
+		ch, err := model.CacheGetChannel(channelID)
+		if err != nil || ch == nil || !ChannelAffinityTypeInList(meta.ChannelTypes, ch.Type) {
+			return
+		}
 	}
 	if ttlSeconds <= 0 {
 		ttlSeconds = setting.DefaultTTLSeconds

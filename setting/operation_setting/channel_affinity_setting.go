@@ -1,6 +1,9 @@
 package operation_setting
 
-import "kejiapi/setting/config"
+import (
+	"kejiapi/constant"
+	"kejiapi/setting/config"
+)
 
 type ChannelAffinityKeySource struct {
 	Type string `json:"type"` // context_int, context_string, request_header, gjson
@@ -28,6 +31,14 @@ type ChannelAffinityRule struct {
 	IncludeUsingGroup bool `json:"include_using_group"`
 	IncludeModelName  bool `json:"include_model_name"`
 	IncludeRuleName   bool `json:"include_rule_name"`
+	// When non-empty, the rule's preference only applies to channels of
+	// these types. This scopes user-level stickiness rules to specific
+	// channel families (for example the account pool).
+	ChannelTypes []int `json:"channel_types,omitempty"`
+	// PoolSession marks rules that belong to the account pool management
+	// mode; they are skipped while the pool settings have session
+	// stickiness disabled.
+	PoolSession bool `json:"pool_session,omitempty"`
 }
 
 type ChannelAffinitySetting struct {
@@ -150,6 +161,24 @@ var channelAffinitySetting = ChannelAffinitySetting{
 			IncludeUsingGroup:     true,
 			IncludeRuleName:       true,
 			UserAgentInclude:      nil,
+		},
+		{
+			// Account pool session: keep each API key on the same pooled
+			// subscription account (per model and group) so multi-turn
+			// sessions survive across requests. Scoped to pool channel
+			// types; the pool settings toggle can disable it.
+			Name:         "account pool session",
+			ModelRegex:   []string{"^.*$"},
+			ChannelTypes: constant.SubscriptionPoolChannelTypes,
+			PoolSession:  true,
+			KeySources: []ChannelAffinityKeySource{
+				{Type: "context_int", Key: "token_id"},
+				{Type: "context_int", Key: "id"},
+			},
+			TTLSeconds:        0,
+			IncludeModelName:  true,
+			IncludeUsingGroup: true,
+			IncludeRuleName:   true,
 		},
 	},
 }

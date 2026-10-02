@@ -4,7 +4,8 @@ import "kejiapi/setting/config"
 
 // AccountPoolSetting controls the account pool ban-prevention policy:
 // timed cooldown when upstream quota errors occur, isolation tagging for
-// banned accounts, and per-account request pacing.
+// banned accounts, per-account request pacing, and session stickiness
+// (keeping each API key on the same pooled account per model and group).
 type AccountPoolSetting struct {
 	// CooldownEnabled automatically disables (with a timed marker)
 	// subscription channels that hit upstream quota / rate-limit errors,
@@ -23,15 +24,22 @@ type AccountPoolSetting struct {
 	RateLimitRequests int `json:"rate_limit_requests"`
 	// RateLimitWindowMinutes is the sliding window length in minutes.
 	RateLimitWindowMinutes int `json:"rate_limit_window_minutes"`
+	// SessionStickinessEnabled keeps each API key routed to the same
+	// pooled account (per model and group) for the affinity TTL so
+	// subscription sessions stay on one account. It falls back
+	// automatically when the pinned account is banned, cooling down, or
+	// out of quota.
+	SessionStickinessEnabled bool `json:"session_stickiness_enabled"`
 }
 
 var accountPoolSetting = AccountPoolSetting{
-	CooldownEnabled:        true,
-	CooldownMinutes:        30,
-	BanIsolateEnabled:      true,
-	RateLimitEnabled:       true,
-	RateLimitRequests:      1200,
-	RateLimitWindowMinutes: 300,
+	CooldownEnabled:          true,
+	CooldownMinutes:          30,
+	BanIsolateEnabled:        true,
+	RateLimitEnabled:         true,
+	RateLimitRequests:        1200,
+	RateLimitWindowMinutes:   300,
+	SessionStickinessEnabled: true,
 }
 
 func init() {
