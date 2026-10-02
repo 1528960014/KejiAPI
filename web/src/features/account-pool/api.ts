@@ -22,6 +22,7 @@ import { api } from '@/lib/api'
 import { requireServerSuccess } from '@/lib/server-error-message'
 
 import type {
+  AccountPoolImportResponse,
   AccountPoolResponse,
   AccountPoolSettingsResponse,
   PoolSettings,
@@ -51,6 +52,22 @@ export async function saveAccountPoolSettings(
     settings
   )
   return requireServerSuccess(res.data).data
+}
+
+/**
+ * Bulk-import subscription accounts from pasted credential data.
+ * `dry_run` parses without creating channels (preview).
+ */
+export async function importAccountPool(params: {
+  raw: string
+  group?: string
+  dry_run?: boolean
+}): Promise<AccountPoolImportResponse> {
+  const res = await api.post<AccountPoolImportResponse>(
+    '/api/channel/pool/import',
+    params
+  )
+  return requireServerSuccess(res.data)
 }
 
 /**

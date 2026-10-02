@@ -122,3 +122,28 @@ export function getPoolCredential(
   // A non-empty credential object always carries the full credential view.
   return credential as PoolCredential
 }
+
+// ============================================================================
+// Pool import (POST /api/channel/pool/import)
+// ============================================================================
+
+/** One parsed entry reported by the import endpoint. */
+export type PoolImportResultItem = {
+  index: number
+  provider: string
+  email: string
+  name?: string
+  channel_id?: number
+  error?: string
+}
+
+export type AccountPoolImportResponse = {
+  success: boolean
+  message?: string
+  data: {
+    total: number
+    created: number
+    dry_run: boolean
+    results: PoolImportResultItem[]
+  }
+}

@@ -23,6 +23,7 @@ import {
   Ban,
   Boxes,
   CheckCircle2,
+  Download,
   ExternalLink,
   Loader2,
   Power,
@@ -88,6 +89,7 @@ import {
   useAccountPool,
   useUpdateAccountPoolSettings,
 } from './api'
+import { PoolImportDialog } from './components/import-dialog'
 import {
   getPoolCredential,
   POOL_STATUS,
@@ -785,20 +787,41 @@ function PoolSettingsCard() {
 
 export function AccountPool() {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const [importOpen, setImportOpen] = useState(false)
 
   return (
     <SectionPageLayout fixedContent>
       <SectionPageLayout.Title>{t('Account Pool')}</SectionPageLayout.Title>
       <SectionPageLayout.Content>
         <div className='flex h-full min-h-0 flex-col gap-4 overflow-auto pr-0.5'>
-          <p className='text-muted-foreground shrink-0 text-sm'>
-            {t(
-              'Monitor subscription accounts in the pool, refresh credentials and configure anti-ban protection.'
-            )}
-          </p>
+          <div className='flex shrink-0 items-start justify-between gap-2'>
+            <p className='text-muted-foreground text-sm'>
+              {t(
+                'Monitor subscription accounts in the pool, refresh credentials and configure anti-ban protection.'
+              )}
+            </p>
+            <Button
+              size='sm'
+              variant='outline'
+              onClick={() => setImportOpen(true)}
+            >
+              <Download />
+              {t('Import accounts')}
+            </Button>
+          </div>
           <PoolStatsCards />
           <PoolAccountTable />
           <PoolSettingsCard />
+          <PoolImportDialog
+            open={importOpen}
+            onOpenChange={setImportOpen}
+            onImported={() =>
+              void queryClient.invalidateQueries({
+                queryKey: accountPoolQueryKeys.all,
+              })
+            }
+          />
         </div>
       </SectionPageLayout.Content>
     </SectionPageLayout>
