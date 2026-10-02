@@ -19,6 +19,7 @@ For commercial licensing, please contact support@kejiapi.com
 import { useQueryClient } from '@tanstack/react-query'
 import {
   Plus,
+  KeyRound,
   MoreHorizontal,
   Settings2,
   Trash2,
@@ -65,6 +66,7 @@ import {
   handleUpdateAllBalances,
 } from '../lib'
 import { useChannels } from './channels-provider'
+import { SubscriptionAccountDialog } from './dialogs/subscription-account-dialog'
 
 export function ChannelsPrimaryButtons() {
   const { t } = useTranslation()
@@ -83,6 +85,7 @@ export function ChannelsPrimaryButtons() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showConsistencyDialog, setShowConsistencyDialog] = useState(false)
   const [isRepairingConsistency, setIsRepairingConsistency] = useState(false)
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false)
   const currentUser = useAuthStore((s) => s.auth.user)
   const canEditSensitive = hasPermission(
     currentUser,
@@ -162,6 +165,30 @@ export function ChannelsPrimaryButtons() {
               <Plus className='h-4 w-4' />
               <span className='max-sm:hidden'>{t('Create Channel')}</span>
               <span className='sm:hidden'>{t('Create')}</span>
+            </Button>
+          </TooltipTrigger>
+          {!canEditSensitive && (
+            <TooltipContent>
+              {t('No permission to perform this action')}
+            </TooltipContent>
+          )}
+        </Tooltip>
+
+        {/* Subscription Account */}
+        <Tooltip>
+          <TooltipTrigger render={<span className='inline-flex' />}>
+            <Button
+              onClick={() => {
+                if (!canEditSensitive) return
+                setSubscriptionOpen(true)
+              }}
+              size='sm'
+              variant='outline'
+              disabled={!canEditSensitive}
+            >
+              <KeyRound className='h-4 w-4' />
+              <span className='max-sm:hidden'>{t('Subscription Account')}</span>
+              <span className='sm:hidden'>{t('Add')}</span>
             </Button>
           </TooltipTrigger>
           {!canEditSensitive && (
@@ -324,6 +351,11 @@ export function ChannelsPrimaryButtons() {
             setIsRepairingConsistency(false)
           }
         }}
+      />
+
+      <SubscriptionAccountDialog
+        open={subscriptionOpen}
+        onOpenChange={setSubscriptionOpen}
       />
     </>
   )

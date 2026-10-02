@@ -30,6 +30,7 @@ import {
   Power,
   PowerOff,
   Key,
+  KeyRound,
   Trash2,
   RefreshCw,
   Loader2,
@@ -71,6 +72,7 @@ import {
 import type { Channel } from '../types'
 import { ChannelRowActionsLayoutContext } from './channel-row-actions-context'
 import { useChannels } from './channels-provider'
+import { SubscriptionStatusDialog } from './dialogs/subscription-status-dialog'
 
 interface DataTableRowActionsProps {
   row: Row<Channel>
@@ -86,9 +88,13 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [isTesting, setIsTesting] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+  const [subscriptionStatusOpen, setSubscriptionStatusOpen] = useState(false)
 
   const isEnabled = isChannelEnabled(channel)
   const isMultiKey = isMultiKeyChannel(channel)
+  const isSubscriptionChannel =
+    (channel.type === 14 || channel.type === 57) &&
+    (channel.key ?? '').trim().startsWith('{')
   const canEditSensitive = hasPermission(
     currentUser,
     ADMIN_PERMISSION_RESOURCES.CHANNEL,
@@ -346,6 +352,20 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             </DropdownMenuItem>
           )}
 
+          {/* Subscription Credentials (only for subscription channels with JSON credentials) */}
+          {isSubscriptionChannel && (
+            <DropdownMenuItem
+              onClick={() => {
+                setSubscriptionStatusOpen(true)
+              }}
+            >
+              {t('Subscription Credentials')}
+              <DropdownMenuShortcut>
+                <KeyRound size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          )}
+
           <DropdownMenuSeparator />
 
           {/* Delete */}
@@ -382,6 +402,15 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           setDeleteConfirmOpen(false)
         }}
       />
+
+      {isSubscriptionChannel && (
+        <SubscriptionStatusDialog
+          open={subscriptionStatusOpen}
+          onOpenChange={setSubscriptionStatusOpen}
+          channelName={channel.name}
+          channelId={channel.id}
+        />
+      )}
     </div>
   )
 }

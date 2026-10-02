@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
+	"kejiapi/common"
 	"kejiapi/relay/channel"
 	relaycommon "kejiapi/relay/common"
 	"kejiapi/relaykit/dto"
@@ -105,7 +107,27 @@ func CommonClaudeHeadersOperation(c *gin.Context, req *http.Header, info *relayc
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
 	channel.SetupApiRequestHeader(info, c, req)
-	req.Set("x-api-key", info.ApiKey)
+	key := strings.TrimSpace(info.ApiKey)
+	if strings.HasPrefix(key, "{") {
+		// Subscription OAuth credential: JSON object with access_token.
+		var oauthKey struct {
+			AccessToken  string `json:"access_token"`
+			AccountUUID  string `json:"account_uuid"`
+		}
+		if err := common.Unmarshal([]byte(key), &oauthKey); err != nil {
+			return fmt.Errorf("claude channel: invalid subscription credential json: %w", err)
+		}
+		accessToken := strings.TrimSpace(oauthKey.AccessToken)
+		if accessToken == "" {
+			return errors.New("claude subscription channel: access_token is required")
+		}
+		req.Set("Authorization", "Bearer "+accessToken)
+		if req.Get("x-api-key") != "" {
+			req.Del("x-api-key")
+		}
+	} else {
+		req.Set("x-api-key", key)
+	}
 	anthropicVersion := c.Request.Header.Get("anthropic-version")
 	if anthropicVersion == "" {
 		anthropicVersion = "2023-06-01"

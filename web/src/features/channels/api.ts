@@ -407,6 +407,109 @@ export async function resetCodexUsage(
 }
 
 // ============================================================================
+// Subscription Account Operations
+// ============================================================================
+
+export type SubscriptionProvider = 'claude' | 'gpt'
+
+export type SubscriptionAuthUrlResponse = {
+  success: boolean
+  message?: string
+  data?: {
+    provider?: SubscriptionProvider
+    auth_url?: string
+    state?: string
+    code_verifier?: string
+  }
+}
+
+export type SubscriptionChannelCreateResponse = {
+  success: boolean
+  message?: string
+  data?: {
+    id?: number
+    name?: string
+  }
+}
+
+export type SubscriptionCredentialStatusData = {
+  provider?: string
+  email?: string
+  account_id?: string
+  expired?: boolean
+  last_refresh?: string
+  remaining_seconds?: number
+  valid?: boolean
+  auto_refresh?: boolean
+}
+
+export type SubscriptionStatusResponse = {
+  success: boolean
+  message?: string
+  data?: SubscriptionCredentialStatusData
+}
+
+/**
+ * Get the provider login link for a subscription account
+ */
+export async function getChannelSubscriptionAuthUrl(
+  provider: SubscriptionProvider
+): Promise<SubscriptionAuthUrlResponse> {
+  const res = await api.post(
+    '/api/channel/subscription/auth-url',
+    { provider },
+    channelActionConfig()
+  )
+  return res.data
+}
+
+/**
+ * Create a channel from a subscription account authorization code
+ */
+export async function createSubscriptionChannel(params: {
+  provider: SubscriptionProvider
+  code: string
+  code_verifier?: string
+  name?: string
+  group?: string
+  models?: string
+}): Promise<SubscriptionChannelCreateResponse> {
+  const res = await api.post(
+    '/api/channel/subscription/create',
+    params,
+    channelActionConfig()
+  )
+  return res.data
+}
+
+/**
+ * Refresh credentials for a subscription channel
+ */
+export async function refreshSubscriptionChannel(
+  channelId: number
+): Promise<SubscriptionStatusResponse> {
+  const res = await api.post(
+    `/api/channel/${channelId}/subscription/refresh`,
+    {},
+    channelActionConfig()
+  )
+  return res.data
+}
+
+/**
+ * Get credential status for a subscription channel
+ */
+export async function getSubscriptionChannelStatus(
+  channelId: number
+): Promise<SubscriptionStatusResponse> {
+  const res = await api.get(
+    `/api/channel/${channelId}/subscription/status`,
+    channelActionConfig({ disableDuplicate: true })
+  )
+  return res.data
+}
+
+// ============================================================================
 // Multi-Key Management
 // ============================================================================
 
