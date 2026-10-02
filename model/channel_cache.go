@@ -185,6 +185,12 @@ func GetRandomSatisfiedChannel(
 		return nil, errors.New(fmt.Sprintf("no channel found, group: %s, model: %s, priority: %d", group, model, targetPriority))
 	}
 
+	// Pool-aware load ordering: subscription pool accounts are ranked by
+	// live health (concurrency saturation, error rate, active load,
+	// staleness) and only the top-K accounts stay in the weighted draw.
+	// Non-pool channels are unaffected.
+	targetChannels = PoolAwareOrderChannels(targetChannels)
+
 	// smoothing factor and adjustment
 	smoothingFactor := 1
 	smoothingAdjustment := 0

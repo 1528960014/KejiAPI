@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"kejiapi/common"
 	"kejiapi/constant"
@@ -18,6 +19,32 @@ type accountPoolImportRequest struct {
 	Group  string `json:"group"`
 	Models string `json:"models"`
 	DryRun bool   `json:"dry_run"`
+	// MaxConcurrency is the per-account concurrency ceiling written into
+	// each imported account's extra metadata. 0 means "no ceiling".
+	MaxConcurrency int `json:"max_concurrency"`
+	// ExpiresDays pauses imported accounts automatically that many days
+	// after import. 0 means "never expires".
+	ExpiresDays int `json:"expires_days"`
+}
+
+func (r *accountPoolImportRequest) poolOptions() map[string]any {
+	options := map[string]any{}
+	if r.MaxConcurrency > 0 {
+		limit := r.MaxConcurrency
+		if limit > 1024 {
+			limit = 1024
+		}
+		options["pool_max_concurrency"] = limit
+	}
+	if r.ExpiresDays > 0 {
+		days := r.ExpiresDays
+		if days > 3650 {
+			days = 3650
+		}
+		options["pool_expires_at"] = time.Now().AddDate(0, 0, days).Unix()
+		options["pool_auto_pause_on_expired"] = true
+	}
+	return options
 }
 
 type poolImportProviderMeta struct {
@@ -122,6 +149,11 @@ func ImportAccountPool(c *gin.Context) {
 		indexOf = append(indexOf, i)
 	}
 
+	// Pool import options (per-account concurrency ceiling / subscription
+	// expiry) are shared by the whole batch and written as channel extra
+	// metadata.
+	poolOptions := req.poolOptions()
+
 	created := 0
 	if !req.DryRun && len(toCreate) > 0 {
 		if err := model.BatchInsertChannels(toCreate); err != nil {
@@ -129,6 +161,17 @@ func ImportAccountPool(c *gin.Context) {
 			return
 		}
 		model.InitChannelCache()
+		if len(poolOptions) > 0 {
+			for j := range toCreate {
+				ch := &toCreate[j]
+				ch.SetOtherInfo(poolOptions)
+				if err := model.DB.Save(ch).Error; err != nil {
+					c.JSON(http.StatusOK, gin.H{"success": false, "message": "写入账号池参数失败: " + err.Error()})
+					return
+				}
+			}
+			model.InitChannelCache()
+		}
 		for j, ch := range toCreate {
 			i := indexOf[j]
 			acc := accounts[i]

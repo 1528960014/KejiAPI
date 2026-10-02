@@ -39,10 +39,12 @@ func GetChannelAccountPool(c *gin.Context) {
 		}
 		reason, _ := ch.GetOtherInfo()["status_reason"].(string)
 		cooldownDeadline := int64(0)
+		cooldownKind := ""
 		if deadline, ok := service.ParseCooldownDeadline(reason); ok {
 			cooldownDeadline = deadline
 			cooldownCount++
 		}
+		cooldownKind = service.ParseCooldownKind(reason)
 		banned := service.IsBanIsolateReason(reason)
 		if banned {
 			bannedCount++
@@ -65,6 +67,26 @@ func GetChannelAccountPool(c *gin.Context) {
 			}
 		}
 
+		otherInfo := ch.GetOtherInfo()
+		maxConcurrency := 0
+		switch v := otherInfo["pool_max_concurrency"].(type) {
+		case float64:
+			maxConcurrency = int(v)
+		case int:
+			maxConcurrency = v
+		}
+		expiresAt := int64(0)
+		switch v := otherInfo["pool_expires_at"].(type) {
+		case float64:
+			expiresAt = int64(v)
+		case int64:
+			expiresAt = v
+		}
+		autoPause := true
+		if v, ok := otherInfo["pool_auto_pause_on_expired"].(bool); ok {
+			autoPause = v
+		}
+
 		accounts = append(accounts, gin.H{
 			"id":                ch.Id,
 			"name":              ch.Name,
@@ -78,7 +100,12 @@ func GetChannelAccountPool(c *gin.Context) {
 			"auto_ban":          ch.GetAutoBan(),
 			"created_time":      ch.CreatedTime,
 			"cooldown_deadline": cooldownDeadline,
+			"cooldown_kind":     cooldownKind,
 			"banned":            banned,
+			"max_concurrency":   maxConcurrency,
+			"expires_at":        expiresAt,
+			"auto_pause":        autoPause,
+			"pool_runtime":      model.PoolSnapshot(ch.Id),
 			"credential":        credential,
 		})
 		statsByType[ch.Type]++
@@ -118,6 +145,30 @@ func UpdateChannelAccountPoolSettings(c *gin.Context) {
 	if s.CooldownMinutes > 24*60 {
 		s.CooldownMinutes = 24 * 60
 	}
+	if s.RateLimitCooldownSeconds < 5 {
+		s.RateLimitCooldownSeconds = 5
+	}
+	if s.RateLimitCooldownSeconds > 24*60*60 {
+		s.RateLimitCooldownSeconds = 24 * 60 * 60
+	}
+	if s.OverloadCooldownMinutes < 1 {
+		s.OverloadCooldownMinutes = 10
+	}
+	if s.OverloadCooldownMinutes > 24*60 {
+		s.OverloadCooldownMinutes = 24 * 60
+	}
+	if s.CredentialCooldownMinutes < 1 {
+		s.CredentialCooldownMinutes = 10
+	}
+	if s.CredentialCooldownMinutes > 24*60 {
+		s.CredentialCooldownMinutes = 24 * 60
+	}
+	if s.SelectionTopK < 0 {
+		s.SelectionTopK = 0
+	}
+	if s.SelectionTopK > 32 {
+		s.SelectionTopK = 32
+	}
 	if s.RateLimitWindowMinutes < 1 {
 		s.RateLimitWindowMinutes = 300
 	}
@@ -132,12 +183,17 @@ func UpdateChannelAccountPoolSettings(c *gin.Context) {
 	}
 
 	updates := map[string]string{
-		"account_pool_setting.cooldown_enabled":          common.Interface2String(s.CooldownEnabled),
-		"account_pool_setting.cooldown_minutes":          common.Interface2String(s.CooldownMinutes),
-		"account_pool_setting.ban_isolate_enabled":       common.Interface2String(s.BanIsolateEnabled),
-		"account_pool_setting.rate_limit_enabled":        common.Interface2String(s.RateLimitEnabled),
-		"account_pool_setting.rate_limit_requests":       common.Interface2String(s.RateLimitRequests),
-		"account_pool_setting.rate_limit_window_minutes": common.Interface2String(s.RateLimitWindowMinutes),
+		"account_pool_setting.cooldown_enabled":            common.Interface2String(s.CooldownEnabled),
+		"account_pool_setting.cooldown_minutes":            common.Interface2String(s.CooldownMinutes),
+		"account_pool_setting.rate_limit_cooldown_seconds": common.Interface2String(s.RateLimitCooldownSeconds),
+		"account_pool_setting.overload_cooldown_minutes":   common.Interface2String(s.OverloadCooldownMinutes),
+		"account_pool_setting.credential_cooldown_minutes": common.Interface2String(s.CredentialCooldownMinutes),
+		"account_pool_setting.ban_isolate_enabled":         common.Interface2String(s.BanIsolateEnabled),
+		"account_pool_setting.rate_limit_enabled":          common.Interface2String(s.RateLimitEnabled),
+		"account_pool_setting.rate_limit_requests":         common.Interface2String(s.RateLimitRequests),
+		"account_pool_setting.rate_limit_window_minutes":   common.Interface2String(s.RateLimitWindowMinutes),
+		"account_pool_setting.session_stickiness_enabled":  common.Interface2String(s.SessionStickinessEnabled),
+		"account_pool_setting.selection_top_k":             common.Interface2String(s.SelectionTopK),
 	}
 	for key, value := range updates {
 		if err := model.UpdateOption(key, value); err != nil {

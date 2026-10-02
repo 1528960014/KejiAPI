@@ -64,8 +64,28 @@ export type PoolAccount = {
   created_time: number
   /** Unix seconds deadline; 0 means no active cooldown */
   cooldown_deadline: number
+  /** Cooldown classification: ratelimit / overload / credential / quota */
+  cooldown_kind: string
   banned: boolean
+  /** Per-account concurrency ceiling; 0 means unlimited */
+  max_concurrency: number
+  /** Unix seconds subscription expiry; 0 means never expires */
+  expires_at: number
+  /** Whether the account auto-pauses at expiry (default true) */
+  auto_pause: boolean
+  /** Live scheduling runtime of this account */
+  pool_runtime: PoolAccountRuntime
   credential: PoolCredential | {}
+}
+
+/** Live per-account runtime counters driving pool-aware scheduling. */
+export type PoolAccountRuntime = {
+  active_requests: number
+  total_requests: number
+  total_errors: number
+  /** EWMA error rate in [0,1]; >=0.5 with enough samples escapes stickiness */
+  error_rate: number
+  last_used_at: number
 }
 
 export type PoolStats = {
@@ -80,15 +100,20 @@ export type PoolStats = {
   banned: number
 }
 
-/** Anti-ban policy settings persisted by PUT /api/channel/pool/settings */
+/** Pool management settings persisted by PUT /api/channel/pool/settings */
 export type PoolSettings = {
   cooldown_enabled: boolean
   cooldown_minutes: number
+  rate_limit_cooldown_seconds: number
+  overload_cooldown_minutes: number
+  credential_cooldown_minutes: number
   ban_isolate_enabled: boolean
   rate_limit_enabled: boolean
   rate_limit_requests: number
   rate_limit_window_minutes: number
   session_stickiness_enabled: boolean
+  /** Healthiest pool accounts per weighted draw; 0 disables load ordering */
+  selection_top_k: number
 }
 
 export type AccountPoolData = {

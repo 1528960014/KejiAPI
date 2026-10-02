@@ -126,6 +126,15 @@ func Distribute() func(c *gin.Context) {
 		}
 		common.SetContextKey(c, constant.ContextKeyRequestStartTime, time.Now())
 		SetupContextForSelectedChannel(c, channel, modelRequest.Model)
+		if channel != nil && constant.IsSubscriptionPoolChannelType(channel.Type) {
+			// Release the pool concurrency slot and report the outcome so
+			// pool scheduling sees live load and error rates.
+			defer func(ch *model.Channel) {
+				succeeded := c.Writer != nil && c.Writer.Status() < http.StatusBadRequest
+				model.PoolRelease(ch.Id)
+				model.PoolMarkResult(ch.Id, succeeded)
+			}(channel)
+		}
 		c.Next()
 		if channel != nil && c.Writer != nil && c.Writer.Status() < http.StatusBadRequest {
 			service.RecordChannelAffinity(c, channel.Id)

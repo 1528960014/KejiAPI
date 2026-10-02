@@ -303,6 +303,9 @@ func SelectChannelForRequest(c *gin.Context, modelName string, retry *RetryParam
 				FilterKind: kind, Channel: channel,
 			}
 		}
+		// Pool accounts occupy one concurrency slot for the request
+		// lifetime; the distributor releases it afterwards.
+		occupySelectedPoolSlot(c, channel)
 		return channel, "", nil
 	}
 
@@ -316,6 +319,15 @@ func SelectChannelForRequest(c *gin.Context, modelName string, retry *RetryParam
 			affinitySatisfied := false
 			if err == nil && preferred != nil && preferred.Status == common.ChannelStatusEnabled && ChannelAffinityAllowsChannelType(c, preferred.Type) {
 				affinitySatisfied, _ = model.ChannelSatisfiesFilters(preferred, modelName, constraints.Filters)
+				// Pool escape hatch: when the sticky account is saturated
+				// (per-account concurrency ceiling) or its recent error
+				// rate is high, fall through to load-balanced selection
+				// instead of queueing behind an unhealthy account.
+				if affinitySatisfied && constant.IsSubscriptionPoolChannelType(preferred.Type) {
+					if model.PoolIsSaturated(preferred) || model.PoolIsOverloaded(preferred.Id) {
+						affinitySatisfied = false
+					}
+				}
 			}
 			if affinitySatisfied {
 				if usingGroup == "auto" {
@@ -373,7 +385,21 @@ func SelectChannelForRequest(c *gin.Context, modelName string, retry *RetryParam
 			FilterKind: kind, Channel: channel, NoAvailableChannel: true,
 		}
 	}
+	occupySelectedPoolSlot(c, channel)
 	return channel, selectGroup, nil
+}
+
+// occupySelectedPoolSlot reserves one concurrency slot of a pooled
+// subscription account for the request that just selected it. A saturated
+// account degrades to soft occupancy instead of failing the request, so a
+// burst can never take the group down.
+func occupySelectedPoolSlot(c *gin.Context, channel *model.Channel) {
+	if channel == nil || !constant.IsSubscriptionPoolChannelType(channel.Type) {
+		return
+	}
+	if !model.PoolAcquire(channel.Id, model.PoolConcurrencyLimit(channel)) {
+		model.PoolForceOccupy(channel.Id)
+	}
 }
 
 // Origin-task pins report a fixed code so task polling can tell a retired

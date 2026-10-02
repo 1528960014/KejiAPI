@@ -326,6 +326,36 @@ function PoolAccountTable() {
           )
         },
       },
+      // Live scheduling load (active requests / error rate)
+      {
+        id: 'load',
+        header: t('Load'),
+        cell: (account) => {
+          const runtime = account.pool_runtime
+          if (!runtime || runtime.total_requests === 0) {
+            return <span className='text-muted-foreground text-xs'>-</span>
+          }
+          const unhealthy = runtime.error_rate >= 0.5
+          return (
+            <div className='flex min-w-0 flex-col items-start gap-0.5 text-xs'>
+              <span className='tabular-nums'>
+                {t('Active {{count}}', { count: runtime.active_requests })}
+              </span>
+              <span
+                className={
+                  unhealthy
+                    ? 'text-destructive tabular-nums'
+                    : 'text-muted-foreground tabular-nums'
+                }
+              >
+                {t('Error {{percent}}%', {
+                  percent: (runtime.error_rate * 100).toFixed(0),
+                })}
+              </span>
+            </div>
+          )
+        },
+      },
       // Credential validity / expiration / remaining time
       {
         id: 'credential',
@@ -684,6 +714,126 @@ function PoolSettingsCard() {
               aria-label={t('Cooldown Protection')}
             />
           </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <Label>{t('Rate Limit Cooldown')}</Label>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t(
+                'Cooldown applied when the upstream answers 429. Rate-limit windows are short, so this stays in seconds.'
+              )}
+            </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Input
+              type='number'
+              min={5}
+              step={1}
+              className='w-24'
+              value={form?.rate_limit_cooldown_seconds ?? 0}
+              onChange={(event) =>
+                updateField(
+                  'rate_limit_cooldown_seconds',
+                  Math.max(5, Number(event.target.value) || 0)
+                )
+              }
+            />
+            <span className='text-muted-foreground text-sm'>
+              {t('seconds')}
+            </span>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <Label>{t('Overload Cooldown')}</Label>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t(
+                'Isolation time applied when the upstream answers 529 (overloaded).'
+              )}
+            </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Input
+              type='number'
+              min={1}
+              step={1}
+              className='w-20'
+              value={form?.overload_cooldown_minutes ?? 0}
+              onChange={(event) =>
+                updateField(
+                  'overload_cooldown_minutes',
+                  Math.max(1, Number(event.target.value) || 0)
+                )
+              }
+            />
+            <span className='text-muted-foreground text-sm'>
+              {t('minutes')}
+            </span>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <Label>{t('Credential Cooldown')}</Label>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t(
+                'Recovery time for temporary credential errors (401 / 403 without an explicit ban).'
+              )}
+            </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Input
+              type='number'
+              min={1}
+              step={1}
+              className='w-20'
+              value={form?.credential_cooldown_minutes ?? 0}
+              onChange={(event) =>
+                updateField(
+                  'credential_cooldown_minutes',
+                  Math.max(1, Number(event.target.value) || 0)
+                )
+              }
+            />
+            <span className='text-muted-foreground text-sm'>
+              {t('minutes')}
+            </span>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <Label>{t('Selection Depth')}</Label>
+            <p className='text-muted-foreground mt-1 text-xs'>
+              {t(
+                'How many of the healthiest pool accounts take part in each weighted draw. Lower concentrates traffic on healthy accounts; 0 disables load-aware ordering.'
+              )}
+            </p>
+          </div>
+          <Input
+            type='number'
+            min={0}
+            max={32}
+            step={1}
+            className='w-20'
+            value={form?.selection_top_k ?? 0}
+            onChange={(event) =>
+              updateField(
+                'selection_top_k',
+                Math.min(32, Math.max(0, Number(event.target.value) || 0))
+              )
+            }
+          />
         </div>
 
         <Separator />

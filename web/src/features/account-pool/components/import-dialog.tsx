@@ -50,12 +50,16 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
   const { t } = useTranslation()
   const [raw, setRaw] = useState('')
   const [group, setGroup] = useState('')
+  const [maxConcurrency, setMaxConcurrency] = useState('')
+  const [expiresDays, setExpiresDays] = useState('')
   const [busy, setBusy] = useState<'preview' | 'import' | null>(null)
   const [preview, setPreview] = useState<PoolImportResultItem[] | null>(null)
 
   const reset = () => {
     setRaw('')
     setGroup('')
+    setMaxConcurrency('')
+    setExpiresDays('')
     setPreview(null)
   }
 
@@ -77,6 +81,8 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
         raw,
         group: group.trim(),
         dry_run: dryRun,
+        max_concurrency: Number(maxConcurrency) || 0,
+        expires_days: Number(expiresDays) || 0,
       })
       if (!res.success) {
         toast.error(getServerErrorMessage(res, t('Failed to import accounts')))
@@ -132,6 +138,34 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
               value={group}
               onChange={(e) => setGroup(e.target.value)}
               placeholder='default'
+            />
+          </div>
+          <div className='flex items-center gap-2'>
+            <Label className='shrink-0' htmlFor='pool-import-concurrency'>
+              {t('Max concurrency')}
+            </Label>
+            <Input
+              id='pool-import-concurrency'
+              type='number'
+              min={0}
+              step={1}
+              className='w-24'
+              value={maxConcurrency}
+              onChange={(e) => setMaxConcurrency(e.target.value)}
+              placeholder='0'
+            />
+            <Label className='shrink-0' htmlFor='pool-import-expires'>
+              {t('Expires in (days)')}
+            </Label>
+            <Input
+              id='pool-import-expires'
+              type='number'
+              min={0}
+              step={1}
+              className='w-24'
+              value={expiresDays}
+              onChange={(e) => setExpiresDays(e.target.value)}
+              placeholder='0'
             />
           </div>
           {preview ? (

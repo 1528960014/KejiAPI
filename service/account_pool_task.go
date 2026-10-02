@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -113,4 +115,107 @@ func runAccountPoolCooldownOnce() {
 		}()
 		logger.LogInfo(ctx, fmt.Sprintf("account pool cooldown recovery: restored=%d", restored))
 	}
+
+	// Reclaim concurrency slots leaked by transport paths without an
+	// explicit release (long-lived websocket relays).
+	if reaped := model.PoolReapLeaked(accountPoolLeakReapSeconds); reaped > 0 {
+		logger.LogInfo(ctx, fmt.Sprintf("account pool leak reaper: cleared=%d", reaped))
+	}
+
+	// Pause pooled accounts whose subscription window has ended.
+	runAccountPoolExpiryOnce(ctx)
+}
+
+const accountPoolLeakReapSeconds = 600
+
+// accountPoolExpiryPass pauses enabled pooled accounts whose
+// "pool_expires_at" deadline passed and that opted into auto pause. Paused
+// accounts are not auto-restored; an admin re-enables them manually.
+func accountPoolExpiryPass(ctx context.Context) ([]int, error) {
+	var channels []*model.Channel
+	err := model.DB.
+		Select("id", "name", "status", "other").
+		Where("type IN ? AND status = ? AND other LIKE ?",
+			constant.SubscriptionPoolChannelTypes,
+			common.ChannelStatusEnabled,
+			"%pool_expires_at%",
+		).
+		Order("id asc").
+		Limit(accountPoolCooldownBatchSize).
+		Find(&channels).Error
+	if err != nil {
+		return nil, err
+	}
+	paused := make([]int, 0, 4)
+	now := time.Now().Unix()
+	for _, ch := range channels {
+		if ch == nil {
+			continue
+		}
+		expired, autoPause := accountPoolExpired(ch.GetOtherInfo(), now)
+		if !expired || !autoPause {
+			continue
+		}
+		if model.UpdateChannelStatus(ch.Id, "", common.ChannelStatusManuallyDisabled,
+			"账号订阅已到期（自动停用，不自动恢复）") {
+			paused = append(paused, ch.Id)
+			logger.LogInfo(ctx, fmt.Sprintf("account pool expiry: channel_id=%d name=%s auto-paused (subscription expired)", ch.Id, ch.Name))
+		}
+	}
+	return paused, nil
+}
+
+// accountPoolExpired decodes the pool expiry metadata of one channel.
+// It reports whether the subscription window has ended and whether the
+// account opted into automatic pause (default true).
+func accountPoolExpired(otherInfo map[string]any, now int64) (bool, bool) {
+	raw, ok := otherInfo["pool_expires_at"]
+	if !ok {
+		return false, false
+	}
+	var expiresAt int64
+	switch v := raw.(type) {
+	case float64:
+		expiresAt = int64(v)
+	case int64:
+		expiresAt = v
+	case int:
+		expiresAt = int64(v)
+	case string:
+		if parsed, err := strconv.ParseInt(strings.TrimSpace(v), 10, 64); err == nil {
+			expiresAt = parsed
+		}
+	}
+	if expiresAt <= 0 {
+		return false, false
+	}
+	autoPause := true
+	if raw, ok := otherInfo["pool_auto_pause_on_expired"]; ok {
+		switch v := raw.(type) {
+		case bool:
+			autoPause = v
+		case string:
+			autoPause = v == "true" || v == "1"
+		}
+	}
+	return now >= expiresAt, autoPause
+}
+
+func runAccountPoolExpiryOnce(ctx context.Context) {
+	paused, err := accountPoolExpiryPass(ctx)
+	if err != nil {
+		logger.LogError(ctx, fmt.Sprintf("account pool expiry: query channels failed: %v", err))
+		return
+	}
+	if len(paused) == 0 {
+		return
+	}
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.LogWarn(ctx, fmt.Sprintf("account pool expiry: InitChannelCache panic: %v", r))
+			}
+		}()
+		model.InitChannelCache()
+	}()
 }
