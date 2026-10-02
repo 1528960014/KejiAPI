@@ -50,6 +50,7 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
   const { t } = useTranslation()
   const [raw, setRaw] = useState('')
   const [group, setGroup] = useState('')
+  const [models, setModels] = useState('')
   const [maxConcurrency, setMaxConcurrency] = useState('')
   const [expiresDays, setExpiresDays] = useState('')
   const [busy, setBusy] = useState<'preview' | 'import' | null>(null)
@@ -58,6 +59,7 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
   const reset = () => {
     setRaw('')
     setGroup('')
+    setModels('')
     setMaxConcurrency('')
     setExpiresDays('')
     setPreview(null)
@@ -80,6 +82,7 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
       const res = await importAccountPool({
         raw,
         group: group.trim(),
+        models: models.trim(),
         dry_run: dryRun,
         max_concurrency: Number(maxConcurrency) || 0,
         expires_days: Number(expiresDays) || 0,
@@ -116,6 +119,10 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
             {t(
               'Paste credential data: Claude rt-JSON, ChatGPT auth.json, Google exports or this system\u2019s native credential JSON. JSON arrays, JSON lines and concatenated objects are all supported; the provider is auto-detected.'
             )}
+            <br />
+            {t(
+              'API key accounts are also supported: paste one key per line, or JSON entries like {"api_key":"...","base_url":"https://..."}.'
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className='grid gap-3'>
@@ -125,7 +132,7 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
               setRaw(e.target.value)
               setPreview(null)
             }}
-            placeholder='{"refreshToken":"...","accessToken":"...","email":"..."}'
+            placeholder={'sk-...\n{"api_key":"sk-...","base_url":"https://api.example.com"}'}
             rows={8}
             className='font-mono text-xs'
           />
@@ -139,6 +146,21 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
               onChange={(e) => setGroup(e.target.value)}
               placeholder='default'
             />
+          </div>
+          <div className='grid gap-1.5'>
+            <Label className='shrink-0' htmlFor='pool-import-models'>
+              {t('Models')}
+            </Label>
+            <Input
+              id='pool-import-models'
+              value={models}
+              onChange={(e) => setModels(e.target.value)}
+              placeholder='gpt-4o,gpt-4o-mini,claude-sonnet-4-5,gemini-2.5-flash'
+              className='font-mono text-xs'
+            />
+            <p className='text-muted-foreground text-xs'>
+              {t('Leave empty to use the provider default model list.')}
+            </p>
           </div>
           <div className='flex items-center gap-2'>
             <Label className='shrink-0' htmlFor='pool-import-concurrency'>
@@ -176,7 +198,14 @@ export function PoolImportDialog(props: PoolImportDialogProps) {
                     #{item.index}
                   </Badge>
                   <span className='shrink-0'>{item.provider || '-'}</span>
-                  <span className='truncate'>{item.email || item.name || ''}</span>
+                  <span className='truncate'>
+                    {item.email || item.base_url || item.name || ''}
+                  </span>
+                  {item.base_url ? (
+                    <span className='text-muted-foreground shrink-0 truncate'>
+                      {item.base_url}
+                    </span>
+                  ) : null}
                   {item.error ? (
                     <span className='text-destructive ml-auto truncate'>
                       {item.error}

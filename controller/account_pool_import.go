@@ -51,13 +51,17 @@ type poolImportProviderMeta struct {
 	channelType   int
 	label         string
 	defaultModels string
+	// apiKey marks providers whose channel key is a plain upstream API key
+	// (OpenAI-compatible gateway) instead of an OAuth credential JSON.
+	apiKey bool
 }
 
 var poolImportProviders = map[string]poolImportProviderMeta{
-	"claude":      {constant.ChannelTypeAnthropic, "Claude", defaultClaudeSubscriptionModels},
-	"codex":       {constant.ChannelTypeCodex, "ChatGPT", defaultGPTSubscriptionModels},
-	"gemini":      {constant.ChannelTypeGemini, "Gemini", defaultGeminiSubscriptionModels},
-	"antigravity": {constant.ChannelTypeAntigravity, "Antigravity", defaultAntigravitySubscriptionModels},
+	"claude":      {constant.ChannelTypeAnthropic, "Claude", defaultClaudeSubscriptionModels, false},
+	"codex":       {constant.ChannelTypeCodex, "ChatGPT", defaultGPTSubscriptionModels, false},
+	"gemini":      {constant.ChannelTypeGemini, "Gemini", defaultGeminiSubscriptionModels, false},
+	"antigravity": {constant.ChannelTypeAntigravity, "Antigravity", defaultAntigravitySubscriptionModels, false},
+	"api_key":     {constant.ChannelTypeCustom, "API Key", defaultApiKeyPoolModels, true},
 }
 
 // ImportAccountPool bulk-imports subscription accounts from pasted
@@ -88,6 +92,7 @@ func ImportAccountPool(c *gin.Context) {
 		Index     int    `json:"index"`
 		Provider  string `json:"provider"`
 		Email     string `json:"email"`
+		BaseURL   string `json:"base_url,omitempty"`
 		Name      string `json:"name,omitempty"`
 		ChannelId int    `json:"channel_id,omitempty"`
 		Error     string `json:"error,omitempty"`
@@ -111,11 +116,16 @@ func ImportAccountPool(c *gin.Context) {
 			continue
 		}
 		var name string
-		if acc.Email != "" {
-			name = fmt.Sprintf("%s (%s)", meta.label, acc.Email)
-		} else {
-			name = fmt.Sprintf("%s 导入 #%d", meta.label, i+1)
+		nameTail := ""
+		switch {
+		case acc.Email != "":
+			nameTail = acc.Email
+		case acc.BaseURL != "":
+			nameTail = acc.BaseURL
+		default:
+			nameTail = fmt.Sprintf("导入 #%d", i+1)
 		}
+		name = fmt.Sprintf("%s (%s)", meta.label, nameTail)
 		nameCount[name]++
 		if nameCount[name] > 1 {
 			name = fmt.Sprintf("%s-%d", name, nameCount[name])
@@ -126,13 +136,16 @@ func ImportAccountPool(c *gin.Context) {
 		}
 		if req.DryRun {
 			results = append(results, importResultItem{
-				Index: i + 1, Provider: acc.Provider, Email: acc.Email, Name: name,
+				Index: i + 1, Provider: acc.Provider, Email: acc.Email, BaseURL: acc.BaseURL, Name: name,
 			})
 			continue
 		}
 		weight := uint(10)
 		priority := int64(0)
 		baseURL := constant.GetChannelBaseURL(meta.channelType)
+		if meta.apiKey && acc.BaseURL != "" {
+			baseURL = acc.BaseURL
+		}
 		ch := model.Channel{
 			Type:        meta.channelType,
 			Key:         acc.KeyJSON,
@@ -176,7 +189,7 @@ func ImportAccountPool(c *gin.Context) {
 			i := indexOf[j]
 			acc := accounts[i]
 			results = append(results, importResultItem{
-				Index: i + 1, Provider: acc.Provider, Email: acc.Email,
+				Index: i + 1, Provider: acc.Provider, Email: acc.Email, BaseURL: acc.BaseURL,
 				Name: ch.Name, ChannelId: ch.Id,
 			})
 			created++

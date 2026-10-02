@@ -24,6 +24,8 @@ import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
 import { cn } from '@/lib/utils'
 
+const REPO_URL = 'https://github.com/1528960014/KejiAPI'
+
 interface FooterLink {
   text: string
   href: string
@@ -42,9 +44,8 @@ interface FooterProps {
   className?: string
 }
 
-const NEW_API_FOOTER_ATTRIBUTION_KEY = [
+const FOOTER_PROJECT_ATTRIBUTION_KEY = [
   'footer',
-  'new' + 'api',
   'projectAttributionSuffix',
 ].join('.')
 
@@ -129,14 +130,14 @@ function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
     <span className='text-muted-foreground/45'>
       &copy; {props.currentYear}{' '}
       <a
-        href='https://kejiapi'
+        href={REPO_URL}
         target='_blank'
         rel='noopener noreferrer'
         className='text-foreground/70 hover:text-foreground font-medium transition-colors'
       >
         {t('KejiAPI')}
       </a>
-      . {t(NEW_API_FOOTER_ATTRIBUTION_KEY)}
+      . {t(FOOTER_PROJECT_ATTRIBUTION_KEY)}
     </span>
   )
   if (props.inline) {
@@ -159,7 +160,7 @@ export function Footer(props: FooterProps) {
   } = useSystemConfig()
 
   const displayLogo = systemLogo || props.logo || '/logo.svg'
-  const displayName = systemName || props.name || 'Kejike API'
+  const displayName = systemName || props.name || 'KejiAPI'
   const isDemoSiteMode = Boolean(demoSiteEnabled)
   const currentYear = new Date().getFullYear()
 
@@ -170,15 +171,15 @@ export function Footer(props: FooterProps) {
         links: [
           {
             text: t('footer.columns.about.links.aboutProject'),
-            href: 'https://docs.kejiapi.pro/wiki/project-introduction/',
+            href: `${REPO_URL}#项目简介`,
           },
           {
             text: t('footer.columns.about.links.contact'),
-            href: 'https://docs.kejiapi.pro/support/community-interaction/',
+            href: `${REPO_URL}/issues`,
           },
           {
             text: t('footer.columns.about.links.features'),
-            href: 'https://docs.kejiapi.pro/wiki/features-introduction/',
+            href: `${REPO_URL}#特性`,
           },
         ],
       },
@@ -187,15 +188,15 @@ export function Footer(props: FooterProps) {
         links: [
           {
             text: t('footer.columns.docs.links.quickStart'),
-            href: 'https://docs.kejiapi.pro/getting-started/',
+            href: `${REPO_URL}#快速开始`,
           },
           {
             text: t('footer.columns.docs.links.installation'),
-            href: 'https://docs.kejiapi.pro/installation/',
+            href: `${REPO_URL}#生产部署`,
           },
           {
             text: t('footer.columns.docs.links.apiDocs'),
-            href: 'https://docs.kejiapi.pro/api/',
+            href: `${REPO_URL}#协议与接口`,
           },
         ],
       },
@@ -203,16 +204,12 @@ export function Footer(props: FooterProps) {
         title: t('footer.columns.related.title'),
         links: [
           {
-            text: t('footer.columns.related.links.oneApi'),
-            href: 'https://github.com/songquanpeng/kejiapi',
+            text: t('Docs'),
+            href: `${REPO_URL}#readme`,
           },
           {
-            text: t('footer.columns.related.links.midjourney'),
-            href: 'https://github.com/novicezk/midjourney-proxy',
-          },
-          {
-            text: t('footer.columns.related.links.kejiApiKeyTool'),
-            href: 'https://github.com/Calcium-Ion/kejiapi-key-tool',
+            text: t('GitHub'),
+            href: REPO_URL,
           },
         ],
       },

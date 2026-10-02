@@ -55,14 +55,16 @@ export async function saveAccountPoolSettings(
 }
 
 /**
- * Bulk-import subscription accounts from pasted credential data.
+ * Bulk-import pool accounts from pasted credential data.
  * `dry_run` parses without creating channels (preview).
  * `max_concurrency` sets a per-account concurrency ceiling (0 = unlimited);
  * `expires_days` auto-pauses imported accounts after N days (0 = never).
+ * `models` overrides the provider's default model list (API key accounts).
  */
 export async function importAccountPool(params: {
   raw: string
   group?: string
+  models?: string
   dry_run?: boolean
   max_concurrency?: number
   expires_days?: number

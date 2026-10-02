@@ -5,6 +5,7 @@ package constant
 // accounts. They participate in account pool management and the
 // ban-prevention policy (cooldown / isolation / per-account pacing).
 var SubscriptionPoolChannelTypes = []int{
+	ChannelTypeCustom,      // 8 - pooled OpenAI-compatible gateway API keys
 	ChannelTypeGemini,      // 24
 	ChannelTypeCodex,       // 57
 	ChannelTypeSub2API,     // 59

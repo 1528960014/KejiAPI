@@ -28,6 +28,10 @@ const (
 	defaultGeminiSubscriptionModels = "gemini-2.5-pro,gemini-2.5-flash,gemini-2.5-flash-lite,gemini-2.0-flash,gemini-2.0-flash-lite"
 
 	defaultAntigravitySubscriptionModels = "claude-sonnet-4-6,claude-opus-4-6-thinking,gemini-3-pro-high,gemini-3-pro-low,gpt-oss-120b-medium"
+
+	// defaultApiKeyPoolModels seeds imported OpenAI-compatible gateway keys
+	// when the import request does not specify an explicit model list.
+	defaultApiKeyPoolModels = "gpt-4o,gpt-4o-mini,gpt-5,gpt-5-mini,claude-sonnet-4-5,gemini-2.5-flash,gemini-2.5-pro,deepseek-chat,deepseek-reasoner,qwen-max,qwen-plus,glm-4.6,kimi-k2"
 )
 
 // GetChannelSubscriptionAuthURL returns the provider authorization URL the

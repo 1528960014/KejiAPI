@@ -4631,10 +4631,10 @@
     "model_name": "qwen3.8-flash-next",
     "model_type": "chat",
     "online_lines": 0,
-    "output_price_min": null,
+    "output_price_min": 0.3,
     "price_available": true,
     "price_max": null,
-    "price_min": null,
+    "price_min": 0.05,
     "protocols": [
       "openai"
     ],
@@ -4920,10 +4920,10 @@
     "model_name": "doubao-seed-1-8-251228",
     "model_type": "chat",
     "online_lines": 0,
-    "output_price_min": null,
+    "output_price_min": 0.9,
     "price_available": true,
     "price_max": null,
-    "price_min": null,
+    "price_min": 0.3,
     "protocols": [
       "openai"
     ],

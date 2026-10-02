@@ -23,9 +23,8 @@ var (
 )
 
 func printHelp() {
-	fmt.Println("NewAPI(Based OneAPI) " + Version + " - The next-generation LLM gateway and AI asset management system supports multiple languages.")
-	fmt.Println("Original Project: OneAPI by JustSong - https://github.com/songquanpeng/kejiapi")
-	fmt.Println("Maintainer: 1528960014 - https://kejiapi")
+	fmt.Println("KejiAPI " + Version + " - The self-hosted AI gateway and multi-model management platform.")
+	fmt.Println("Maintainer: 1528960014 - https://github.com/1528960014/KejiAPI")
 	fmt.Println("Usage: kejiapi [--port <port>] [--log-dir <log directory>] [--version] [--help]")
 }
 

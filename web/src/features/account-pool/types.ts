@@ -181,6 +181,7 @@ export type PoolImportResultItem = {
   index: number
   provider: string
   email: string
+  base_url?: string
   name?: string
   channel_id?: number
   error?: string

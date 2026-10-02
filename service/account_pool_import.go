@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"kejiapi/common"
@@ -24,13 +25,17 @@ import (
 //   - ChatGPT/Codex auth.json (nested "tokens" object or flat fields,
 //     email recovered from the id_token JWT when absent)
 //   - Google/Gemini exports (accessToken / refreshToken or snake_case)
+//   - OpenAI-compatible API key accounts (api_key + optional base_url,
+//     also accepted as plain "sk-..." text, one per line)
 //   - explicit "provider"/"type"/"platform" field overrides detection
 type ImportedAccount struct {
-	// Provider is one of: claude, codex, gemini, antigravity
+	// Provider is one of: claude, codex, gemini, antigravity, api_key
 	Provider string
 	Email    string
+	// BaseURL is only used by api_key accounts (upstream gateway address).
+	BaseURL string
 	// KeyJSON is the normalized native credential JSON ready to be
-	// stored as the channel key.
+	// stored as the channel key. For api_key accounts it is the raw key.
 	KeyJSON string
 	// Err is set when this entry could not be parsed.
 	Err error
@@ -39,6 +44,16 @@ type ImportedAccount struct {
 // ParseImportedAccounts parses raw pasted text into normalized accounts.
 // Returns nil when the input is empty.
 func ParseImportedAccounts(raw string) []ImportedAccount {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return nil
+	}
+
+	// Plain API key text (no JSON): one key per line / whitespace / comma.
+	if !strings.Contains(trimmed, "{") {
+		return parsePlainApiKeys(trimmed)
+	}
+
 	entries := splitImportEntries(raw)
 	if len(entries) == 0 {
 		return nil
@@ -50,6 +65,32 @@ func ParseImportedAccounts(raw string) []ImportedAccount {
 			acc.Err = fmt.Errorf("第 %d 条：%v", i+1, acc.Err)
 		}
 		out = append(out, acc)
+	}
+	return out
+}
+
+// parsePlainApiKeys accepts one API key per line (also comma / whitespace
+// separated) without requiring a JSON wrapper.
+func parsePlainApiKeys(text string) []ImportedAccount {
+	re := regexp.MustCompile(`sk-[A-Za-z0-9_\-]{8,}`)
+	found := re.FindAllString(text, -1)
+	if len(found) == 0 {
+		// Tolerate any other long opaque token shape.
+		for _, field := range strings.FieldsFunc(text, func(r rune) bool {
+			return r == '\n' || r == '\r' || r == ',' || r == ';' || r == ' ' || r == '\t'
+		}) {
+			field = strings.TrimSpace(field)
+			if len(field) >= 16 && !strings.ContainsAny(field, "{}") {
+				found = append(found, field)
+			}
+		}
+	}
+	out := make([]ImportedAccount, 0, len(found))
+	for _, key := range found {
+		out = append(out, ImportedAccount{
+			Provider: "api_key",
+			KeyJSON:  key,
+		})
 	}
 	return out
 }
@@ -124,6 +165,9 @@ func normalizeImportEntry(m map[string]any) ImportedAccount {
 	nestedTokens, _ := m["tokens"].(map[string]any)
 
 	switch {
+	case provider == "api_key" || provider == "apikey" || provider == "custom" ||
+		provider == "openai_compatible" || provider == "gateway":
+		provider = "api_key"
 	case provider == "claude" || provider == "anthropic" ||
 		importStr(m, "account_uuid", "accountUUID") != "" ||
 		strings.HasPrefix(importStr(m, "refreshToken", "refresh_token"), "sec_"):
@@ -139,6 +183,9 @@ func normalizeImportEntry(m map[string]any) ImportedAccount {
 		provider = "gemini"
 	case strings.Contains(strings.ToLower(importStr(m, "email", "email_address")), "@gmail.com"):
 		provider = "gemini"
+	case importStr(m, "api_key", "apiKey") != "":
+		// Plain OpenAI-compatible gateway key.
+		provider = "api_key"
 	default:
 		// Claude rt-JSON is the most common pasted dialect.
 		provider = "claude"
@@ -227,6 +274,18 @@ func normalizeImportEntry(m map[string]any) ImportedAccount {
 			return ImportedAccount{Provider: provider, Email: cred.Email, Err: errors.New("缺少 refresh_token / access_token")}
 		}
 		return marshalImportedAccount(provider, cred.Email, cred)
+
+	case "api_key":
+		apiKey := importStr(m, "api_key", "apiKey", "key", "token")
+		if apiKey == "" {
+			return ImportedAccount{Provider: provider, Err: errors.New("缺少 api_key")}
+		}
+		return ImportedAccount{
+			Provider: provider,
+			Email:    importStr(m, "email", "email_address", "name", "label"),
+			BaseURL:  importStr(m, "base_url", "baseURL", "baseUrl", "endpoint", "url"),
+			KeyJSON:  apiKey,
+		}
 
 	default:
 		return ImportedAccount{Err: fmt.Errorf("无法识别的凭据格式（provider=%s）", provider)}

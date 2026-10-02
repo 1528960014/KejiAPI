@@ -9,17 +9,11 @@ See LICENSE for the full project license terms.
 ==== Additional Terms under AGPLv3 Section 7 ====
 
 Pursuant to Section 7(b) of the GNU Affero General Public License version 3,
-the following reasonable legal notice and author attribution must be preserved
-by modified versions in the Appropriate Legal Notices and in any prominent
-about, legal, footer, or attribution location presented by the user interface:
+modified versions that present a user interface must preserve the following
+attribution in the Appropriate Legal Notices and in any prominent about,
+legal, footer, or attribution location:
 
-"Frontend design and development by KejiAPI contributors."
-
-Modified versions that present a user interface must also preserve a visible
-link to the original project in a prominent about, legal, footer, or
-attribution location:
-
-https://kejiapi
+"KejiAPI - self-hosted AI gateway. https://github.com/1528960014/KejiAPI"
 
 Modified versions must not misrepresent the origin of the software and must
 mark their changes in accordance with AGPLv3 Section 7(c).

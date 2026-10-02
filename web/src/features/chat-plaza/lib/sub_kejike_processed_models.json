@@ -513,8 +513,8 @@
     "group_multiplier": 1.0,
     "model_type": "video",
     "billing_mode": "?token",
-    "price_min": null,
-    "output_price_min": null,
+    "price_min": 1.6,
+    "output_price_min": 1.6,
     "icon": "https://cos.lingkeai.vip/op.svg",
     "tags": [
       "?? 1.0x",

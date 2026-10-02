@@ -15,37 +15,18 @@
 </p>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/Calcium-Ion/kejiapi/main/LICENSE">
-    <img src="https://img.shields.io/github/license/Calcium-Ion/kejiapi?color=brightgreen" alt="license">
+  <a href="https://github.com/1528960014/KejiAPI/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/1528960014/KejiAPI?color=brightgreen" alt="license">
   </a><!--
-  --><a href="https://github.com/Calcium-Ion/kejiapi/releases/latest">
-    <img src="https://img.shields.io/github/v/release/Calcium-Ion/kejiapi?color=brightgreen&include_prereleases" alt="release">
-  </a><!--
-  --><a href="https://hub.docker.com/r/CalciumIon/kejiapi">
-    <img src="https://img.shields.io/badge/docker-dockerHub-blue" alt="docker">
-  </a>
-  <a href="https://atomgit.com/1528960014/kejiapi" target="_blank">
-    <img alt="AtomGit G-Star" src="https://atomgit.com/1528960014/kejiapi/star/badge.svg"/>
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://trendshift.io/repositories/20180" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/20180" alt="1528960014%2Fkejiapi | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
-  </a>
-  <br>
-  <a href="https://hellogithub.com/repository/1528960014/kejiapi" target="_blank">
-    <img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=539ac4217e69431684ad4a0bab768811&claim_uid=tbFPfKIDHpc4TzR" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" />
-  </a><!--
-  -->
-  <a href="https://atomgit.com/1528960014/kejiapi" target="_blank">
-    <img alt="AtomGit G-Star" src="https://atomgit.com/1528960014/kejiapi/star/new_badge.svg" width="250" height="55" />
+  --><a href="https://github.com/1528960014/KejiAPI/releases/latest">
+    <img src="https://img.shields.io/github/v/release/1528960014/KejiAPI?color=brightgreen&include_prereleases" alt="release">
   </a>
 </p>
 
 <p align="center">
   <a href="#capabilities">核心能力</a> •
   <a href="#quick-start">快速开始</a> •
+  <a href="#tutorial">新手上路教程</a> •
   <a href="#deployment">部署运维</a> •
   <a href="#development">开发扩展</a> •
   <a href="#documentation">文档社区</a>
@@ -125,7 +106,8 @@ KejiAPI 是面向应用、Agent 和团队的自托管 AI 网关。将不同厂�
 | --- | --- |
 | 模型接入 | 支持 OpenAI Chat Completions、Responses、Anthropic Messages 和 Gemini 协议，以及上游支持的流式输出、工具调用、推理与多模态输入 |
 | 渠道调度 | 配置模型映射、渠道优先级与权重、失败重试、渠道亲和性和多密钥管理 |
-| **账号池** | **订阅账号池化管理：粘贴/授权流接入、会话粘性调度、错误率逃逸、并发槽与负载系数、信号分层冷却、定时健康检查自动恢复、到期自动停用** |
+| **账号池** | **订阅账号与 API Key 账号池化管理：粘贴/授权流接入、会话粘性调度、错误率逃逸、并发槽与负载系数、信号分层冷却、定时健康检查自动恢复、到期自动停用** |
+| 内置官方模型库 | 模型广场内置全部官方模型与参考定价（token 输入/输出价、按次计费价），未接渠道也能比价；官方 Logo、介绍与协议自动匹配 |
 | 用量与成本 | 管理额度、订阅套餐、用量日志、缓存计费，以及基于表达式的阶梯定价 |
 | 访问控制 | 管理用户、分组、细粒度权限和 API Key 限制；支持 OAuth/OIDC、通行密钥、两步验证与登录会话管理 |
 | 异步任务 | 通过 JavaScript 插件扩展图片、视频等任务 API，统一查询任务状态和获取产物 |
@@ -135,7 +117,7 @@ KejiAPI 是面向应用、Agent 和团队的自托管 AI 网关。将不同厂�
 
 「账号池」页统一管理订阅类账号（Gemini / ChatGPT(Codex) / Claude / Antigravity / 中转网关账户）：
 
-- **接入**：粘贴 Claude rt-JSON、ChatGPT auth.json、Google 导出凭据（支持 JSON 数组/行/拼接混排，自动识别提供商）；也可用浏览器授权流创建；导入时可批量设置并发上限与到期天数
+- **接入**：粘贴 Claude rt-JSON、ChatGPT auth.json、Google 导出凭据（支持 JSON 数组/行/拼接混排，自动识别提供商）；API Key 账号（每行一个 `sk-...`，或 `{"api_key":"sk-...","base_url":"https://..."}` JSON）；也可用浏览器授权流创建；导入时可批量设置并发上限与到期天数
 - **调度**：同一 API 密钥优先命中同一账号（会话粘性）；账号错误率（EWMA）超阈值自动逃逸；按并发槽、活跃数、健康度 Top-K 加权抽选；账号负载系数（load factor）可调
 - **防封**：封禁自动隔离（不自动恢复）；429 秒级冷却；529 过载隔离；401/403 凭据分钟级冷却；每账号滑动窗口限速
 - **恢复**：冷却到期自动恢复；每账号定时健康检查（间隔 + 测试模型）成功自动恢复并清除标记，失败自动禁用，最近 5 次结果留痕
@@ -201,6 +183,28 @@ curl --fail-with-body http://localhost:3000/v1/responses \
   -d '{"model":"your-enabled-model","input":"Hello!"}'
 ```
 
+<a id="tutorial"></a>
+
+## 新手上路教程
+
+从零到第一次成功调用，按顺序完成以下步骤即可：
+
+1. **注册管理员**：部署后首次访问 Web 控制台注册账号，第一个注册用户即管理员。
+2. **接入上游账号**（普通渠道、账号池批量导入可组合使用）：
+   - 普通渠道：「渠道」页 → 新建，选择类型（OpenAI / Claude / Gemini / 自定义中转等），填入上游 API Key 或走 OAuth 授权，填写模型列表与分组，保存后执行「渠道测试」确认连通。
+   - 账号池批量接入：「账号池」页 → 导入，支持三种粘贴方式：
+     - 订阅凭据 JSON（Claude rt-JSON、ChatGPT auth.json、Google 导出，支持数组/行/拼接混排，自动识别提供商）；
+     - 网关 API Key，每行一个 `sk-...`；
+     - JSON 条目 `{"api_key":"sk-...","base_url":"https://your-gateway/v1"}`（可带 `name`）。
+     先「预览」确认解析结果，再「导入」；导入时可统一设置并发上限与到期天数，未填模型列表时使用内置默认模型集。
+3. **确认价格**：「模型」页配置倍率；模型广场已内置全部官方模型参考定价（token 输入/输出价、按次计费价），未接渠道的模型也能直接比价，计费仍以后台配置为准。
+4. **配置分组与策略**：「系统设置」配置分组倍率；「账号池 - 管理设置」按需调整健康检查间隔、逃逸阈值、信号冷却层级、并发槽与负载系数。
+5. **签发密钥**：「令牌」页为用户/应用创建 API Key，绑定分组与额度。
+6. **调用**：客户端以 OpenAI 兼容方式请求 `https://<your-host>/v1/chat/completions`，Base URL 与 Key 均指向本服务。
+7. **（可选）开放充值**：配置易支付（聚合支付宝/微信）或 Stripe 后，用户可在控制台自助充值、购买订阅套餐、使用兑换码与优惠码。
+
+常见排障：调用返回 401 → 检查令牌是否有效、分组与模型是否匹配；提示无可用渠道 → 检查渠道状态、分组与模型名映射；账号被冷却 → 「账号池」页查看冷却分类与原因，等待自动恢复或手动启用；想批量替换上游网关密钥 → 再次导入同 base_url 的新 Key 即可加入池中调度。
+
 <a id="deployment"></a>
 
 ## 部署与运维
@@ -210,8 +214,8 @@ curl --fail-with-body http://localhost:3000/v1/responses \
 仓库的 [Compose 配置](./docker-compose.yml) 默认启动 **KejiAPI + PostgreSQL + Redis**，并提供 MySQL 和独立 ClickHouse 日志库的配置示例。
 
 ```bash
-git clone https://kejiapi.git
-cd kejiapi
+git clone https://github.com/1528960014/KejiAPI.git
+cd KejiAPI
 ```
 
 启动前编辑 `docker-compose.yml`：同时替换数据库、Redis 服务及对应连接串中的示例密码，并设置固定的随机 `SESSION_SECRET`（可用 `openssl rand -hex 32` 生成）。通过 HTTPS 访问控制台时，设置 `SESSION_COOKIE_SECURE=true`，并在 `SESSION_COOKIE_TRUSTED_URL` 中填写控制台对外的精确 HTTPS Origin。
@@ -291,31 +295,24 @@ bun run dev -- --port 5173
 
 | 资源 | 入口 |
 | --- | --- |
-| 官方文档 | [使用指南](https://github.com/1528960014/KejiAPI/zh/docs) · [安装部署](https://github.com/1528960014/KejiAPI/zh/docs/installation) · [API 参考](https://github.com/1528960014/KejiAPI/zh/docs/api) |
+| 项目文档 | [README](./README.zh_CN.md) · [环境变量示例](./.env.example) |
 | 项目导读 | [DeepWiki](https://deepwiki.com/1528960014/kejiapi) |
-| 使用问题与交流 | [常见问题](https://github.com/1528960014/KejiAPI/zh/docs/support/faq) · [社区渠道](https://github.com/1528960014/KejiAPI/zh/docs/support/community-interaction) |
-| 缺陷与功能建议 | [GitHub Issues](https://kejiapi/issues) |
+| 使用问题与交流 | [GitHub Discussions](https://github.com/1528960014/KejiAPI/discussions) |
+| 缺陷与功能建议 | [GitHub Issues](https://github.com/1528960014/KejiAPI/issues) |
 | 安全漏洞 | 按[安全政策](./.github/SECURITY.md)进行私下报告 |
 
 反馈问题时请附上版本、部署方式、复现步骤及脱敏日志。欢迎贡献文档、翻译、渠道适配和有针对性的回归测试。
 
 ---
 
-## 🔗 相关项目
+## 🔗 生态与工具
 
-### 上游项目
-
-| 项目 | 说明 |
+| 组件 | 说明 |
 |------|------|
-| [One API](https://github.com/songquanpeng/kejiapi) | 原版项目基础 |
-| [Midjourney-Proxy](https://github.com/novicezk/midjourney-proxy) | Midjourney 接口支持 |
-
-### 配套工具
-
-| 项目 | 说明 |
-|------|------|
-| [kejiapi-key-tool](https://github.com/Calcium-Ion/kejiapi-key-tool) | Key 额度查询工具 |
-| [kejiapi-horizon](https://github.com/Calcium-Ion/kejiapi-horizon) | KejiAPI 高性能优化版 |
+| KejiAPI 主仓库 | 网关服务本体：Go 后端 + React 控制台，单二进制内嵌前端 |
+| [RelayKit](./relaykit/README.md) | 可独立构建的协议 DTO 与转换 Go 模块（OpenAI / Anthropic / Gemini 等） |
+| [Task Plugin](./plugins/tasks/) | JavaScript 任务插件体系，扩展图片、视频等异步任务接口 |
+| [Electron](./electron/README.md) | 桌面封装与打包 |
 
 ---
 
@@ -323,13 +320,9 @@ bun run dev -- --port 5173
 
 本项目采用 [GNU Affero 通用公共许可证 v3.0 (AGPLv3)](./LICENSE) 授权。
 
-根据 AGPLv3 第 7 条，本项目还适用[附加条款](./NOTICE)。修改版本必须在适当法律声明及界面中显著的关于、法律、页脚或署名位置保留作者署名 `Frontend design and development by KejiAPI contributors.`，并保留指向原项目 <https://kejiapi> 的可见链接。
-
-本项目为开源项目，在 [One API](https://github.com/songquanpeng/kejiapi)（MIT 许可证）的基础上进行二次开发。
+署名及依赖声明见 [NOTICE](./NOTICE) 和[第三方许可证](./THIRD-PARTY-LICENSES.md)。
 
 如果您所在的组织政策不允许使用 AGPLv3 许可的软件，或您希望规避 AGPLv3 的开源义务，请发送邮件至：[support@kejiapi.com](mailto:support@kejiapi.com)
-
-署名及依赖声明见 [NOTICE](./NOTICE) 和[第三方许可证](./THIRD-PARTY-LICENSES.md)。
 
 ---
 
@@ -337,7 +330,7 @@ bun run dev -- --port 5173
 
 <div align="center">
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Calcium-Ion/kejiapi&type=Date)](https://star-history.com/#Calcium-Ion/kejiapi&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=1528960014/KejiAPI&type=Date)](https://star-history.com/#1528960014/KejiAPI&Date)
 
 </div>
 
@@ -349,7 +342,7 @@ bun run dev -- --port 5173
 
 如果这个项目对你有帮助，欢迎给我们一个 ⭐️ Star！
 
-**[官方文档](https://github.com/1528960014/KejiAPI/zh/docs)** • **[问题反馈](https://github.com/Calcium-Ion/kejiapi/issues)** • **[最新发布](https://github.com/Calcium-Ion/kejiapi/releases)**
+**[GitHub 仓库](https://github.com/1528960014/KejiAPI)** • **[问题反馈](https://github.com/1528960014/KejiAPI/issues)** • **[最新发布](https://github.com/1528960014/KejiAPI/releases)**
 
 <sub>Built with ❤️ by 1528960014</sub>
 

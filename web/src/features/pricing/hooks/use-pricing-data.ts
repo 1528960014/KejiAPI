@@ -29,6 +29,7 @@ import { useStatus } from '@/hooks/use-status'
 import { requireServerSuccess } from '@/lib/server-error-message'
 
 import { getPricing } from '../api'
+import { mergeOfficialBuiltinPricing } from '../lib/official-models'
 import type { PricingModel, PricingVendor } from '../types'
 
 const PRESET_VENDORS: Array<{ name: string; icon: string; description: string }> = [
@@ -121,7 +122,7 @@ export function usePricingData(enabled = true) {
     }
 
     return {
-      models: list,
+      models: mergeOfficialBuiltinPricing(list),
       vendors: rawVendors,
       groupRatio: mergedGroupRatio,
       usableGroup: mergedUsableGroup,
