@@ -25,6 +25,7 @@ import {
   HeartPulse,
   Loader2,
   MoreHorizontal,
+  Plus,
   Power,
   PowerOff,
   RefreshCcwDot,
@@ -51,6 +52,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -730,70 +732,104 @@ export function PoolAccountsTable(props: PoolAccountsTableProps) {
           searchDebounceMs: 300,
           filters: toolbarFilters,
           preActions: (
-            <>
+            <div className='flex items-center gap-1.5 sm:gap-2 shrink-0'>
+              <Button
+                variant='outline'
+                size='icon'
+                className='size-8 shrink-0'
+                onClick={() => invalidatePool()}
+                title={t('Refresh now')}
+                aria-label={t('Refresh now')}
+              >
+                <RefreshCcwDot className='size-4' />
+              </Button>
+              <Button
+                variant={autoRefresh ? 'secondary' : 'outline'}
+                size='sm'
+                className='h-8 shrink-0 gap-1 text-xs'
+                onClick={() => setAutoRefresh((previous) => !previous)}
+              >
+                <RefreshCw
+                  className={cn('size-3.5', autoRefresh && 'animate-spin')}
+                />
+                {t('Auto refresh')}
+                {autoRefresh && (
+                  <span className='size-1.5 rounded-full bg-emerald-500' />
+                )}
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <Button variant='outline' size='sm' className='gap-1.5' />
+                    <Button variant='outline' size='sm' className='h-8 shrink-0 gap-1.5' />
                   }
                 >
                   <MoreHorizontal className='size-4' />
                   {t('More actions')}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end' className='w-52'>
-                  <DropdownMenuLabel>{t('Data operations')}</DropdownMenuLabel>
-                  <DropdownMenuItem onSelect={() => setImportOpen(true)}>
-                    <Upload />
-                    {t('Import accounts')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={handleExport}>
-                    <Download />
-                    {t('Export accounts')}
-                  </DropdownMenuItem>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>{t('Data operations')}</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => setImportOpen(true)}>
+                      <Upload className='size-4' />
+                      {t('Import accounts')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleExport}>
+                      <Download className='size-4' />
+                      {t('Export accounts')}
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel>{t('Tools')}</DropdownMenuLabel>
-                  <DropdownMenuItem onSelect={() => invalidatePool()}>
-                    <RefreshCcwDot />
-                    {t('Refresh now')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      void runWithPending(
-                        accounts.map((a) => a.id),
-                        async (id) => {
-                          const account = accounts.find((a) => a.id === id)
-                          if (account) await handleHealthTest(account)
-                        }
-                      )
-                    }
-                  >
-                    <HeartPulse />
-                    {t('Batch health check')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={props.onOpenSettings}>
-                    <Settings2 />
-                    {t('Account pool settings')}
-                  </DropdownMenuItem>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>{t('Tools')}</DropdownMenuLabel>
+                    <DropdownMenuItem onSelect={() => invalidatePool()}>
+                      <RefreshCcwDot className='size-4' />
+                      {t('Refresh now')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() =>
+                        void runWithPending(
+                          accounts.map((a) => a.id),
+                          async (id) => {
+                            const account = accounts.find((a) => a.id === id)
+                            if (account) await handleHealthTest(account)
+                          }
+                        )
+                      }
+                    >
+                      <HeartPulse className='size-4' />
+                      {t('Batch health check')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={props.onOpenSettings}>
+                      <Settings2 className='size-4' />
+                      {t('Account pool settings')}
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel>{t('Display')}</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onSelect={() => setAutoRefresh((previous) => !previous)}
-                  >
-                    <RefreshCcwDot />
-                    {t('Auto refresh')}
-                    {autoRefresh && (
-                      <Badge variant='secondary' className='ms-auto text-xs'>
-                        ON
-                      </Badge>
-                    )}
-                  </DropdownMenuItem>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>{t('Display')}</DropdownMenuLabel>
+                    <DropdownMenuItem
+                      onSelect={() => setAutoRefresh((previous) => !previous)}
+                    >
+                      <RefreshCcwDot className='size-4' />
+                      {t('Auto refresh')}
+                      {autoRefresh && (
+                        <Badge variant='secondary' className='ms-auto text-xs'>
+                          ON
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size='sm' onClick={() => setImportOpen(true)}>
-                <Upload />
+              <Button
+                size='sm'
+                className='h-8 shrink-0 gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium shadow-sm'
+                onClick={() => setImportOpen(true)}
+              >
+                <Plus className='size-4' />
                 {t('Add account')}
               </Button>
-            </>
+            </div>
           ),
         }}
         bulkActions={
